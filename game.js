@@ -3,7 +3,15 @@
 (() => {
 const D = window.DATA;
 const $ = s => document.querySelector(s);
-const SAVE_KEY = "cekirdek_save";
+// §12 sürüm/önbellek: sayfa ile içerik dosyası farklı sürümse bir kez önbelleksiz yeniden yükle
+try {
+  if (window.CB_VERSION && D.version !== window.CB_VERSION) {
+    if (!sessionStorage.getItem("cb_reload")) { sessionStorage.setItem("cb_reload", "1"); location.replace(location.pathname + "?r=" + Date.now()); return; }
+  } else sessionStorage.removeItem("cb_reload");
+} catch (e) {}
+const SAVE_KEY = "cekirdek_save";                       // eski tek kayıt (yuva 1'e taşınır)
+const SLOT_KEY = i => "cekirdek_slot_" + i, SLOTS = 3;   // §12: 3 kayıt yuvası
+let curSlot = 1;
 const DAY_SECONDS = 90;             // §2: prototip kalibrasyonu, kısa ve odaklı gün
 const EXTRACT_SPEED = 6;            // §4: mini oyun 3–8 sn → ekstraksiyon 6× hızlı akar
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -22,11 +30,14 @@ function newState() {
     perfect: { espresso: 0 }, served: {}, unlocked: ["espresso"], taught: [],
     beans: { brazil: { kg: 1, boughtDay: 1 } }, bean: "brazil", milk: 0,
     equipment: {}, prices: {}, tipsLearned: [], regulars: {}, log: [],
-    debt: 0, staff: {}, decor: {}, streak: 0, milkDay: 1
+    debt: 0, staff: {}, decor: {}, streak: 0, milkDay: 1, traffic: {}
   };
 }
-function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
-function load() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { return null; } }
+function save(slot) { if (!S) return; try { S.savedAt = Date.now(); localStorage.setItem(SLOT_KEY(slot || curSlot), JSON.stringify(S)); } catch (e) {} }
+function loadSlot(i) { try { return JSON.parse(localStorage.getItem(SLOT_KEY(i))); } catch (e) { return null; } }
+function deleteSlot(i) { try { localStorage.removeItem(SLOT_KEY(i)); } catch (e) {} }
+const anySlot = () => { for (let i = 1; i <= SLOTS; i++) if (loadSlot(i)) return true; return false; };
+try { const old = localStorage.getItem(SAVE_KEY); if (old && !localStorage.getItem(SLOT_KEY(1))) localStorage.setItem(SLOT_KEY(1), old); if (old) localStorage.removeItem(SAVE_KEY); } catch (e) {}
 
 const rank = () => [...D.ranks].reverse().find(r => S.xp >= r.xp);
 const shop = () => D.shopLevels[S.shopLevel];
@@ -45,6 +56,10 @@ function autoSteps() { const set = new Set(); Object.keys(S.equipment).forEach(k
 // §5 latte art adımı 3★ dükkanda latte/cappuccino'ya eklenir
 function stepsFor(id) { const d = D.drinks[id]; const st = d.steps.slice(); if (d.art && shop().stars >= 3) st.push("art"); return st; }
 const decorMult = key => Object.keys(S.decor || {}).reduce((m, k) => (S.decor[k] && D.decor[k][key]) ? m * D.decor[k][key] : m, 1);
+// §9 müşteri trafiği: sıra sınırı (X), günlük en fazla (Y), geliş sıklığı; Y ve sıklık dükkana özel 3 kademe
+const tr = () => (S.traffic && S.traffic[S.shopLevel]) || { cust: 0, freq: 0 };
+const dayCap = () => shop().customersPerDay + tr().cust * shop().custStep;
+const arrivalEvery = () => shop().interval * Math.pow(D.traffic.freqMult, tr().freq);
 const weekday = d => D.weekdays[(d - 1) % 7];
 const weekNo = d => Math.floor((d - 1) / 7) + 1;
 const daysToRent = d => 6 - ((d - 1) % 7);             // 0 = bugün Pazar, akşam kira
@@ -72,6 +87,9 @@ function renderHUD() {
   $("#hRent").classList.toggle("warn", dr <= 1);
   $("#hDebt").style.display = S.debt > 0 ? "" : "none"; $("#hDebt").textContent = "Borç ₺" + S.debt;
   $("#hStreak").style.display = (S.streak || 0) >= 2 ? "" : "none"; $("#hStreak").textContent = "🔥 Seri " + S.streak + " · bahşiş ×" + streakMult().toFixed(1);
+  const nx = nextRecipe(), el = $("#hNext");                       // §3 "Yeni tarife X kahve daha"
+  if (!nx) el.textContent = "Tüm tarifler açık ✓";
+  else { const d = D.drinks[nx], left = d.unlockCups - totalSold(); el.textContent = left > 0 ? `Yeni tarife ${left} kahve daha` : `Yeni tarif için ${d.shop}★ dükkan`; }
   renderTask();
   $("#hClock").textContent = clockStr(day ? day.t / DAY_SECONDS : 0);
   $("#hMoney").textContent = S.money; $("#hRep").textContent = S.rep;
@@ -85,10 +103,12 @@ function renderHUD() {
 }
 
 // ---------- Açılım (§3, §9) ----------
-// Prototip kalibrasyonu: tarif açılımı artık "10 mükemmel servis" değil, barista XP eşiğiyle (unlockXp) otomatik olur.
+// §3 tarif açılımı: satılan toplam kahve sayısı (kümülatif artan eşikler) + gerekirse dükkan seviyesi
+const totalSold = () => Object.values(S.served || {}).reduce((a, b) => a + b, 0);
+function nextRecipe() { return Object.keys(D.drinks).filter(id => !S.unlocked.includes(id)).sort((a, b) => D.drinks[a].unlockCups - D.drinks[b].unlockCups)[0]; }
 function canUnlock(id) {
   const d = D.drinks[id];
-  return S.xp >= d.unlockXp && shop().stars >= (d.shop || 1) && !S.unlocked.includes(id);   // §9 dükkan büyüklüğü kilidi
+  return totalSold() >= d.unlockCups && shop().stars >= (d.shop || 1) && !S.unlocked.includes(id);   // §9 dükkan büyüklüğü kilidi
 }
 function checkUnlocks() {
   const fresh = Object.keys(D.drinks).filter(canUnlock);
@@ -125,10 +145,10 @@ function renderTask() {
 
 // ---------- Gün (§2) ----------
 function startDay() {
-  const n = shop().customersPerDay; checkUnlocks();
+  const n = dayCap(); checkUnlocks();
   const firstTime = S.day === 1 && !S.taught.includes("first");
-  day = { t: 0, toSpawn: n, spawnEvery: DAY_SECONDS / n, nextSpawn: firstTime ? 99999 : 1, customers: [], orders: [], active: 0,
-          stats: { served: 0, perfect: 0, income: 0, tips: 0, left: 0, repStart: S.rep }, id: 1, tutorialActive: false, asst: null };
+  day = { t: 0, toSpawn: n, spawnEvery: arrivalEvery(), nextSpawn: firstTime ? 99999 : 1, customers: [], orders: [], active: 0,
+          stats: { served: 0, perfect: 0, income: 0, tips: 0, left: 0, bounced: 0, repStart: S.rep }, id: 1, tutorialActive: false, asst: null };
   if (!firstTime) day.task = makeTask();
   if (firstTime) {
     day.tutorialActive = true;
@@ -152,7 +172,12 @@ function tick(now) {
   if (day) {
     if (!day.tutorialActive) {
       day.t += dt;
-      if (day.toSpawn > 0 && day.t >= day.nextSpawn) { spawnCustomer(); day.toSpawn--; day.nextSpawn += day.spawnEvery * rnd(0.6, 1.4); }
+      if (day.t >= DAY_SECONDS) day.toSpawn = 0;                                   // §9 20:00: gün biter, gelemeyen gelmez
+      if (day.toSpawn > 0 && day.t >= day.nextSpawn) {
+        if (queueOf().length >= shop().maxQueue) day.stats.bounced++;                  // §9 sıra dolu: kapıdan döner
+        else spawnCustomer();
+        day.toSpawn--; day.nextSpawn += day.spawnEvery * rnd(0.6, 1.4);
+      }
       queueOf().forEach(c => { if (c.patienceMax) c.patience -= dt; });
       queueOf().filter(c => c.patienceMax && c.patience <= 0).forEach(leave);
     }
@@ -160,15 +185,20 @@ function tick(now) {
     if (S.staff && S.staff.assistant && !day.tutorialActive) assistantTick(dt);
     layout();
   }
-  renderScene(dt);
+  // performans: dükkan kapalıyken ya da bir kart/panel açıkken arka sahne 3 karede bir çizilir
+  if ((!day || document.querySelector(".overlay.on") || $("#sheet").classList.contains("on")) && (sceneSkip = (sceneSkip + 1) % 3)) sceneAcc += dt; else { renderScene(dt + sceneAcc); sceneAcc = 0; }
   if (day && day.toSpawn === 0 && queueOf().length === 0 && day.orders.length === 0 && !day.asst) return endDay();
   raf = requestAnimationFrame(tick);
 }
+let lastHint = "", lastClock = "", sceneSkip = 0, sceneAcc = 0;
 function renderScene(dt) {
   if (day) day.customers = day.customers.filter(c => !c.gone);
   SCENE.draw({ customers: day ? day.customers : [], orders: day ? day.orders : [], t: day ? day.t / DAY_SECONDS : 0.3, level: shop().stars, slots: slots(),
-    decor: S.decor || {}, assistant: !!(S.staff && S.staff.assistant), asstBusy: !!(day && day.asst), superAuto: !!S.equipment.superAuto }, dt || 0);
-  $("#hint").textContent = !day ? "Dükkan kapalı. Hazır olunca aç." : queueOf().length ? "Sırada bekleyen müşteriye dokun" : day.orders.length ? "" : "Müşteri bekleniyor…";
+    decor: S.decor || {}, assistant: !!(S.staff && S.staff.assistant), asstBusy: !!(day && day.asst), superAuto: !!S.equipment.superAuto,
+    baristaBusy: !!(day && day.orders.length) }, dt || 0);
+  const hint = !day ? "Dükkan kapalı. Hazır olunca aç." : `Sıra ${queueOf().length}/${shop().maxQueue} · ` + (queueOf().length ? "Sırada bekleyen müşteriye dokun" : day.orders.length ? "Sipariş hazırlanıyor" : day.toSpawn > 0 ? "Müşteri bekleniyor…" : "Bugünkü müşteriler bitti");
+  if (hint !== lastHint) { lastHint = hint; $("#hint").textContent = hint; }                 // performans: DOM'a yalnız değişince yaz
+  if (day) { const ck = clockStr(day.t / DAY_SECONDS); if (ck !== lastClock) { lastClock = ck; $("#hClock").textContent = ck; } }
 }
 function spawnCustomer() {
   // §7 prototip müşteri tipleri: isim yok, yalnızca tip etiketi; tahammül ve bahşiş tipe göre değişir
@@ -300,7 +330,8 @@ function showLedger(dayNum, st, L, repDelta) {
   $("#ledgerCard").innerHTML = `<h2>${weekday(dayNum)} · ${weekNo(dayNum)}. Hafta – gün kapanışı</h2>
     <table>
       <tr><td>Servis edilen</td><td class="num">${st.served} (${st.perfect} mükemmel)</td></tr>
-      <tr><td>Giden müşteri</td><td class="num">${st.left}</td></tr>
+      <tr><td>Giden müşteri (beklemekten vazgeçen)</td><td class="num">${st.left}</td></tr>
+      ${st.bounced ? `<tr><td>Kapıdan dönen (sıra doluydu)</td><td class="num">${st.bounced}</td></tr>` : ""}
       <tr><td>Satış</td><td class="num">₺${st.income}</td></tr>
       <tr><td>Bahşiş</td><td class="num">₺${st.tips}</td></tr>
       ${L.task ? `<tr><td>Günlük görev: ${L.task.text}</td><td class="num">${L.task.done ? "✓ +₺" + L.task.money : "✗"}</td></tr>` : ""}
@@ -416,11 +447,15 @@ function renderShop(mandatory) {
   if (mandatory) html += `<div class="box"><h4>Yeni güne başlamadan önce</h4>
     <div class="req ${beanOk ? "ok" : ""}">Çekirdek: ${(S.beans[S.bean]?.kg || 0).toFixed(2)} / ${D.economy.minBeans} kg ${beanOk ? "✓" : ""}</div>
     ${milkNeed ? `<div class="req ${milkOk ? "ok" : ""}">Süt: ${(S.milk || 0).toFixed(1)} / ${D.economy.minMilk} L ${milkOk ? "✓" : ""}</div>` : ""}</div>`;
-  html += `<div class="box"><h4>${"★".repeat(lv.stars)} ${lv.name} · günde ${lv.customersPerDay} müşteri</h4>`;
+  html += `<div class="box"><h4>${"★".repeat(lv.stars)} ${lv.name} · sıra ${lv.maxQueue} · günde ${dayCap()} müşteri</h4>`;
   html += `<p class="muted">Haftalık kira ₺${lv.rent} (her Pazar akşamı) · ${daysToRent(S.day) === 0 ? "kira bugün" : "kiraya " + daysToRent(S.day) + " gün"}</p>`;
   if (next) { const lok = S.money >= next.money && S.rep >= next.rep && !(S.debt > 0);
     html += `<p class="muted">Sonraki: ${next.name} – ₺${next.money} birikim + itibar ${next.rep} · kira ₺${next.rent}/hafta<br>Açar: ${next.stars === 2 ? "latte, cappuccino, çift gruplu makine, otomatik tamper, buzdolabı, yardımcı barista" : "süper otomatik makine, otomatik süt köpürtücü, latte art"}${S.debt > 0 ? "<br><b>Borç varken seviye atlanamaz.</b>" : ""}</p><button class="pri" id="lvUp" ${lok ? "" : "disabled"}>Seviye atla</button>`; }
   else html += `<p class="muted">Prototipte en yüksek seviye.</p>`;
+  const T = tr(), nextCost = k => lv.tierCost[k];
+  html += `</div><div class="box"><h4>Müşteri trafiği (${lv.name})</h4><p class="muted">Sıra en fazla <b>${lv.maxQueue}</b> kişi (dükkan büyüyünce +2) · günde en fazla <b>${dayCap()}</b> müşteri · ortalama <b>${arrivalEvery().toFixed(1)} sn</b>'de bir müşteri. Sıra doluyken gelen kapıdan döner. Kademeler bu dükkana özeldir.</p><table>
+    <tr><td><b>Günlük müşteri</b> (kademe ${T.cust}/3)<br><span class="muted">${T.cust < 3 ? D.traffic.cust[T.cust] + ": +" + lv.custStep + " müşteri/gün" : "en üst kademe"}</span></td><td>${T.cust < 3 ? "₺" + nextCost(T.cust) : ""}</td><td>${T.cust < 3 ? `<button data-tr="cust" ${S.money < nextCost(T.cust) ? "disabled" : ""}>Yükselt</button>` : "✓"}</td></tr>
+    <tr><td><b>Geliş sıklığı</b> (kademe ${T.freq}/3)<br><span class="muted">${T.freq < 3 ? D.traffic.freq[T.freq] + ": müşteriler daha sık gelir (×0,85 süre)" : "en üst kademe"}</span></td><td>${T.freq < 3 ? "₺" + nextCost(T.freq) : ""}</td><td>${T.freq < 3 ? `<button data-tr="freq" ${S.money < nextCost(T.freq) ? "disabled" : ""}>Yükselt</button>` : "✓"}</td></tr></table>`;
   const room = lv.loanLimit - (S.debt || 0), cap = x => Math.round(x * (1 + D.economy.loanInterest)) <= room;
   html += `</div><div class="box"><h4>Banka</h4><p class="muted">Kredi geri ödemesi %10 fazladır; borç bitene kadar her gün gelirin %20'si otomatik kesilir. Limit ₺${lv.loanLimit}.</p>
     <p>Borç: <b>₺${S.debt || 0}</b></p><div class="row" style="justify-content:flex-start">
@@ -448,12 +483,14 @@ function renderShop(mandatory) {
   $("#shopCard").querySelectorAll("[data-eq]").forEach(b => b.onclick = () => { const id = b.dataset.eq; S.money -= D.equipment[id].price; S.equipment[id] = true; if (id === "fridge") S.milkDay = S.day; AUDIO.sfx("register"); save(); renderShop(mandatory); renderHUD(); });
   $("#shopCard").querySelectorAll("[data-pr]").forEach(r => r.oninput = () => { S.prices[r.dataset.pr] = +r.value / 100; $("#pr_" + r.dataset.pr).textContent = priceOf(r.dataset.pr); save(); });
   const buyMilk = $("#buyMilk"); if (buyMilk) buyMilk.onclick = () => { S.money -= D.economy.milkPrice; S.milk = (S.milk || 0) + 1; S.milkDay = S.day; save(); renderShop(mandatory); renderHUD(); };
+  $("#shopCard").querySelectorAll("[data-tr]").forEach(b => b.onclick = () => { const k = b.dataset.tr, T = S.traffic[S.shopLevel] = Object.assign({ cust: 0, freq: 0 }, S.traffic[S.shopLevel]);
+    if (T[k] >= 3) return; S.money -= shop().tierCost[T[k]]; S.log.push("Gün " + S.day + ": " + D.traffic[k][T[k]]); T[k]++; AUDIO.sfx("register"); save(); renderShop(mandatory); renderHUD(); });
   $("#shopCard").querySelectorAll("[data-loan]").forEach(b => b.onclick = () => { takeLoan(+b.dataset.loan); renderShop(mandatory); renderHUD(); });
   const rp = $("#repay"); if (rp) rp.onclick = () => { const x = Math.min(S.debt, Math.max(0, S.money)); S.money -= x; S.debt -= x; AUDIO.sfx("register"); save(); renderShop(mandatory); renderHUD(); };
   $("#shopCard").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const id = b.dataset.dec; S.money -= D.decor[id].price; S.decor[id] = true; AUDIO.sfx("register"); save(); renderShop(mandatory); renderHUD(); });
   const hi = $("#hire"); if (hi) hi.onclick = () => { S.staff.assistant = true; S.log.push("Gün " + S.day + ": yardımcı barista işe alındı"); save(); renderShop(mandatory); };
   const fi = $("#fire"); if (fi) fi.onclick = () => { S.staff.assistant = false; save(); renderShop(mandatory); };
-  const up = $("#lvUp"); if (up) up.onclick = () => { S.shopLevel++; S.log.push("Gün " + S.day + ": " + shop().name); AUDIO.sfx("unlock"); modal(`<h3>${"★".repeat(shop().stars)} ${shop().name}</h3><p>Günde ${shop().customersPerDay} müşteri, haftalık kira ₺${shop().rent}. Yeni ekipman, tarif ve kredi limiti (₺${shop().loanLimit}) açıldı.</p>`); checkUnlocks(); save(); renderShop(mandatory); renderHUD(); };
+  const up = $("#lvUp"); if (up) up.onclick = () => { S.shopLevel++; S.log.push("Gün " + S.day + ": " + shop().name); AUDIO.sfx("unlock"); modal(`<h3>${"★".repeat(shop().stars)} ${shop().name}</h3><p>Sıra en fazla ${shop().maxQueue} kişi, günde ${shop().customersPerDay} müşteri, haftalık kira ₺${shop().rent}. Yeni ekipman, tarif ve kredi limiti (₺${shop().loanLimit}) açıldı.</p>`); checkUnlocks(); save(); renderShop(mandatory); renderHUD(); };
   const sx = $("#shopX"); if (sx) sx.onclick = () => closeOverlay("#ovShop");
   $("#shopStart").onclick = () => { if (mandatory) { if (!restockOk()) return; mandatoryRestock = false; closeOverlay("#ovShop"); startDay(); } else closeOverlay("#ovShop"); };
 }
@@ -495,8 +532,8 @@ function renderBook() {
   html += `<div class="box"><h4>Barista: ${r.name}</h4><p class="muted">XP ${S.xp}. Rütbe yükseldikçe kabul aralıkları daralır, bahşiş artar.</p></div>`;
   html += `<div class="box"><h4>Tarif kartları</h4>` + Object.entries(D.drinks).map(([id, d]) => {
     const open = S.unlocked.includes(id);
-    const xpOk = S.xp >= d.unlockXp, shOk = shop().stars >= (d.shop || 1);
-    return `<div class="recipe ${open ? "" : "lock"}">${drinkIcon(id, !open)}<div><b>${open ? d.name : "???"}</b> <span class="muted">${open ? `· ${S.served[id] || 0} servis, ${S.perfect[id] || 0} mükemmel${d.art && shop().stars >= 3 ? " · latte art ✓" : ""}` : `· XP ${d.unlockXp} ${xpOk ? "✓" : `(şu an ${S.xp})`} · ${d.shop || 1}★ dükkan ${shOk ? "✓" : "🔒"}`}</span><br>${open ? d.card : '<span class="muted">Bu tarifi henüz öğrenmedin.</span>'}</div></div>`; }).join("") + `</div>`;
+    const left = Math.max(0, d.unlockCups - totalSold()), shOk = shop().stars >= (d.shop || 1);
+    return `<div class="recipe ${open ? "" : "lock"}">${drinkIcon(id, !open)}<div><b>${open ? d.name : "???"}</b> <span class="muted">${open ? `· ${S.served[id] || 0} servis, ${S.perfect[id] || 0} mükemmel${d.art && shop().stars >= 3 ? " · latte art ✓" : ""}` : `· ${d.unlockCups} kahve satınca ${left ? `(${left} kahve daha)` : "✓"} · ${d.shop || 1}★ dükkan ${shOk ? "✓" : "🔒"}`}</span><br>${open ? d.card : '<span class="muted">Bu tarifi henüz öğrenmedin.</span>'}</div></div>`; }).join("") + `</div>`;
   html += `<div class="box"><h4>Öğrenilen ipuçları</h4>${S.tipsLearned.length ? "<ul>" + S.tipsLearned.map(k => `<li>${D.tips[k]}</li>`).join("") + "</ul>" : '<p class="muted">Henüz yok. Her hata bir ders verir.</p>'}</div>`;
   html += `<div class="box"><h4>Menşe sayfaları</h4>` + Object.entries(D.beans).filter(([id]) => S.beans[id]).map(([id, b]) => `<p><b>${b.name}</b><br>${b.page}<br><span class="muted">${b.notes}</span></p>`).join("") + `</div>`;
   html += `<div class="box"><h4>Günlük</h4><p class="muted">${S.log.slice(-8).reverse().join("<br>") || "—"}</p></div>`;
@@ -510,39 +547,133 @@ function renderSettings() {
   $("#settingsCard").innerHTML = `<h2>Ayarlar<span class="x" id="setX">✕</span></h2>
     <div class="box"><h4>Müzik</h4><div class="setrow"><span class="muted">🔈</span><input type="range" id="volMusic" min="0" max="100" value="${Math.round(a.music * 100)}"><span class="muted">🔊</span></div></div>
     <div class="box"><h4>Efekt sesleri</h4><div class="setrow"><span class="muted">🔈</span><input type="range" id="volSfx" min="0" max="100" value="${Math.round(a.sfx * 100)}"><span class="muted">🔊</span></div></div>
-    <div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="muteAll" ${a.muted ? "checked" : ""}> Tüm sesleri kapat</label></div>`;
+    <div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="muteAll" ${a.muted ? "checked" : ""}> Tüm sesleri kapat</label></div>
+    <div class="box"><h4>Grafik</h4>
+      <label class="setrow" style="cursor:pointer"><input type="checkbox" id="gfxGpu" ${GFX.gpu ? "checked" : ""} ${GPU.ok ? "" : "disabled"}> Ekran kartıyla çiz (donanım hızlandırma)</label>
+      <p class="muted">${GPU.ok ? "Algılanan ekran kartı: " + (GPU.name || "bilinmiyor") : "Bu tarayıcı/sistemde ekran kartı hızlandırması desteklenmiyor" + (GPU.name ? " (" + GPU.name + ")" : "") + "."}</p>
+      <div id="gfxRestart" style="display:none" class="req">Bu değişiklik oyun kaydedilip yeniden yüklenince geçerli olur. <button id="gfxReload">Kaydet ve yeniden yükle</button></div>
+      <p style="margin:10px 0 4px"><b>Grafik kalitesi</b> <span class="muted">(eski bilgisayarlarda Orta ya da Düşük seç)</span></p>
+      <div class="row" style="justify-content:flex-start;margin-top:4px">${["high", "medium", "low"].map(q => `<button data-q="${q}" class="${GFX.quality === q ? "pri" : ""}">${{ high: "Yüksek", medium: "Orta", low: "Düşük" }[q]}</button>`).join("")}</div>
+      <p class="muted">Yüksek: tam çözünürlük, tüm ışık/gölge, 60 kare/sn · Orta: daha düşük çözünürlük, sade ışık · Düşük: %80 çözünürlük, efektsiz, 30 kare/sn.</p></div>
+    <div class="box"><h4>Kayıtlar</h4><p class="muted">Kaydı dosya olarak saklayabilir ya da bir dosyadan yuvaya aktarabilirsin.</p>
+      <div class="row" style="justify-content:flex-start"><button id="setExport">Kaydı dışa aktar</button><button id="setImport">Kaydı içe aktar</button></div></div>`;
   $("#setX").onclick = () => closeOverlay("#ovSettings");
   $("#volMusic").oninput = e => AUDIO.setMusic(+e.target.value / 100);
   $("#volSfx").oninput = e => { AUDIO.setSfx(+e.target.value / 100); AUDIO.sfx("click"); };
   $("#muteAll").onchange = e => AUDIO.setMuted(e.target.checked);
+  $("#setExport").onclick = () => $("#btnExport").click();
+  $("#gfxGpu").onchange = e => { GFX.gpu = e.target.checked; saveGfx(); $("#gfxRestart").style.display = ""; };
+  $("#gfxReload").onclick = () => { save(); location.reload(); };
+  $("#settingsCard").querySelectorAll("[data-q]").forEach(b => b.onclick = () => { GFX.quality = b.dataset.q; saveGfx(); SCENE.setQuality(GFX.quality); CLOSEUP.setQuality(GFX.quality);
+    if (S) renderScene(0); else idleLoop(); renderSettings(); });
+  $("#setImport").onclick = () => { closeOverlay("#ovSettings"); $("#fileImport").click(); };
+}
+
+// ---------- §12 Kayıt yuvaları ----------
+function slotSummary(x) {
+  if (!x) return `<b>Boş yuva</b><span class="muted">Henüz kayıt yok</span>`;
+  const lv = D.shopLevels[x.shopLevel || 0], when = x.savedAt ? new Date(x.savedAt).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+  return `<b>${weekday(x.day)} · ${weekNo(x.day)}. Hafta (Gün ${x.day})</b><span class="muted">₺${x.money} · ${"★".repeat(lv.stars)} ${lv.name} · kaydedildi ${when}</span>`;
+}
+function renderSlots(mode, payload) {
+  const titles = { new: "Yeni oyun – yuva seç", load: "Kayıt yükle", save: "Oyunu kaydet", import: "Kaydı hangi yuvaya aktaralım?" };
+  let html = `<h2>${titles[mode]}<span class="x" id="slotsX">✕</span></h2>`;
+  for (let i = 1; i <= SLOTS; i++) {
+    const x = loadSlot(i), cur = S && i === curSlot;
+    let acts = "";
+    if (mode === "new") acts = `<button class="pri" data-act="new" data-i="${i}">Burada başla</button>`;
+    if (mode === "load") acts = `<button class="pri" data-act="load" data-i="${i}" ${x ? "" : "disabled"}>Yükle</button>`;
+    if (mode === "save") acts = `<button class="pri" data-act="save" data-i="${i}">Buraya kaydet</button>`;
+    if (mode === "import") acts = `<button class="pri" data-act="import" data-i="${i}">Buraya aktar</button>`;
+    if (x && mode !== "import" && !cur) acts += `<button class="danger" data-act="del" data-i="${i}">Sil</button>`;
+    html += `<div class="slot ${x ? "" : "empty"}"><div class="num">${i}</div><div class="info">${slotSummary(x)}${cur ? '<span class="muted"> · şu an oynanan</span>' : ""}</div><div class="acts">${acts}</div></div>`;
+  }
+  $("#slotsCard").innerHTML = html; openOverlay("#ovSlots");
+  $("#slotsX").onclick = () => closeOverlay("#ovSlots");
+  const confirmOver = (i, verb, fn) => { const x = loadSlot(i); if (x && !(S && i === curSlot && verb === "kaydet")) modal(`<h3>Yuva ${i} dolu</h3><p>${slotSummary(x).replace(/<[^>]+>/g, " ")}</p><p>Bu kaydın üstüne ${verb === "kaydet" ? "yazılacak" : "yeni oyun yazılacak"}. Eski kayıt geri gelmez.</p>`,
+      [{ label: "Vazgeç" }, { label: "Üstüne yaz", pri: true, fn }]); else fn(); };
+  $("#slotsCard").querySelectorAll("[data-act]").forEach(b => b.onclick = () => {
+    const i = +b.dataset.i, act = b.dataset.act;
+    if (act === "new") confirmOver(i, "yeni", () => { closeOverlay("#ovSlots"); begin(newState(), i); });
+    if (act === "load") { const x = loadSlot(i); if (x) { closeOverlay("#ovSlots"); begin(x, i); } }
+    if (act === "save") confirmOver(i, "kaydet", () => { curSlot = i; save(i); AUDIO.sfx("register"); toast("Yuva " + i + "'e kaydedildi"); renderSlots("save"); });
+    if (act === "import") confirmOver(i, "aktar", () => { try { localStorage.setItem(SLOT_KEY(i), JSON.stringify(payload)); } catch (e) {} toast("Kayıt yuva " + i + "'e aktarıldı"); closeOverlay("#ovSlots"); refreshMenu(); });
+    if (act === "del") modal(`<h3>Yuva ${i} silinsin mi?</h3><p>${slotSummary(loadSlot(i)).replace(/<[^>]+>/g, " ")}</p><p>Silinen kayıt geri gelmez.</p>`,
+      [{ label: "Vazgeç" }, { label: "Sil", pri: true, fn: () => { deleteSlot(i); refreshMenu(); renderSlots(mode, payload); } }]);
+  });
+}
+// ---------- §12 Oyun içi menü ----------
+function renderGameMenu() {
+  $("#gameMenuCard").innerHTML = `<h2>Menü<span class="x" id="gmX">✕</span></h2>
+    <p class="muted">Oyun yuva ${curSlot}'e kendiliğinden kaydediliyor.</p>
+    <div class="mbtns" style="display:flex;flex-direction:column;gap:10px">
+      <button class="pri" id="gmSave">Kaydet (yuva seç)</button>
+      <button id="gmMenu">Ana menüye dön</button>
+      <button id="gmClose">Oyuna dön</button></div>`;
+  $("#gmX").onclick = $("#gmClose").onclick = () => closeOverlay("#ovGameMenu");
+  $("#gmSave").onclick = () => { closeOverlay("#ovGameMenu"); renderSlots("save"); };
+  $("#gmMenu").onclick = () => modal(`<h3>Ana menüye dönülsün mü?</h3><p>${day ? "Gün sürüyor: bugünün kalan müşterileri iptal olur, şimdiye kadar kazandıkların kalır ve aynı günü yeniden açarsın. " : ""}Oyun yuva ${curSlot}'e kaydedilecek.</p>`,
+    [{ label: "Vazgeç" }, { label: "Ana menüye dön", pri: true, fn: goMenu }]);
+}
+function goMenu() {
+  AUDIO.stopLoops(); cancelAnimationFrame(raf); day = null; save();
+  ["#ovGameMenu", "#ovBook", "#ovSettings", "#ovLedger"].forEach(x => $(x).classList.remove("on"));
+  mandatoryRestock = false; $("#ovShop").classList.remove("on"); $("#sheet").classList.remove("on");
+  ["#hud", "#hint", "#icons", "#task", "#openDay"].forEach(x => $(x).style.display = "none");
+  S = null; $("#menu").style.display = "flex"; refreshMenu(); idleLoop(); AUDIO.startMusic("menu");
 }
 
 // ---------- Başlat ----------
-function begin(state) {
-  S = state; if (S.milk == null) S.milk = 0; mandatoryRestock = false;
-  ["debt", "streak"].forEach(k => { if (S[k] == null) S[k] = 0; }); ["staff", "decor"].forEach(k => { if (!S[k]) S[k] = {}; }); if (!S.milkDay) S.milkDay = S.day;
-  AUDIO.startMusic();
+function begin(state, slot) {
+  if (slot) curSlot = slot; S = state; if (S.milk == null) S.milk = 0; mandatoryRestock = false;
+  ["debt", "streak"].forEach(k => { if (S[k] == null) S[k] = 0; }); ["staff", "decor", "traffic"].forEach(k => { if (!S[k]) S[k] = {}; }); if (!S.milkDay) S.milkDay = S.day;
+  AUDIO.startMusic("game");
   $("#menu").style.display = "none"; $("#hud").style.display = "flex"; $("#hint").style.display = "block"; $("#icons").style.display = "flex";
   day = null; renderHUD(); renderBench();
   lastT = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
   if (!S.taught.includes("intro")) { S.taught.push("intro"); modal(`<h3>Nejla Teyze</h3><p>${D.tutorial.intro}</p><p><i>${D.tutorial.espresso}</i></p><p class="muted">${D.drinks.espresso.card}</p>`, [{ label: "Başlayalım", pri: true }]); }
   save();
 }
-SCENE.init($("#scene"));
+// ---------- §12 Grafik: ekran kartı algılama + kalite ----------
+const GFX_KEY = "cekirdek_gfx";
+function detectGPU() {
+  try { const c = document.createElement("canvas"), gl = c.getContext("webgl") || c.getContext("experimental-webgl");
+    if (!gl) return { ok: false, name: "" };
+    const ext = gl.getExtension("WEBGL_debug_renderer_info"), name = String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER) || "");
+    const sw = /swiftshader|llvmpipe|software|basic render|microsoft basic/i.test(name);
+    const lose = gl.getExtension("WEBGL_lose_context"); if (lose) lose.loseContext();
+    return { ok: !sw, name };
+  } catch (e) { return { ok: false, name: "" }; }
+}
+const GPU = detectGPU();
+let GFX = { gpu: GPU.ok, quality: GPU.ok ? "high" : "medium" };
+try { const g = JSON.parse(localStorage.getItem(GFX_KEY)); if (g) Object.assign(GFX, g); } catch (e) {}
+if (!GPU.ok) GFX.gpu = false;
+const saveGfx = () => { try { localStorage.setItem(GFX_KEY, JSON.stringify(GFX)); } catch (e) {} };
+SCENE.setQuality(GFX.quality); CLOSEUP.setQuality(GFX.quality, GFX.gpu);
+SCENE.init($("#scene"), GFX.gpu);
 $("#scene").addEventListener("pointerdown", e => { if (!day) return; const r = e.currentTarget.getBoundingClientRect(); const id = SCENE.hitTest(e.clientX - r.left, e.clientY - r.top); if (id) takeOrder(id); });
 $("#openDay").onclick = () => { if (!day && !mandatoryRestock) startDay(); };
 $("#icBook").onclick = () => { AUDIO.sfx("open"); renderBook(); openOverlay("#ovBook"); };
 $("#icShop").onclick = () => { AUDIO.sfx("open"); renderShop(false); openOverlay("#ovShop"); };
 $("#icSettings").onclick = () => { AUDIO.sfx("open"); renderSettings(); openOverlay("#ovSettings"); };
 ["ovBook", "ovShop", "ovModal", "ovSettings"].forEach(id => $("#" + id).addEventListener("click", e => { if (e.target.id === id) closeOverlay("#" + id); }));
-$("#btnNew").onclick = () => { const ex = load(); if (ex) modal("<h3>Mevcut kayıt silinsin mi?</h3>", [{ label: "Vazgeç" }, { label: "Sil ve başla", pri: true, fn: () => begin(newState()) }]); else begin(newState()); };
-$("#btnContinue").onclick = () => { const ex = load(); if (ex) begin(ex); else toast("Kayıt bulunamadı"); };
-$("#btnExport").onclick = () => { const ex = load(); if (!ex) return toast("Kayıt yok"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(ex)], { type: "application/json" })); a.download = "cekirdek-kayit.json"; a.click(); };
+$("#btnNew").onclick = () => { AUDIO.sfx("open"); renderSlots("new"); };
+$("#btnContinue").onclick = () => { AUDIO.sfx("open"); renderSlots("load"); };
+$("#btnExport").onclick = () => { let best = null; for (let i = 1; i <= SLOTS; i++) { const x = loadSlot(i); if (x && (!best || (x.savedAt || 0) > (best.savedAt || 0))) best = x; }
+  if (!best) return toast("Kayıt yok"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(best)], { type: "application/json" })); a.download = "coffebean-kayit.json"; a.click(); };
 $("#btnImport").onclick = () => $("#fileImport").click();
-$("#fileImport").onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => { try { const s = JSON.parse(t); if (!s.unlocked) throw 0; localStorage.setItem(SAVE_KEY, t); toast("Kayıt yüklendi"); } catch { toast("Geçersiz kayıt dosyası"); } }); };
-window.addEventListener("resize", () => renderScene(0));
-try { $("#btnContinue").disabled = !load(); } catch { }
+$("#fileImport").onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => { try { const x = JSON.parse(t); if (!x.unlocked) throw 0; renderSlots("import", x); } catch (er) { toast("Geçersiz kayıt dosyası"); } }); e.target.value = ""; };
+$("#btnSettings").onclick = () => { AUDIO.startMusic("menu"); AUDIO.sfx("open"); renderSettings(); openOverlay("#ovSettings"); };
+// §11 ana menü müziği: tarayıcının izin verdiği ilk dokunuşta başlar
+document.addEventListener("pointerdown", () => { if (!S) AUDIO.startMusic("menu"); }, { once: true });
+$("#icMenu").onclick = () => { AUDIO.sfx("open"); renderGameMenu(); openOverlay("#ovGameMenu"); };
+["ovSlots", "ovGameMenu"].forEach(id => $("#" + id).addEventListener("click", e => { if (e.target.id === id) closeOverlay("#" + id); }));
+window.addEventListener("resize", () => { if (S) renderScene(0); else idleLoop(); });
+function refreshMenu() { try { $("#btnContinue").disabled = !anySlot(); } catch (e) {} $("#menuVer").textContent = "Sürüm " + D.version; }
+refreshMenu();
 // Menü açıkken de sahne boş dükkan olarak arkada dönsün
-(function idleLoop(now) { if (!S) { SCENE.draw({ customers: [], orders: [], t: 0.35, level: 1, slots: 1 }, 0.016); requestAnimationFrame(idleLoop); } })();
+function idleLoop() { if (!S) SCENE.draw({ customers: [], orders: [], t: 0.35, level: 1, slots: 1 }, 0); }   // §12 performans: menüde sahne bir kez çizilir
+idleLoop();
 window.CEKIRDEK = { state: () => S, day: () => day };   // hata ayıklama
 })();

@@ -36,6 +36,8 @@ Her paket çıkışında kullanıcıya şunların hepsi birlikte iletilir:
 2. Oyunun **erişilebilir (açılabilir) bağlantısı** (yayın güncellenir),
 3. Tasarım belgesinin **HTML** hali (`Tasarim_Dokumani.html`),
 4. Kısa **güncelleme notları** (`Guncelleme_Notlari.md`: sürüm, tarih, bu pakette ne değişti).
+
+Her pakette sürüm numarası 3 yerde güncellenir (önbellek sorunu olmasın diye): `index.html`'deki `window.CB_VERSION`, betiklerin `?v=` değerleri ve `data.js`'teki `version`.
 Ayrıca GitHub reposuna gönderilir.
 
 ## Kural 7 – Testi kullanıcı yapar

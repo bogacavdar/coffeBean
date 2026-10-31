@@ -1,4 +1,60 @@
-# Çekirdek – Güncelleme Notları
+# CoffeBean – Güncelleme Notları
+
+## v0.10 – 31 Ekim 2026
+
+### Yeni
+- **CoffeBean adı ve yeni giriş ekranı:** sıcak kahverengi arka plan, süzülen kahve çekirdekleri, buharı tüten fincan ve çekirdek logosu. Sürüm numarası logonun altında yazar.
+- **Ana menü müziği:** oyundan ayrı, daha yavaş ve dinlendirici bir piyano parçası. Ekrana ilk dokunuşta başlar; oyuna girince oyun müziğine, ana menüye dönünce yeniden menü müziğine geçer.
+- **Ana menüde Ayarlar:** müzik ve efekt sesi, tüm sesleri kapatma, kayıtları dışa/içe aktarma ve grafik ayarları burada.
+- **3 kayıt yuvası:**
+  - Yeni oyun ve Yükle önce yuva seçtirir; dolu yuvaya yazacaksan uyarı çıkar.
+  - Her yuvanın yanında onaylı bir Sil düğmesi var.
+  - Oyun, oynadığın yuvaya kendiliğinden kaydedilir.
+  - Önceki sürümlerdeki kaydın 1. yuvaya taşınır.
+- **Oyun içi Menü ikonu:** istediğin yuvaya kaydedebilir ya da ana menüye dönebilirsin. Gün sürerken dönersen o günün kalan müşterileri iptal olur, kazandıkların kalır ve aynı günü yeniden açarsın.
+- **Barista sensin:** tezgâhın arkasında sarı saçlı, atkuyruklu, önlüklü bir kız var; sipariş hazırlarken hareketlenir.
+- **Tek sıra:** müşteriler tezgâhın önünde tek, düz bir sıra halinde bekler.
+- **Müşteri trafiği:** her dükkan tipinin üç değeri var:
+
+  | Dükkan | Sıradaki en fazla kişi | Günde en fazla müşteri | Gelme sıklığı |
+  |---|---|---|---|
+  | 1★ Köşe büfesi | 3 | 6 | ~13 sn'de bir |
+  | 2★ Mahalle kahvecisi | 5 | 9 | ~9,5 sn'de bir |
+  | 3★ Semt favorisi | 7 | 13 | ~6,5 sn'de bir |
+
+  - Sıra doluyken gelen müşteri kapıdan döner; itibar düşmez, gün sonu hesabında yazılır.
+  - Ekranın sol altında "Sıra 2/3" gibi doluluk görünür.
+  - Tedarik'teki "Müşteri trafiği" bölümünden günlük müşteri sayısı ve gelme sıklığı ayrı ayrı 3 kademe yükseltilir. Kademeler her dükkana özeldir, büyük dükkana geçince baştan başlar.
+- **Grafik ayarları:**
+  - "Ekran kartıyla çiz" seçeneği, tarayıcı ve sistem destekliyorsa varsayılan olarak açık. Algılanan ekran kartının adı da görünür.
+  - Grafik kalitesi Yüksek / Orta / Düşük seçilebilir. Eski bilgisayarlar için Orta ya da Düşük önerilir; Düşük'te efektler kapanır ve oyun saniyede 30 kare çizer.
+
+### Değişen
+- **Tarifler daha yavaş açılır:** artık XP ile değil, satılan toplam kahve sayısıyla açılırlar ve aradaki fark giderek büyür.
+
+  | Tarif | Açıldığı toplam satış |
+  |---|---|
+  | Americano | 4 |
+  | Lungo | 8 |
+  | Ristretto | 14 |
+  | Macchiato | 22 |
+  | Cortado | 32 |
+  | Latte | 44 (ayrıca 2★ dükkan) |
+  | Cappuccino | 58 (ayrıca 2★ dükkan) |
+
+  Üst çubukta "Yeni tarife X kahve daha" yazar; Defter'de kilitli her tarifin yanında kaç kahve kaldığı görünür.
+
+### Düzeltilen / optimizasyon
+- **Önbellek sorunu:** oyun dosyaları artık sürüm numarasıyla yükleniyor ve sayfa tarayıcıda saklanmıyor. Sayfa ile oyun dosyaları farklı sürümdeyse oyun kendini bir kez otomatik yeniliyor. Eski sürümden parça kalmamalı, önbellek temizlemeye gerek olmamalı.
+- **Donmalara karşı:**
+  - Ana menüdeyken arkadaki dükkan artık her karede yeniden çizilmiyor.
+  - Dükkan kapalıyken ya da bir kart veya mini oyun paneli açıkken arka sahne daha seyrek çiziliyor.
+  - Ekran metinleri yalnızca değiştiklerinde güncelleniyor.
+  - Kalite ayarına göre çözünürlük ve efektler azaltılabiliyor.
+
+### Süreç
+- Bu paket test edilmeden yayınlandı (Kural 7: testi kullanıcı yapar).
+
 
 ## v0.9 – 31 Ekim 2026
 

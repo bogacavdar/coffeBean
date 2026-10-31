@@ -7,7 +7,22 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.9)
+## v0.10 – YAYINLANDI (31 Ekim 2026, kullanıcı "optimizasyondan sonra paketi çık" dedi)
+Doküman rev 33 (HTML yerelde güncel, pakette gönderilecek). Test yapılmadı (Kural 7), yalnız sözdizimi.
+- Oyuncu karakteri: tezgâhın arkasında sarı saçlı, atkuyruklu, önlüklü kız ("Sen"), sipariş varken hareket ediyor (`scene.js` `barista()`); yardımcı barista yanına (y=3.0) taşındı.
+- Müşteriler tezgâhın önünde tek, düz sıra (`queueSlot`: x sabit 3.0, y aralığı 0,95).
+- Müşteri trafiği: dükkan başına sıra sınırı X (3/5/7), günlük en fazla Y (6/9/13) ve geliş sıklığı (13 / 9,5 / 6,5 sn). Sıra doluyken gelen müşteri kapıdan dönüyor (ledger'da satır var). Gün 90 sn'de biter. Y (+2/+3/+4) ve sıklık (×0,85) dükkana özel 3 kademe yükseltiliyor (`S.traffic[shopLevel]`); fiyatlar 120/220/350 · 300/550/850 · 700/1.200/1.800. Tedarik'te "Müşteri trafiği" kutusu, ipucu satırında "Sıra n/X".
+- Önbellek: `index.html`'e no-cache meta etiketleri; tüm betikler `?v=0.10` ile; `window.CB_VERSION` ≠ `DATA.version` ise oyun bir kez `?r=` ile yeniden yükleniyor (sessionStorage koruması). **Her pakette 3 yeri güncelle:** index.html'deki `CB_VERSION`, betiklerin `?v=` değerleri ve data.js'teki `version`.
+- Kayıt: 3 yuva (`cekirdek_slot_1..3`); eski tek kayıt yuva 1'e taşınıyor. Yeni oyun ve Yükle yuva seçtiriyor; dolu yuvaya yazarken uyarı veriyor, her yuvada Sil (onaylı). Oyun bulunduğu yuvaya kendiliğinden kaydediliyor.
+- Oyun içi Menü ikonu: Kaydet (yuva seç) ve Ana menüye dön. Ana menüye dönünce gün iptal oluyor, kazanılanlar kalıyor.
+- Giriş ekranı: adı CoffeBean. Süzülen çekirdekler, buharlı fincan, SVG çekirdek logosu, Fraunces yazı tipi, sürüm etiketi.
+- Ana menüde Ayarlar düğmesi: ses ayarları + Kayıtlar (dışa/içe aktar). Aynı kart oyun içinden de açılıyor.
+- Ana menü müziği: ayrı parça (~52 BPM; Cmaj7→Am7→Fmaj7→G6, seyrek melodi). İlk dokunuşta başlıyor; oyuna girince oyun müziğine, menüye dönünce menü müziğine geçiyor (`AUDIO.startMusic("menu"|"game")`).
+- Tarif açılımı yeniden: XP yerine **satılan toplam kahve** (`unlockCups`): Americano 4, Lungo 8, Ristretto 14, Macchiato 22, Cortado 32, Latte 44 (2★), Cappuccino 58 (2★); aradaki fark gittikçe büyüyor. HUD'da "Yeni tarife X kahve daha" (eşik dolmuş ama dükkan küçükse "Yeni tarif için 2★ dükkan"); Defter'de kilitli tariflerde "N kahve satınca (X kahve daha)". Doküman §3, §9 bu kurala göre yeniden yazıldı (rev 36).
+- Grafik (rev 37): WebGL ile ekran kartı algılama (yazılımsal render tanınır), 'Ekran kartıyla çiz' (canvas `desynchronized`, kapalıysa `willReadFrequently` → CPU), Yüksek/Orta/Düşük kalite (`SCENE.setQuality`: dpr sınırı, çözünürlük ölçeği, efekt seviyesi, Düşük'te 30 kare/sn). Ayar `cekirdek_gfx`'te saklanıyor.
+- Optimizasyon: menüde sahne bir kez çiziliyor (eskiden her karede); dükkan kapalıyken ya da kart/panel açıkken sahne 3 karede bir çiziliyor; ipucu metni ve saat yalnızca değişince DOM'a yazılıyor.
+
+## Bekleyen paket (son yayın: v0.10)
 - (henüz yok)
 
 ## v0.9 – YAYINLANDI (31 Ekim 2026, kullanıcı "yap ve yayınla" dedi)

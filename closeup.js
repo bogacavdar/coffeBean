@@ -3,9 +3,11 @@ window.CLOSEUP = (() => {
   const W = 480, H = 250;        // mantıksal çizim ızgarası (tüm fonksiyonlar bu koordinatları kullanır)
   let cv, ctx;
   // §11: panel artık sahnenin ortasında büyük bir kart — tuval CSS'te büyütülür, burada mantıksal ızgara ona ölçeklenir (daha büyük, daha net).
-  function init(canvas) { cv = canvas; ctx = cv.getContext("2d"); size(); }
+  let maxDpr = 2, gpuOn = true;
+  function setQuality(q, gpu) { maxDpr = q === "high" ? 2 : q === "medium" ? 1.25 : 1; if (gpu != null) gpuOn = gpu; }   // §12
+  function init(canvas) { cv = canvas; ctx = cv.getContext("2d", gpuOn ? { desynchronized: true } : { willReadFrequently: true }); size(); }
   function size() {
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const dpr = Math.min(maxDpr, window.devicePixelRatio || 1);
     const cw = cv.clientWidth || W, ch = cv.clientHeight || H;
     cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
     ctx.setTransform(dpr * cw / W, 0, 0, dpr * ch / H, 0, 0);
@@ -127,5 +129,5 @@ window.CLOSEUP = (() => {
     if (heart) { heartShape(240, 122, 34, "#fffaf2"); heartShape(240, 122, 22, "rgba(233,214,190,.6)"); }
     ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; ctx.fillText("Kalite " + quality, 240, 235);
   }
-  return { init, grind, dose, tamp, extract, milk, art, cupTop };
+  return { init, setQuality, grind, dose, tamp, extract, milk, art, cupTop };
 })();

@@ -127,15 +127,18 @@ window.AUDIO = (() => {
   function stopLoops() { Object.keys(loops).forEach(k => { if (k !== "milkAir") loop(k, false); }); delete loops.milkAir; }
 
   // ---- müzik: sıcak, ev gibi (§11) — keçe piyano + yumuşak ped + bas + ninni motifi, ~60 BPM, davulsuz ----
-  const BPM = 60, BEAT = 60 / BPM, E8 = BEAT / 2;
-  const PROG = [                                     // Fmaj7 → Dm7 → B♭maj7 → Csus4/C (majör, sıcak)
-    { bass: 41, pad: [53, 57, 60, 64], arp: [65, 69, 72, 76] },
-    { bass: 38, pad: [50, 53, 57, 60], arp: [62, 65, 69, 72] },
-    { bass: 46, pad: [53, 57, 58, 62], arp: [65, 70, 74, 77] },
-    { bass: 36, pad: [55, 60, 65, 67], arp: [67, 72, 77, 79], res: [55, 60, 64, 67] }
-  ];
-  const MELODY = [[[0, 69], [4, 72]], [[0, 74], [4, 72]], [[0, 70], [4, 69]], [[0, 67], [6, 64]]];   // 8'lik adım, nota
-  const ARP = [0, 1, 2, 3, 2, 1, 2, 1];
+  const TRACKS = {
+    game: { bpm: 60,                                 // Fmaj7 → Dm7 → B♭maj7 → Csus4/C (majör, sıcak)
+      prog: [{ bass: 41, pad: [53, 57, 60, 64], arp: [65, 69, 72, 76] }, { bass: 38, pad: [50, 53, 57, 60], arp: [62, 65, 69, 72] },
+             { bass: 46, pad: [53, 57, 58, 62], arp: [65, 70, 74, 77] }, { bass: 36, pad: [55, 60, 65, 67], arp: [67, 72, 77, 79], res: [55, 60, 64, 67] }],
+      melody: [[[0, 69], [4, 72]], [[0, 74], [4, 72]], [[0, 70], [4, 69]], [[0, 67], [6, 64]]], arp: [0, 1, 2, 3, 2, 1, 2, 1], dense: 1 },
+    menu: { bpm: 52,                                 // §11 ana menü: Cmaj7 → Am7 → Fmaj7 → G6, daha yavaş ve seyrek
+      prog: [{ bass: 36, pad: [52, 55, 59, 64], arp: [64, 67, 71, 76] }, { bass: 45, pad: [52, 55, 60, 64], arp: [64, 67, 72, 76] },
+             { bass: 41, pad: [53, 57, 60, 64], arp: [65, 69, 72, 77] }, { bass: 43, pad: [50, 55, 59, 64], arp: [62, 67, 71, 74] }],
+      melody: [[[0, 76]], [[2, 72]], [[0, 69], [4, 72]], [[2, 74]]], arp: [0, 2, 1, 3, 2, 1, 3, 2], dense: 0 }
+  };
+  let TR = TRACKS.game, BEAT = 60 / TR.bpm, E8 = BEAT / 2, PROG = TR.prog, MELODY = TR.melody, ARP = TR.arp, curTrack = "game", wantTrack = "game";
+  function applyTrack(name) { curTrack = name; TR = TRACKS[name]; BEAT = 60 / TR.bpm; E8 = BEAT / 2; PROG = TR.prog; MELODY = TR.melody; ARP = TR.arp; }
   let step = 0, nextT = 0, musicOut = null;
   function musicChain() {
     if (musicOut) return musicOut;
@@ -175,17 +178,20 @@ window.AUDIO = (() => {
     if (s === 0) { pad(ch.pad, t, BEAT * 4); softBass(ch.bass, t, BEAT * 3.6); }
     if (bar === 3 && s === 4 && ch.res) pad(ch.res, t, BEAT * 2);
     const notes = (bar === 3 && s >= 4 && ch.res) ? ch.res.map(n => n + 12) : ch.arp;
-    if (s % 2 === 0 || cycle % 2 === 1) feltPiano(notes[ARP[s]], t + human, s === 0 ? .07 : .045);
+    if (s % 2 === 0 || (TR.dense && cycle % 2 === 1)) feltPiano(notes[ARP[s]], t + human, s === 0 ? .07 : (TR.dense ? .045 : .035));
     if (cycle % 2 === 0) MELODY[bar].forEach(([at, m]) => { if (at === s) lullaby(m, t); });
   }
   function scheduler() {
     if (!started || ctx.state !== "running") return;
-    while (nextT < ctx.currentTime + .3) { scheduleStep(step, nextT); step++; nextT += E8; }
+    while (nextT < ctx.currentTime + .3) {
+      if (step % (8 * PROG.length) === 0 && wantTrack !== curTrack) { applyTrack(wantTrack); step = 0; }   // parça değişimi döngü başında
+      scheduleStep(step, nextT); step++; nextT += E8; }
   }
-  function startMusic() {
+  function startMusic(track) {
+    if (track && TRACKS[track]) { wantTrack = track; if (started && curTrack !== track) { applyTrack(track); step = 0; } }   // §11 menü ↔ oyun müziği
     if (document.hidden) { resumeMusic = true; return; }
     ensureCtx(); if (ctx.state === "suspended" && !document.hidden) ctx.resume();
-    if (started) return; started = true; step = 0; nextT = ctx.currentTime + .2;
+    if (started) return; started = true; step = 0; applyTrack(wantTrack); nextT = ctx.currentTime + .2;
     sched = setInterval(scheduler, 80);
   }
   function stopMusic() { started = false; clearInterval(sched); sched = null; }
@@ -197,7 +203,7 @@ window.AUDIO = (() => {
     const c = ctx; ctx = null; master = musicBus = sfxBus = reverb = revSend = noiseBuf = musicOut = null;
     try { c.close(); } catch (e) {}
   }
-  document.addEventListener("visibilitychange", () => { if (document.hidden) shutdown(); else if (resumeMusic) { resumeMusic = false; startMusic(); } });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) shutdown(); else if (resumeMusic) { resumeMusic = false; startMusic(wantTrack); } });
   window.addEventListener("pagehide", shutdown);
   window.addEventListener("blur", () => { if (document.hidden) shutdown(); });
 
