@@ -1,5 +1,20 @@
 # Çekirdek – Güncelleme Notları
 
+## v0.9 – 31 Ekim 2026
+
+### Düzeltilen (v0.8'deki yanlış anlaşılma)
+- **Hedefler küçüldü:** üç rengin toplamı başlangıçta çubuğun %10'unu geçmiyor. Koyu yeşil Mükemmel %2, açık yeşil Güzel (içiyle birlikte) %5, sarı İyi (içiyle birlikte) %10. Rütbe yükseldikçe daralıyor. Bu sınırı yalnızca hassasiyet yükseltmeleri aşabiliyor (×1,5).
+- **Adımlar istenen şekle döndü:**
+  1. **Öğütme:** siyah ibre çubukta hızla gidip geliyor, ÖĞÜT'e basınca duruyor.
+  2. **Dozlama:** eskisi gibi basılı tutuyorsun, kahve doluyor, istediğin yerde bırakıyorsun. Çubuk 0–24 g, hedef 18 g; 24 g'ı geçersen taşıyor.
+  3. **Tamping:** eskisi gibi daire büyüyüp küçülüyor. Hedef artık dairenin üzerinde iç içe renkli halkalar; dairenin siyah kenarı koyu yeşil halkadayken daireye ya da BASTIR'a dokunuyorsun.
+  4. **Ekstraksiyon:** bir kez basınca kahve dolmaya başlıyor, bir kez daha basınca bitiyor. Renkli bölgeler aynı şekilde geçerli.
+- Süt ve latte art değişmedi. Öğretici metinleri yeni adımlara göre güncellendi.
+
+### Süreç
+- Bu paket test edilmeden yayınlandı (Kural 7: testi kullanıcı yapar).
+
+
 ## v0.8 – 31 Ekim 2026
 
 ### Yeni

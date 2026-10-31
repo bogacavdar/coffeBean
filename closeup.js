@@ -53,14 +53,17 @@ window.CLOSEUP = (() => {
     gauge(40, 215, 400, g / 24, 17.5 / 24, 18.5 / 24, "hedef 18 g ±0,5");
   }
   // ---- Tamping: üstten sepet, tamper, güç halkası
-  function tamp(v, band) { bg();
+  function tamp(v, z) { bg();                         // §4: daire büyüyüp küçülür; hedef iç içe renkli halkalar
+    const R = u => 24 + u / 100 * 60;
     ctx.fillStyle = rg(240, 125, 10, 95, [[0, "#1a1a1c"], [1, "#4b4d51"]]); ctx.beginPath(); ctx.arc(240, 125, 92, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = rg(236, 120, 5, 78, [[0, "#6a4124"], [1, "#2a170b"]]); ctx.beginPath(); ctx.arc(240, 125, 78, 0, Math.PI * 2); ctx.fill();
-    const r = 24 + v * 60; ctx.strokeStyle = "rgba(111,125,74,.55)"; ctx.lineWidth = band * 160 + 4; ctx.beginPath(); ctx.arc(240, 125, 24 + .55 * 60, 0, Math.PI * 2); ctx.stroke();
+    const r = 24 + v * 60;
     ctx.fillStyle = rg(232, 118, 4, r, [[0, "#f0f1f2"], [.6, "#b6babf"], [1, "#6f7378"]]); ctx.beginPath(); ctx.arc(240, 125, r, 0, Math.PI * 2); ctx.fill();   // tamper tabanı
     ctx.fillStyle = lg(0, 90, 0, 160, [[0, "#3b2a20"], [1, "#1c130e"]]); rr(226, 95, 28, 60, 10); ctx.fill();                                                   // sap
-    shadow(240, 125, r + 10, r + 10, .15);
-    ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.textAlign = "center"; ctx.fillText("baskı gücü", 240, 235);
+    if (z) [[z.k, "rgba(233,196,106,.95)"], [z.g, "rgba(156,199,122,.98)"], [z.p, "#3f7d34"]].forEach(([h, col]) => {                                      // hedef halkaları
+      const a = R(Math.max(0, z.t - h)), b = R(Math.min(100, z.t + h)); ctx.strokeStyle = col; ctx.lineWidth = Math.max(1.2, b - a); ctx.beginPath(); ctx.arc(240, 125, (a + b) / 2, 0, Math.PI * 2); ctx.stroke(); });
+    ctx.strokeStyle = "#111"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(240, 125, r, 0, Math.PI * 2); ctx.stroke();                                         // tamper kenarı = ibre
+    ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.textAlign = "center"; ctx.fillText("siyah kenar koyu yeşil halkadayken dokun", 240, 235);
   }
   // ---- Ekstraksiyon: grup kafası, iki akış, fincan, krema
   function extract(t, g, targetG, run, tT, tTol) { bg(); shadow(240, H - 64, 60, 9);

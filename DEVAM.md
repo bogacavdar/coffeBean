@@ -7,8 +7,14 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.8)
+## Bekleyen paket (son yayın: v0.9)
 - (henüz yok)
+
+## v0.9 – YAYINLANDI (31 Ekim 2026, kullanıcı "yap ve yayınla" dedi)
+Doküman rev 32 (§4 renkli hedefler + adım tablosu yeniden yazıldı).
+- Bölgeler: perfect 1 / good 2,5 / ok 5 (yarı genişlik) → toplam ≤ %10; `zoneSet` rütbe çarpanını en fazla 1'le sınırlıyor, hassasiyet ×1,5.
+- Öğütme: osc, hız 85. Dozlama: basılı tut (0–24 g, 9 g/sn, hedef 18 g). Tamping: daire (osc, hız 160), hedef halkaları `CLOSEUP.tamp(v, z)` içinde çiziliyor, yatay çubuk gizli, tuvale dokunmak da durduruyor. Ekstraksiyon: başlat/durdur (aynı).
+- Test yapılmadı (Kural 7); yalnızca sözdizimi kontrol edildi.
 
 ## v0.8 – YAYINLANDI (31 Ekim 2026, kullanıcı "hepsini yayınla" dedi)
 Doküman rev 31 (HTML yerelde güncel, henüz gönderilmedi).

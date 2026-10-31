@@ -23,9 +23,9 @@ window.DATA = {
 
   // §4 – Mini oyunlar (MVP: 5 adet). Aralıklar: Çırak rütbesinde geniş, yükseldikçe daralır.
   minigames: {
-    grind:   { name: "Öğütme",       hint: "Siyah ibre gidip geliyor: koyu yeşilde ÖĞÜT'e bas." },
-    dose:    { name: "Dozlama",      hint: "Terazi ibresi gidip geliyor: 18 g'da (koyu yeşil) DOZLA." },
-    tamp:    { name: "Tamping",      hint: "Baskı ibresi gidip geliyor: koyu yeşilde BASTIR." },
+    grind:   { name: "Öğütme",       hint: "Siyah ibre hızla gidip geliyor: koyu yeşilde ÖĞÜT'e bas." },
+    dose:    { name: "Dozlama",      hint: "Basılı tut, kahve dolsun; ibre 18 g'da (koyu yeşil) iken bırak." },
+    tamp:    { name: "Tamping",      hint: "Daire büyüyüp küçülüyor: kenarı koyu yeşil halkadayken dokun." },
     extract: { name: "Ekstraksiyon", hint: "BAŞLAT'a bas; ibre süreyi gösterir, koyu yeşilde DURDUR." },
     milk:    { name: "Süt köpürtme", hint: "Basılı tut, süt ısınır; ibre koyu yeşildeyken bırak (60–65 °C)." },
     art:     { name: "Latte art",    hint: "Basılı tut ve dök, koyu yeşilde bırak; sonra kesim ibresi koyu yeşildeyken KES." }
@@ -77,7 +77,7 @@ window.DATA = {
     autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  requires: ["thermoPitcher"], effect: "Süt adımı otomatik (85 puan)" }
   },
   // §4 renkli hedef çubuğu: bölge yarı genişlikleri (çubuğun %'si) ve puanları
-  zones: { perfect: 3, good: 8, ok: 15, widen: 1.5, score: { perfect: 100, good: 88, ok: 72 } },
+  zones: { perfect: 1, good: 2.5, ok: 5, widen: 1.5, score: { perfect: 100, good: 88, ok: 72 } },
 
   // §8 – Personel (prototip)
   staff: { assistant: { name: "Yardımcı barista", stars: 2, wage: 40, prepTime: 7, score: 85, effect: "Kuyruktaki sütsüz siparişleri kendisi hazırlar" } },
@@ -135,9 +135,9 @@ window.DATA = {
     // §10 ilk kahve öğreticisi: ilk müşteri Nejla Teyze, adım adım
     first: "İlk kahveyi bana yapacaksın. Acelem yok; zaman duruyor. Sırada dururken bana dokun ve siparişimi al.",
     steps: {
-      grind:   "<b>Öğütüyoruz.</b> Çubukta siyah ibre gidip geliyor. Koyu yeşil = mükemmel öğütüm; açık yeşil güzel, sarı idare eder. Çok kaba olursa su hızlı geçer, ekşi olur; çok ince olursa tıkanır, acı olur. İbre koyu yeşildeyken büyük <b>ÖĞÜT</b> düğmesine bas.",
-      dose:    "<b>Dozluyoruz.</b> Terazinin ibresi 14 ile 22 gram arasında gidip geliyor. Tam <b>18 gramda</b> (koyu yeşil) <b>DOZLA</b>'ya bas.",
-      tamp:    "<b>Sıkıştırıyoruz (tamping).</b> İbre baskı gücünü gösteriyor: hafif ile sert arasında gidip geliyor. Koyu yeşilde <b>BASTIR</b>; düz ve eşit basınç.",
+      grind:   "<b>Öğütüyoruz.</b> Çubukta siyah ibre hızla gidip geliyor. Ortadaki küçük koyu yeşil = mükemmel öğütüm; açık yeşil güzel, sarı idare eder. Çok kaba olursa su hızlı geçer, ekşi olur; çok ince olursa tıkanır, acı olur. İbre koyu yeşildeyken büyük <b>ÖĞÜT</b> düğmesine bas.",
+      dose:    "<b>Dozluyoruz.</b> Düğmeyi <b>basılı tut</b>: sepete kahve dolar, terazi artar. İbre <b>18 gramda</b> (koyu yeşil) iken bırak; 24 gramı geçersen taşar.",
+      tamp:    "<b>Sıkıştırıyoruz (tamping).</b> Tamper dairesi büyüyüp küçülüyor. Dairenin siyah kenarı koyu yeşil halkaya geldiği an daireye ya da <b>BASTIR</b>'a dokun. Düz ve eşit basınç.",
       extract: "<b>Çekiyoruz.</b> <b>BAŞLAT</b>'a bas; ibre saniyeleri sayarak sağa ilerler. Krema koyu baldan açık karamele dönerken, koyu yeşilde (<b>25–30 sn</b>) <b>DURDUR</b>.",
       milk:    "<b>Süt köpürtüyoruz.</b> Düğmeyi basılı tut: süt ısınır, ibre sağa ilerler. Kâğıt yırtılır gibi hafif sesi duy; ibre koyu yeşildeyken (<b>60–65 °C</b>) bırak.",
       art:     "<b>Latte art.</b> Basılı tut ve sütü dök; ibre doluluğu gösterir, koyu yeşilde bırak. Sonra kesim ibresi gidip gelir: koyu yeşildeyken <b>KES</b>."

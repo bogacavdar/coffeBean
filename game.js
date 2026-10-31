@@ -347,7 +347,7 @@ function pulseControl(s) { const el = $("#zB"); if (el) el.classList.add("pulse"
 // Ortada koyu yeşil Mükemmel (100), yanında açık yeşil Güzel (88), en dışta sarı İyi (72); dışı Kaçtı.
 // Bölgeler rütbe toleransıyla daralır, ilgili hassasiyet yükseltmesiyle ×1,5 genişler (§8).
 const hasWiden = step => Object.keys(S.equipment).some(k => S.equipment[k] && D.equipment[k] && D.equipment[k].widen === step);
-function zoneSet(step) { const Z = D.zones, w = tol() * (hasWiden(step) ? Z.widen : 1); return { p: Z.perfect * w, g: Z.good * w, k: Z.ok * w }; }
+function zoneSet(step) { const Z = D.zones, w = Math.min(1, tol()) * (hasWiden(step) ? Z.widen : 1);  /* başlangıçta toplam ≤ %10 */ return { p: Z.perfect * w, g: Z.good * w, k: Z.ok * w }; }
 function zoneScore(v, t, z) {
   const d = Math.abs(v - t), sc = D.zones.score;
   if (d <= z.p) return [sc.perfect, "perfect"]; if (d <= z.g) return [sc.good, "good"]; if (d <= z.k) return [sc.ok, "ok"];
@@ -362,12 +362,12 @@ function setNeedle(v) { const n = $("#zN"); if (n) n.style.left = v + "%"; }
 function showZone(zone, sc) { const r = $("#zRes"); if (!r) return; r.className = "zres " + zone; r.textContent = ({ perfect: "MÜKEMMEL!", good: "Güzel", ok: "İyi", miss: "Kaçtı" })[zone] + " · " + sc; }
 const EXT_T = o => { const r = D.drinks[o.drink].ratio || 2; return r === 1.5 ? 20 : r === 3 ? 37.5 : 27.5; };
 const MG = {
-  grind:   { mode: "osc", speed: 55, btn: "ÖĞÜT", left: "kaba", right: "ince", target: () => S.bean === "brazil" ? 42 : 55, sfx: "grind", tipLow: "grind_low", tipHigh: "grind_high",
+  grind:   { mode: "osc", speed: 85, btn: "ÖĞÜT", left: "kaba", right: "ince", target: () => S.bean === "brazil" ? 42 : 55, sfx: "grind", tipLow: "grind_low", tipHigh: "grind_high",
              draw: (o, v) => CLOSEUP.grind(v) },
-  dose:    { mode: "osc", speed: 50, btn: "DOZLA", left: "14 g", right: "22 g", target: () => 50, sfx: "dose", tipLow: "dose_low", tipHigh: "dose_high",
-             draw: (o, v) => CLOSEUP.dose(14 + v * .08) },
-  tamp:    { mode: "osc", speed: 70, btn: "BASTIR", left: "hafif", right: "sert", target: () => 58, sfx: "tamp", tipLow: "tamp_low", tipHigh: "tamp_high",
-             draw: (o, v) => CLOSEUP.tamp(v / 100, 0) },
+  dose:    { mode: "hold", speed: 9 * 100 / 24, btn: "BASILI TUT · dozla", left: "0 g", right: "24 g", target: () => 18 / 24 * 100, sfx: "dose", tipLow: "dose_low", tipHigh: "dose_high",
+             onStart: () => AUDIO.sfx("dose"), draw: (o, v) => CLOSEUP.dose(v * .24) },
+  tamp:    { mode: "osc", ring: true, speed: 160, btn: "BASTIR", target: () => 58, sfx: "tamp", tipLow: "tamp_low", tipHigh: "tamp_high",
+             draw: (o, v) => CLOSEUP.tamp(v / 100, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }) },
   extract: { mode: "sweep", speed: EXTRACT_SPEED * 100 / 45, btn0: "BAŞLAT", btn: "DURDUR", left: "0 sn", right: "45 sn", target: o => EXT_T(o) / 45 * 100, tipLow: "extract_low", tipHigh: "extract_high",
              onStart: () => AUDIO.loop("extract", true), onStop: () => { AUDIO.loop("extract", false); AUDIO.sfx("extractStop"); },
              draw: (o, v) => { const t = v * .45, tT = EXT_T(o), tg = Math.round(18 * (D.drinks[o.drink].ratio || 2)); CLOSEUP.extract(t, Math.max(0, (t - 6) * tg / (tT - 6)), tg, o.phase === "run", tT, 2.5); } },
@@ -381,7 +381,9 @@ function uiZone(o, el) {
   const s = o.steps[o.i], c = MG[s];
   o.z = zoneSet(s); o.tgt = c.target(o); o.mode = null; o.artCut = false; o.dir = 1;
   o.v = c.mode === "osc" ? Math.random() * 100 : 0; o.phase = c.mode === "osc" ? "run" : "ready";
-  el.innerHTML = zoneBar(o.tgt, o.z, c.left, c.right) + `<button class="hold big pri" id="zB">${c.btn0 || c.btn}</button><div id="zRes" class="zres"></div>`;
+  const legend = `<div class="zends" style="justify-content:center"><span class="zleg"><i class="perf"></i>Mükemmel <i class="good"></i>Güzel <i class="ok"></i>İyi</span></div>`;
+  el.innerHTML = (c.ring ? legend : zoneBar(o.tgt, o.z, c.left, c.right)) + `<button class="hold big pri" id="zB">${c.btn0 || c.btn}</button><div id="zRes" class="zres"></div>`;
+  if (c.ring) $("#closeup").onpointerdown = e => { e.preventDefault(); if (o.phase === "run" && o.steps[o.i] === s) stopZone(o, s); };   // §4 tamping: daireye dokun
   bindZone(o, s); setNeedle(o.v); c.draw(o, o.v);
 }
 function bindZone(o, s) {
