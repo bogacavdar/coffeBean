@@ -136,6 +136,7 @@ function startDay() {
       pos: { x: SCENE.DOOR.x, y: SCENE.DOOR.y }, target: null, moving: false });
     toast(D.tutorial.first);
   }
+  AUDIO.sfx("shopOpen");                                                            // §11 açılış sesi
   layout(); renderHUD(); renderBench(); lastT = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
 }
 function layout() {
@@ -205,20 +206,14 @@ function takeOrder(id) {
 
 // ---------- Mini oyunlar (§4) ----------
 function scoreFrom(val, target, tolerance) { const d = Math.abs(val - target) / tolerance; return Math.round(clamp(100 - d * 40, 0, 100)); }
-function stepTick(o, dt) {
-  const s = o.steps[o.i]; if (!s) return;
-  if (s === "tamp") { o.v += o.dir * dt * 1.6; if (o.v > 1 || o.v < 0) { o.dir *= -1; o.v = clamp(o.v, 0, 1); } drawTamp(o); }
-  if (s === "dose" && o.phase === "hold") { o.v += dt * 9; drawDose(o); }
-  if (s === "extract" && o.phase === "run") { o.v += dt * EXTRACT_SPEED; drawExtract(o); if (o.v > 45) finishStep(o, 0, "extract_high"); }
-  if (s === "art") {
-    if (o.phase === "pour") { o.v += dt * 32; if (o.v > 100) { o.phase = "done"; finishStep(o, 0, "art_high"); return; } }
-    if (o.phase === "cut") { o.mark += o.mdir * dt * .9; if (o.mark > 1 || o.mark < 0) { o.mdir *= -1; o.mark = clamp(o.mark, 0, 1); } }
-    if ($("#closeup")) CLOSEUP.art(o.v, o.phase === "cut" ? o.mark : null);
+function stepTick(o, dt) {                                  // §4 renkli hedef çubuğu: ibre hareketi
+  const s = o.steps[o.i]; if (!s || !MG[s]) return; const c = MG[s];
+  if (o.phase === "run") {
+    if ((o.mode || c.mode) === "osc") { o.v += o.dir * c.speed * dt; if (o.v > 100) { o.v = 100; o.dir = -1; } if (o.v < 0) { o.v = 0; o.dir = 1; } }
+    else { o.v += (typeof c.speed === "function" ? c.speed() : c.speed) * dt; if (o.v >= 100) { o.v = 100; stopZone(o, s); return; } }
+    if (c.onTick) c.onTick(o);
   }
-  if (s === "milk" && o.phase === "hold") {
-    const rate = S.equipment.steamWand ? 24 : 16;                 // §8 buhar çubuğu: 2 sn kısalır
-    o.v += dt * rate; if (o.air) o.tex += dt; drawMilk(o); if (o.v > 85) finishStep(o, 0, "milk_high");
-  }
+  setNeedle(o.v); if ($("#closeup")) c.draw(o, o.v);
 }
 function finishStep(o, score, tipKey) {
   AUDIO.stopLoops();
@@ -296,6 +291,7 @@ function endDay() {
   if (S.decor && S.decor.plant) { L.plant = D.decor.plant.rep; S.rep += L.plant; }
   const repDelta = S.rep - st.repStart; const dayNum = S.day;
   if (!S.equipment.fridge || S.day - (S.milkDay || S.day) + 1 >= D.economy.milkShelfDays) { L.spoiled = S.milk > 0; S.milk = 0; }   // §8 süt bozulur (buzdolabıyla 3 gün)
+  AUDIO.stopLoops(); AUDIO.sfx("shopClose");                                       // §11 kapanış sesi
   day = null; save(); renderHUD(); renderScene(0);
   showLedger(dayNum, st, L, repDelta);
 }
@@ -343,67 +339,72 @@ function renderBench() {
   CLOSEUP.init($("#closeup"));
   $("#sheet").classList.add("on");
   $("#sheetBody").querySelectorAll(".tabs button").forEach(b => b.onclick = () => { day.active = +b.dataset.i; renderBench(); });
-  ({ grind: uiGrind, dose: uiDose, tamp: uiTamp, extract: uiExtract, milk: uiMilk, art: uiArt })[s](o, $("#mgBody"));
+  uiZone(o, $("#mgBody"));
   if (o.tutorial) pulseControl(s);
 }
-function pulseControl(s) { const sel = { grind: "#gOk", dose: "#dH", tamp: "#closeup", extract: "#xB", milk: "#mH", art: "#aH" }[s]; const el = sel && $(sel); if (el) el.classList.add("pulse"); }
-// Öğütme: kaydırıcı, hedef bölge (çekirdeğe göre değişir)
-function uiGrind(o, el) {
-  const target = S.bean === "brazil" ? 42 : 55; const t = 8 * tol(); o.target = target; o.tol = t; o.v = 50;
-  el.innerHTML = `<div class="ctrl"><span class="muted">kaba</span><input type="range" id="gR" min="0" max="100" value="50" style="width:220px"><span class="muted">ince</span><button class="pri" id="gOk">Öğüt</button></div>` +
-    (rank().guide ? `<div class="gauge" style="max-width:300px;margin:6px auto"><div class="zone" style="left:${target - t}%;width:${2 * t}%"></div><div class="needle" id="gN" style="left:50%"></div></div>` : "");
-  CLOSEUP.grind(50);
-  const r = $("#gR"); r.oninput = () => { o.v = +r.value; const n = $("#gN"); if (n) n.style.left = r.value + "%"; CLOSEUP.grind(o.v); };
-  $("#gOk").onclick = () => { AUDIO.sfx("grind"); const v = +r.value; finishStep(o, scoreFrom(v, target, t), v < target ? "grind_low" : "grind_high"); };
+function pulseControl(s) { const el = $("#zB"); if (el) el.classList.add("pulse"); }
+// ---------- §4 Renkli hedef çubuğu: tüm mini oyunlar ----------
+// Ortada koyu yeşil Mükemmel (100), yanında açık yeşil Güzel (88), en dışta sarı İyi (72); dışı Kaçtı.
+// Bölgeler rütbe toleransıyla daralır, ilgili hassasiyet yükseltmesiyle ×1,5 genişler (§8).
+const hasWiden = step => Object.keys(S.equipment).some(k => S.equipment[k] && D.equipment[k] && D.equipment[k].widen === step);
+function zoneSet(step) { const Z = D.zones, w = tol() * (hasWiden(step) ? Z.widen : 1); return { p: Z.perfect * w, g: Z.good * w, k: Z.ok * w }; }
+function zoneScore(v, t, z) {
+  const d = Math.abs(v - t), sc = D.zones.score;
+  if (d <= z.p) return [sc.perfect, "perfect"]; if (d <= z.g) return [sc.good, "good"]; if (d <= z.k) return [sc.ok, "ok"];
+  return [Math.round(Math.max(20, 60 - (d - z.k) * 2)), "miss"];
 }
-// Dozlama: basılı tut, 18 g'da bırak
-function uiDose(o, el) {
-  el.innerHTML = `<button class="hold" id="dH">Basılı tut, 18 g'da bırak</button>`; CLOSEUP.dose(0);
-  const h = $("#dH"); h.onpointerdown = e => { e.preventDefault(); o.phase = "hold"; AUDIO.sfx("dose"); };
-  h.onpointerup = h.onpointercancel = h.onpointerleave = () => { if (o.phase !== "hold") return; o.phase = "done"; const v = o.v; finishStep(o, scoreFrom(v, 18, 0.5 * tol()), v < 18 ? "dose_low" : "dose_high"); };
+function zoneBar(t, z, left, right) {
+  const seg = (h, cls) => { const a = clamp(t - h, 0, 100), b = clamp(t + h, 0, 100); return `<div class="zb ${cls}" style="left:${a}%;width:${b - a}%"></div>`; };
+  return `<div class="zbar">${seg(z.k, "ok")}${seg(z.g, "good")}${seg(z.p, "perf")}<div class="zneedle" id="zN"></div></div>
+    <div class="zends"><span>${left}</span><span class="zleg"><i class="perf"></i>Mükemmel <i class="good"></i>Güzel <i class="ok"></i>İyi</span><span>${right}</span></div>`;
 }
-function drawDose(o) { CLOSEUP.dose(o.v); if (o.v > 24) { o.phase = "done"; finishStep(o, 0, "dose_high"); } }
-// Tamping: büyüyüp küçülen halka, yeşil bantta tıkla
-function uiTamp(o, el) {
-  const band = S.equipment.scaleTamp ? 0.16 : 0.1;                 // §8 tartılı tamper: aralık genişler
-  o.band = band * tol();
-  el.innerHTML = ``; CLOSEUP.tamp(0, o.band);
-  $("#closeup").onpointerdown = () => { if (o.steps[o.i] !== "tamp") return; AUDIO.sfx("tamp"); const s = scoreFrom(o.v, 0.55, o.band); finishStep(o, s, o.v < 0.55 ? "tamp_low" : "tamp_high"); };
+function setNeedle(v) { const n = $("#zN"); if (n) n.style.left = v + "%"; }
+function showZone(zone, sc) { const r = $("#zRes"); if (!r) return; r.className = "zres " + zone; r.textContent = ({ perfect: "MÜKEMMEL!", good: "Güzel", ok: "İyi", miss: "Kaçtı" })[zone] + " · " + sc; }
+const EXT_T = o => { const r = D.drinks[o.drink].ratio || 2; return r === 1.5 ? 20 : r === 3 ? 37.5 : 27.5; };
+const MG = {
+  grind:   { mode: "osc", speed: 55, btn: "ÖĞÜT", left: "kaba", right: "ince", target: () => S.bean === "brazil" ? 42 : 55, sfx: "grind", tipLow: "grind_low", tipHigh: "grind_high",
+             draw: (o, v) => CLOSEUP.grind(v) },
+  dose:    { mode: "osc", speed: 50, btn: "DOZLA", left: "14 g", right: "22 g", target: () => 50, sfx: "dose", tipLow: "dose_low", tipHigh: "dose_high",
+             draw: (o, v) => CLOSEUP.dose(14 + v * .08) },
+  tamp:    { mode: "osc", speed: 70, btn: "BASTIR", left: "hafif", right: "sert", target: () => 58, sfx: "tamp", tipLow: "tamp_low", tipHigh: "tamp_high",
+             draw: (o, v) => CLOSEUP.tamp(v / 100, 0) },
+  extract: { mode: "sweep", speed: EXTRACT_SPEED * 100 / 45, btn0: "BAŞLAT", btn: "DURDUR", left: "0 sn", right: "45 sn", target: o => EXT_T(o) / 45 * 100, tipLow: "extract_low", tipHigh: "extract_high",
+             onStart: () => AUDIO.loop("extract", true), onStop: () => { AUDIO.loop("extract", false); AUDIO.sfx("extractStop"); },
+             draw: (o, v) => { const t = v * .45, tT = EXT_T(o), tg = Math.round(18 * (D.drinks[o.drink].ratio || 2)); CLOSEUP.extract(t, Math.max(0, (t - 6) * tg / (tT - 6)), tg, o.phase === "run", tT, 2.5); } },
+  milk:    { mode: "hold", speed: () => (S.equipment.steamWand ? 24 : 16) * 100 / 65, btn: "BASILI TUT · ısıt", left: "20 °C", right: "85 °C", target: () => (62.5 - 20) / 65 * 100, tipLow: "milk_low", tipHigh: "milk_high",
+             onStart: () => { AUDIO.loop("milk", true); AUDIO.milkAir(true); }, onTick: o => AUDIO.milkAir(20 + o.v * .65 < 45),
+             draw: (o, v) => { const temp = 20 + v * .65, tt = { dollop: 1.2, foam: 1.8, micro: .8 }[D.drinks[o.drink].milk] || 1; CLOSEUP.milk(temp, tt * clamp(v / o.tgt, 0, 1.3), tt, o.phase === "run" && temp < 45, o.phase === "run"); } },
+  art:     { mode: "hold", speed: 32, btn: "BASILI TUT · dök", left: "%0", right: "%100", target: () => 72.5, tipLow: "art_low", tipHigh: "art_high",
+             draw: (o, v) => o.artCut ? CLOSEUP.art(o.fill, v / 100) : CLOSEUP.art(v, null) }
+};
+function uiZone(o, el) {
+  const s = o.steps[o.i], c = MG[s];
+  o.z = zoneSet(s); o.tgt = c.target(o); o.mode = null; o.artCut = false; o.dir = 1;
+  o.v = c.mode === "osc" ? Math.random() * 100 : 0; o.phase = c.mode === "osc" ? "run" : "ready";
+  el.innerHTML = zoneBar(o.tgt, o.z, c.left, c.right) + `<button class="hold big pri" id="zB">${c.btn0 || c.btn}</button><div id="zRes" class="zres"></div>`;
+  bindZone(o, s); setNeedle(o.v); c.draw(o, o.v);
 }
-function drawTamp(o) { if ($("#closeup")) CLOSEUP.tamp(o.v, o.band); }
-// Ekstraksiyon: başlat, 25–30 sn ve ~36 g'da durdur (tek birleşik ibre – açık soru §4)
-function uiExtract(o, el) {
-  const d = D.drinks[o.drink]; const ratio = d.ratio || 2; o.tTarget = ratio === 1.5 ? 20 : ratio === 3 ? 37.5 : 27.5; o.tTol = 2.5 * tol();
-  el.innerHTML = `<button class="hold pri" id="xB">Başlat</button>`; o.targetG = Math.round(18 * ratio); CLOSEUP.extract(0, 0, o.targetG, false, o.tTarget, o.tTol);
-  $("#xB").onclick = () => { if (o.phase === "ready") { o.phase = "run"; $("#xB").textContent = "Durdur"; AUDIO.loop("extract", true); } else if (o.phase === "run") { o.phase = "done"; AUDIO.loop("extract", false); AUDIO.sfx("extractStop"); finishStep(o, scoreFrom(o.v, o.tTarget, o.tTol), o.v < o.tTarget ? "extract_low" : "extract_high"); } };
+function bindZone(o, s) {
+  const c = MG[s], b = $("#zB"), mode = o.mode || c.mode;
+  b.onpointerdown = b.onpointerup = b.onpointercancel = b.onclick = null;
+  if (mode === "osc") b.onpointerdown = e => { e.preventDefault(); if (o.phase === "run") stopZone(o, s); };
+  if (mode === "sweep") b.onclick = () => { if (o.phase === "ready") { o.phase = "run"; b.textContent = c.btn; c.onStart && c.onStart(); } else if (o.phase === "run") stopZone(o, s); };
+  if (mode === "hold") { b.onpointerdown = e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {} if (o.phase !== "ready") return; o.phase = "run"; b.textContent = "…bırak"; c.onStart && c.onStart(); if (s === "art") AUDIO.sfx("dose"); };
+    b.onpointerup = b.onpointercancel = () => { if (o.phase === "run") stopZone(o, s); }; }
 }
-function drawExtract(o) {
-  const ratio = D.drinks[o.drink].ratio || 2; const g = Math.max(0, (o.v - 6) * (18 * ratio) / (o.tTarget - 6));
-  if ($("#closeup")) CLOSEUP.extract(o.v, g, o.targetG, true, o.tTarget, o.tTol);
+function stopZone(o, s) {
+  const c = MG[s]; o.phase = "done"; c.onStop && c.onStop();
+  let [sc, zone] = zoneScore(o.v, o.tgt, o.z); showZone(zone, sc); setNeedle(o.v);
+  if (c.sfx) AUDIO.sfx(c.sfx);
+  if (s === "art" && !o.artCut) {                         // §5 latte art 2. aşama: kesim ibresi gidip gelir
+    o.fillScore = sc; o.fill = o.v; o.artCut = true; o.mode = "osc"; o.tgt = 50; o.z = zoneSet("art"); o.v = 0; o.dir = 1;
+    setTimeout(() => { if (o.steps[o.i] !== "art") return; $("#mgBody").innerHTML = zoneBar(50, o.z, "sol", "sağ") + `<button class="hold big pri" id="zB">KES</button><div id="zRes" class="zres"></div>`;
+      bindZone(o, s); o.phase = "run"; if (o.tutorial) pulseControl(s); }, 450);
+    return;
+  }
+  if (s === "art") { AUDIO.sfx("open"); sc = Math.round((o.fillScore + sc) / 2); }
+  finishStep(o, sc, o.v < o.tgt ? c.tipLow : c.tipHigh);
 }
-// Süt köpürtme: basılı tut; parmak yüzeyde (yukarıda) = hava, aşağı sürükle = girdap; 60–65 °C'de bırak
-function uiMilk(o, el) {
-  const kind = D.drinks[o.drink].milk; o.texTarget = { dollop: 1.2, foam: 1.8, micro: 0.8 }[kind] || 1; o.tex = 0; o.air = false;
-  el.innerHTML = `<div class="muted">hedef: ${kind === "foam" ? "kalın köpük" : kind === "dollop" ? "bir kaşık köpük" : "mikro köpük"} · 60–65 °C</div><button class="hold" id="mH">Basılı tut (hava), sonra aşağı sürükle (girdap)</button>`;
-  CLOSEUP.milk(20, 0, o.texTarget, false, false);
-  const h = $("#mH"); let y0 = 0;
-  h.onpointerdown = e => { e.preventDefault(); h.setPointerCapture(e.pointerId); y0 = e.clientY; o.phase = "hold"; o.v = 20; o.air = true; AUDIO.loop("milk", true); AUDIO.milkAir(true); };
-  h.onpointermove = e => { if (o.phase === "hold") { o.air = (e.clientY - y0) < 24; AUDIO.milkAir(o.air); } };
-  h.onpointerup = h.onpointercancel = () => { if (o.phase !== "hold") return; o.phase = "done";
-    const tempScore = scoreFrom(o.v, 62.5, 2.5 * tol()); const texScore = scoreFrom(o.tex, o.texTarget, 0.5 * tol());
-    finishStep(o, Math.round(tempScore * 0.6 + texScore * 0.4), o.v < 62.5 ? "milk_low" : "milk_high"); };
-}
-// §5 Latte art (kalp): basılı tut-dök (%65–80), sonra kayan işaret ortadayken dokun-kes
-function uiArt(o, el) {
-  o.phase = "ready"; o.v = 0; o.mark = 0; o.mdir = 1; o.fillScore = 0;
-  el.innerHTML = `<button class="hold" id="aH">Basılı tut: sütü dök (%65–80'de bırak)</button>`; CLOSEUP.art(0, null);
-  const h = $("#aH");
-  h.onpointerdown = e => { e.preventDefault(); if (o.phase === "ready") { o.phase = "pour"; AUDIO.sfx("dose"); }
-    else if (o.phase === "cut") { o.phase = "done"; AUDIO.sfx("open"); const cut = scoreFrom(o.mark, .5, .12 * tol()); finishStep(o, Math.round((o.fillScore + cut) / 2), o.v < 72.5 ? "art_low" : "art_high"); } };
-  h.onpointerup = h.onpointercancel = h.onpointerleave = () => { if (o.phase !== "pour") return; o.fillScore = scoreFrom(o.v, 72.5, 7.5 * tol()); o.phase = "cut"; h.textContent = "Çizgi ortaya gelince dokun: kalbi kes"; };
-}
-function drawMilk(o) { if ($("#closeup")) CLOSEUP.milk(o.v, o.tex, o.texTarget, o.air, o.phase === "hold"); }
-
 // ---------- Dükkan / Tedarik overlay (§6, §8, §9) ----------
 function renderShop(mandatory) {
   const lv = shop(); const next = D.shopLevels[S.shopLevel + 1];
@@ -429,8 +430,10 @@ function renderShop(mandatory) {
       <td><button data-buy="${id}" ${locked || S.money < b.price ? "disabled" : ""}>1 kg al</button><br><button data-use="${id}" ${!st || S.bean === id ? "disabled" : ""}>${S.bean === id ? "kullanımda" : "kullan"}</button></td></tr>`; }).join("") + `</table></div>`;
   html += `<div class="box"><h4>Süt (₺${D.economy.milkPrice}/L)</h4><p class="muted">Sütlü içecek başına ${D.economy.milkPerCup} L harcanır. ${S.equipment.fridge ? "Buzdolabı var: süt 3 gün dayanır." : "Buzdolabı yok: gün sonunda kalan süt bozulur."}</p>
     <p>Stok: <b>${(S.milk || 0).toFixed(1)} L</b> <button id="buyMilk" ${S.money < D.economy.milkPrice ? "disabled" : ""}>1 L al</button></p></div>`;
-  html += `<div class="box"><h4>Ekipman ve otomasyon</h4><p class="muted">⚙ Otomatik adım mini oyunu atlar ve sabit 85 puan verir; mükemmel servis için elle yap.</p><table>` + Object.entries(D.equipment).map(([id, e]) => { const lk = e.stars > lv.stars;
-    return `<tr class="${lk ? "lock" : ""}"><td><b>${e.auto ? "⚙ " : ""}${e.name}</b><br><span class="muted">${e.effect}</span></td><td>₺${e.price}<br><span class="muted">${e.stars}★</span></td><td>${S.equipment[id] ? "✓ alındı" : lk ? `🔒 ${e.stars}★ dükkan` : `<button data-eq="${id}" ${S.money < e.price ? "disabled" : ""}>Satın al</button>`}</td></tr>`; }).join("") + `</table></div>`;
+  html += `<div class="box"><h4>Ekipman ve otomasyon</h4><p class="muted">🎯 Hassasiyet yükseltmesi o adımın renkli hedeflerini ×1,5 genişletir. ⚙ Otomasyon o adımı atlar ve sabit 85 puan verir; önce o adımın hassasiyet yükseltmesi gerekir.</p><table>` + Object.entries(D.equipment).map(([id, e]) => {
+    const lk = e.stars > lv.stars, miss = (e.requires || []).filter(r => !S.equipment[r]);
+    const state = S.equipment[id] ? "✓ alındı" : lk ? `🔒 ${e.stars}★ dükkan` : miss.length ? `🔒 Önce: ${miss.map(r => D.equipment[r].name).join(", ")}` : `<button data-eq="${id}" ${S.money < e.price ? "disabled" : ""}>Satın al</button>`;
+    return `<tr class="${lk || (miss.length && !S.equipment[id]) ? "lock" : ""}"><td><b>${e.auto ? "⚙ " : e.widen ? "🎯 " : ""}${e.name}</b><br><span class="muted">${e.effect}</span></td><td>₺${e.price}<br><span class="muted">${e.stars}★</span></td><td>${state}</td></tr>`; }).join("") + `</table></div>`;
   const A = D.staff.assistant, alk = A.stars > lv.stars;
   html += `<div class="box"><h4>Personel</h4><table><tr class="${alk ? "lock" : ""}"><td><b>${A.name}</b><br><span class="muted">${A.effect} (${A.score} puan) · günlük maaş ₺${A.wage}</span></td><td>${A.stars}★</td><td>${alk ? `🔒 ${A.stars}★ dükkan` : S.staff.assistant ? `<button id="fire">Çıkar</button>` : `<button id="hire">İşe al</button>`}</td></tr></table></div>`;
   html += `<div class="box"><h4>Dekor</h4><table>` + Object.entries(D.decor).map(([id, dc]) => `<tr><td><b>${dc.name}</b><br><span class="muted">${dc.effect}</span></td><td>₺${dc.price}</td><td>${S.decor[id] ? "✓ dükkanda" : `<button data-dec="${id}" ${S.money < dc.price ? "disabled" : ""}>Satın al</button>`}</td></tr>`).join("") + `</table></div>`;

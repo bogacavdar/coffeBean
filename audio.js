@@ -82,12 +82,20 @@ window.AUDIO = (() => {
     perfect: t => { [72, 76, 79, 84].forEach((m, i) => { bell(t + i * .09, mtof(m), .06, 1.1, sfxBus); bell(t + i * .09, mtof(m), .03, 1.1, revSend); }); },
     sad: t => { const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 900; f.connect(sfxBus);
       osc("triangle", mtof(62), t, .35, .12, f); osc("triangle", mtof(58), t + .22, .55, .12, f, { to: mtof(57), glide: .5 }); },
+    // §11 dükkan açılış: kapı zili (iki çın) + yükselen sıcak üç nota
+    shopOpen: t => { bell(t, 2349, .09, 1.1, sfxBus); bell(t + .16, 2793, .08, 1.2, sfxBus); bell(t + .16, 2793, .04, 1.2, revSend);
+      [65, 69, 72].forEach((m, i) => { osc("sine", mtof(m), t + .45 + i * .16, 1.1, .08, sfxBus, { a: .02 }); osc("sine", mtof(m), t + .45 + i * .16, 1.1, .05, revSend, { a: .02 }); }); },
+    // §11 kapanış: tek zil + kilit tık-tak + inen yumuşak üç nota
+    shopClose: t => { bell(t, 2349, .07, 1, sfxBus); noise(t + .55, .03, .2, sfxBus, "bandpass", 2500, 2); osc("sine", 900, t + .55, .04, .1, sfxBus);
+      noise(t + .7, .06, .22, sfxBus, "lowpass", 500); osc("sine", 140, t + .7, .12, .2, sfxBus, { to: 80 });
+      [72, 69, 65].forEach((m, i) => { osc("sine", mtof(m), t + 1 + i * .22, 1.3, .07, sfxBus, { a: .03 }); osc("sine", mtof(m), t + 1 + i * .22, 1.3, .05, revSend, { a: .03 }); }); },
     unlock: t => { [67, 71, 74, 79].forEach((m, i) => { osc("sine", mtof(m), t + i * .08, .9, .07, sfxBus); osc("sine", mtof(m), t + i * .08, .9, .05, revSend); }); }
   };
-  function sfx(name) { if (!SFX[name]) return; try { ensureCtx(); if (ctx.state === "suspended" && !document.hidden) ctx.resume(); SFX[name](ctx.currentTime + .01); } catch (e) {} }
+  function sfx(name) { if (!SFX[name] || document.hidden) return; try { ensureCtx(); if (ctx.state === "suspended" && !document.hidden) ctx.resume(); SFX[name](ctx.currentTime + .01); } catch (e) {} }
 
   // ---- sürekli sesler: ekstraksiyon (pompa + akış) ve süt buharı ----
   function loop(name, on) {
+    if (on && document.hidden) return;
     try {
       ensureCtx(); const t = ctx.currentTime;
       if (!on) { const L = loops[name]; if (!L) return; L.g.gain.setTargetAtTime(0.0001, t, .06); L.nodes.forEach(n => { try { n.stop(t + .4); } catch (e) {} }); delete loops[name]; return; }
@@ -114,7 +122,7 @@ window.AUDIO = (() => {
       loops[name] = { g, nodes };
     } catch (e) {}
   }
-  function milkAir(air) { const L = loops.milkAir; if (!L || !loops.milk) return; const t = ctx.currentTime;   // hava = kâğıt yırtılma sesi, girdap = derin tıslama
+  function milkAir(air) { const L = loops.milkAir; if (!L || !loops.milk || !ctx) return; const t = ctx.currentTime;   // hava = kâğıt yırtılma sesi, girdap = derin tıslama
     L.g2.gain.setTargetAtTime(air ? .07 : 0, t, .04); L.f.frequency.setTargetAtTime(air ? 2600 : 1400, t, .08); }
   function stopLoops() { Object.keys(loops).forEach(k => { if (k !== "milkAir") loop(k, false); }); delete loops.milkAir; }
 
@@ -175,18 +183,23 @@ window.AUDIO = (() => {
     while (nextT < ctx.currentTime + .3) { scheduleStep(step, nextT); step++; nextT += E8; }
   }
   function startMusic() {
+    if (document.hidden) { resumeMusic = true; return; }
     ensureCtx(); if (ctx.state === "suspended" && !document.hidden) ctx.resume();
     if (started) return; started = true; step = 0; nextT = ctx.currentTime + .2;
     sched = setInterval(scheduler, 80);
   }
   function stopMusic() { started = false; clearInterval(sched); sched = null; }
 
-  // §11: sekme arka plana geçince tüm ses durur, dönünce devam eder
-  document.addEventListener("visibilitychange", () => {
-    if (!ctx) return;
-    if (document.hidden) ctx.suspend(); else { ctx.resume().then(() => { nextT = Math.max(nextT, ctx.currentTime + .05); }); }
-  });
-  window.addEventListener("pagehide", () => { if (ctx) ctx.suspend(); });
+  // §11: sekme arka plana geçince ses motoru TAMAMEN kapatılır (tarayıcının "ses çalıyor" simgesi de gider); dönünce müzik yeniden başlar
+  let resumeMusic = false;
+  function shutdown() {
+    if (!ctx) return; resumeMusic = started || resumeMusic; stopLoops(); stopMusic();
+    const c = ctx; ctx = null; master = musicBus = sfxBus = reverb = revSend = noiseBuf = musicOut = null;
+    try { c.close(); } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", () => { if (document.hidden) shutdown(); else if (resumeMusic) { resumeMusic = false; startMusic(); } });
+  window.addEventListener("pagehide", shutdown);
+  window.addEventListener("blur", () => { if (document.hidden) shutdown(); });
 
   return { sfx, loop, milkAir, stopLoops, startMusic, stopMusic, setMusic, setSfx, setMuted, get, ensureCtx };
 })();

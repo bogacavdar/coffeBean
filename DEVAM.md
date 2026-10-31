@@ -4,7 +4,21 @@ Son güncelleme: 2026-10-31
 
 ## Öncelik hatırlatması
 "Acilen" / "kritik" denilen her istek, bu dosyadaki her şeyin önüne geçer (bkz. KURALLAR.md, Kural 3).
-Her oyun teslimatı = zip + açılabilir hali (yayın bağlantısı güncellenir; Kural 4).
+Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
+Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
+
+## Bekleyen paket (son yayın: v0.8)
+- (henüz yok)
+
+## v0.8 – YAYINLANDI (31 Ekim 2026, kullanıcı "hepsini yayınla" dedi)
+Doküman rev 31 (HTML yerelde güncel, henüz gönderilmedi).
+- KURALLAR.md: Kural 5 (paket yalnız "paket çık" / kritik-acil), Kural 6 (paket = zip + bağlantı + doküman HTML + güncelleme notları + GitHub); Kural 1 ve 4 pakete bağlandı.
+- Sesler: dükkan açılışı (iki zil + yükselen üç nota), gün kapanışı (zil + kilit tık-tak + inen üç nota).
+- Sekme: arka planda AudioContext tamamen kapatılıyor (tarayıcının "ses çalıyor" simgesi gitsin diye), dönünce müzik yeniden başlıyor; arka plandayken hiçbir ses motoru açılmıyor.
+- Tüm mini oyunlar renkli hedef çubuğuna geçti (§4): iç içe Mükemmel 100 / Güzel 88 / İyi 72, dışı Kaçtı; siyah ibre. Öğütme/dozlama/tamping gidip gelir (hız 55/50/70), ekstraksiyon BAŞLAT→DURDUR tek yön, süt basılı tut-bırak, latte art dök + kes. Büyük düğme (ÖĞÜT/DOZLA/BASTIR...), sonuç etiketi. Tuval içi küçük ibreler gizlendi.
+- Hassasiyet yükseltmeleri (bölgeler ×1,5): Mikro ayarlı öğütücü 150, Hassas terazi 160, Tartılı tamper 180, PID 220, Termometreli sürahi 140, Profesyonel döküm sürahisi 260 (3★). Otomasyon artık bunlardan sonra alınabiliyor (`requires`); Tedarik'te "🔒 Önce: …" görünüyor.
+- Öğretici metinleri ve ipuçları yeni çubuğa göre yeniden yazıldı. Panel 800px yükseklikte kaydırmasız sığıyor.
+- Test: mükemmel espresso (4 adım 100); cappuccino'da süt bölgesi ×1,5 genişledi, latte art iki aşama çalıştı, kalp çizildi; otomatik öğütme 85 ile mükemmel servis olmuyor (beklenen); konsol hatası yok.
 
 ## Durum
 | Alan | Durum |

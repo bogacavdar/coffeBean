@@ -22,6 +22,7 @@ window.CLOSEUP = (() => {
   function steel(x, y, w, h, r = 8) { ctx.fillStyle = lg(x, 0, x + w, 0, [[0, "#9ea2a7"], [.25, "#e3e6e9"], [.5, "#b4b8bd"], [.75, "#eef0f2"], [1, "#8a8e93"]]); rr(x, y, w, h, r); ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,.25)"; ctx.lineWidth = 1; ctx.stroke(); }
   function shadow(x, y, rx, ry, a = .35) { ctx.fillStyle = rg(x, y, 0, rx, [[0, `rgba(0,0,0,${a})`], [1, "rgba(0,0,0,0)"]]); ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); }
   function gauge(x, y, w, val, lo, hi, label) {   // §11: ibreler yarı saydam ve küçük
+    return;   // §4 prototip: hedef artık tuvalin altındaki büyük renkli çubukta; tuval içi küçük ibreler gizli
     ctx.save(); ctx.globalAlpha = .75; ctx.fillStyle = "rgba(255,255,255,.55)"; rr(x, y, w, 10, 5); ctx.fill();
     ctx.fillStyle = "rgba(111,125,74,.55)"; rr(x + w * lo, y, w * (hi - lo), 10, 4); ctx.fill();
     ctx.fillStyle = "#2b2117"; ctx.fillRect(x + w * Math.max(0, Math.min(1, val)) - 1.5, y - 2, 3, 14);
@@ -59,7 +60,7 @@ window.CLOSEUP = (() => {
     ctx.fillStyle = rg(232, 118, 4, r, [[0, "#f0f1f2"], [.6, "#b6babf"], [1, "#6f7378"]]); ctx.beginPath(); ctx.arc(240, 125, r, 0, Math.PI * 2); ctx.fill();   // tamper tabanı
     ctx.fillStyle = lg(0, 90, 0, 160, [[0, "#3b2a20"], [1, "#1c130e"]]); rr(226, 95, 28, 60, 10); ctx.fill();                                                   // sap
     shadow(240, 125, r + 10, r + 10, .15);
-    ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.textAlign = "center"; ctx.fillText("halka yeşil banda gelince bas", 240, 235);
+    ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.textAlign = "center"; ctx.fillText("baskı gücü", 240, 235);
   }
   // ---- Ekstraksiyon: grup kafası, iki akış, fincan, krema
   function extract(t, g, targetG, run, tT, tTol) { bg(); shadow(240, H - 64, 60, 9);

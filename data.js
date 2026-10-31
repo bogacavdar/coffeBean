@@ -23,13 +23,14 @@ window.DATA = {
 
   // §4 – Mini oyunlar (MVP: 5 adet). Aralıklar: Çırak rütbesinde geniş, yükseldikçe daralır.
   minigames: {
-    grind:   { name: "Öğütme",       hint: "Kaydırıcıyı hedef bölgede bırak. Çok kaba = ekşi, çok ince = acı." },
-    dose:    { name: "Dozlama",      hint: "Basılı tut, 18 g'da bırak (±0,5 g)." },
-    tamp:    { name: "Tamping",      hint: "Halka yeşil banda gelince tek tıkla bas." },
-    extract: { name: "Ekstraksiyon", hint: "Akışı izle; 25–30 sn ve ~36 g'da durdur." },
-    milk:    { name: "Süt köpürtme", hint: "Basılı tut: önce hava, sonra girdap. 60–65 °C'de bırak." },
-    art:     { name: "Latte art",    hint: "Basılı tut, fincan %65–80 dolunca bırak; sonra işaret ortaya gelince dokun." }
+    grind:   { name: "Öğütme",       hint: "Siyah ibre gidip geliyor: koyu yeşilde ÖĞÜT'e bas." },
+    dose:    { name: "Dozlama",      hint: "Terazi ibresi gidip geliyor: 18 g'da (koyu yeşil) DOZLA." },
+    tamp:    { name: "Tamping",      hint: "Baskı ibresi gidip geliyor: koyu yeşilde BASTIR." },
+    extract: { name: "Ekstraksiyon", hint: "BAŞLAT'a bas; ibre süreyi gösterir, koyu yeşilde DURDUR." },
+    milk:    { name: "Süt köpürtme", hint: "Basılı tut, süt ısınır; ibre koyu yeşildeyken bırak (60–65 °C)." },
+    art:     { name: "Latte art",    hint: "Basılı tut ve dök, koyu yeşilde bırak; sonra kesim ibresi koyu yeşildeyken KES." }
   },
+
 
   // §9 – Barista rütbesi: kabul aralıkları. tol = hedefin etrafındaki tolerans çarpanı.
   // Prototip kalibrasyonu: XP eşikleri küçültüldü (hız hissi için); her rütbe menüye doğrudan yeni tarif ekler (unlockXp, §3).
@@ -58,16 +59,26 @@ window.DATA = {
 
   // §8 – Ekipman + otomasyon (prototip). stars = gereken dükkan seviyesi; auto = otomatik yaptığı adımlar (sabit 85 puan).
   equipment: {
-    autoGrind:   { name: "Otomatik öğütücü",          price: 350,  stars: 1, auto: ["grind"], effect: "Öğütme otomatik (85 puan)" },
-    scaleGrind:  { name: "Tartılı öğütücü",           price: 400,  stars: 1, auto: ["dose"],  effect: "Dozlama otomatik (85 puan)" },
-    scaleTamp:   { name: "Tartılı tamper",            price: 180,  stars: 1, effect: "Tamping aralığı genişler" },
-    steamWand:   { name: "Buhar çubuğu yükseltmesi",  price: 300,  stars: 1, effect: "Süt köpürtme hızlanır" },
-    autoTamp:    { name: "Otomatik tamper",           price: 450,  stars: 2, auto: ["tamp"],  effect: "Tamping otomatik (85 puan)" },
+    // hassasiyet: renkli hedef bölgeleri ×1,5 (widen); otomasyon için önce bunlar gerekir (requires)
+    grindPrecise:  { name: "Mikro ayarlı öğütücü",       price: 150,  stars: 1, widen: "grind",   effect: "Öğütme hedef bölgeleri ×1,5 geniş" },
+    precScale:     { name: "Hassas terazi",              price: 160,  stars: 1, widen: "dose",    effect: "Dozlama hedef bölgeleri ×1,5 geniş" },
+    scaleTamp:     { name: "Tartılı tamper",             price: 180,  stars: 1, widen: "tamp",    effect: "Tamping hedef bölgeleri ×1,5 geniş" },
+    pidGauge:      { name: "Basınç göstergesi (PID)",    price: 220,  stars: 1, widen: "extract", effect: "Ekstraksiyon hedef bölgeleri ×1,5 geniş" },
+    thermoPitcher: { name: "Termometreli sürahi",        price: 140,  stars: 1, widen: "milk",    effect: "Süt hedef bölgeleri ×1,5 geniş" },
+    steamWand:     { name: "Buhar çubuğu yükseltmesi",   price: 300,  stars: 1, effect: "Süt köpürtme hızlanır" },
+    pourPitcher:   { name: "Profesyonel döküm sürahisi", price: 260,  stars: 3, widen: "art",     effect: "Latte art hedef bölgeleri ×1,5 geniş" },
+    // otomasyon (sabit 85 puan)
+    autoGrind:   { name: "Otomatik öğütücü",          price: 350,  stars: 1, auto: ["grind"], requires: ["grindPrecise"], effect: "Öğütme otomatik (85 puan)" },
+    scaleGrind:  { name: "Tartılı öğütücü",           price: 400,  stars: 1, auto: ["dose"],  requires: ["precScale"], effect: "Dozlama otomatik (85 puan)" },
+    autoTamp:    { name: "Otomatik tamper",           price: 450,  stars: 2, auto: ["tamp"],  requires: ["scaleTamp"], effect: "Tamping otomatik (85 puan)" },
     dualGroup:   { name: "Çift gruplu makine",        price: 700,  stars: 2, effect: "2 paralel sipariş" },
     fridge:      { name: "Süt buzdolabı",             price: 400,  stars: 2, effect: "Süt 3 gün dayanır" },
-    superAuto:   { name: "Süper otomatik espresso makinesi", price: 2500, stars: 3, auto: ["grind","dose","tamp","extract"], effect: "Espressonun tüm adımları tek tuş (85 puan)" },
-    autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  effect: "Süt adımı otomatik (85 puan)" }
+    superAuto:   { name: "Süper otomatik espresso makinesi", price: 2500, stars: 3, auto: ["grind","dose","tamp","extract"], requires: ["pidGauge","autoGrind","scaleGrind","autoTamp"], effect: "Espressonun tüm adımları tek tuş (85 puan)" },
+    autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  requires: ["thermoPitcher"], effect: "Süt adımı otomatik (85 puan)" }
   },
+  // §4 renkli hedef çubuğu: bölge yarı genişlikleri (çubuğun %'si) ve puanları
+  zones: { perfect: 3, good: 8, ok: 15, widen: 1.5, score: { perfect: 100, good: 88, ok: 72 } },
+
   // §8 – Personel (prototip)
   staff: { assistant: { name: "Yardımcı barista", stars: 2, wage: 40, prepTime: 7, score: 85, effect: "Kuyruktaki sütsüz siparişleri kendisi hazırlar" } },
   // §8 – Dekor (prototip): alınan dekor dükkanda görünür
@@ -124,13 +135,14 @@ window.DATA = {
     // §10 ilk kahve öğreticisi: ilk müşteri Nejla Teyze, adım adım
     first: "İlk kahveyi bana yapacaksın. Acelem yok; zaman duruyor. Sırada dururken bana dokun ve siparişimi al.",
     steps: {
-      grind:   "<b>Öğütüyoruz.</b> Kaydırıcıyı yeşil bölgeye getir. Çok kaba olursa su hızlı geçer, ekşi olur; çok ince olursa tıkanır, acı olur. Sonra <b>Öğüt</b>'e bas.",
-      dose:    "<b>Dozluyoruz.</b> Düğmeyi basılı tut; sepet dolarken tartıyı izle. <b>18 gramda</b> bırak.",
-      tamp:    "<b>Sıkıştırıyoruz (tamping).</b> Halka büyüyüp küçülüyor; yeşil banda geldiği an fincanın üstüne bir kez dokun. Düz ve eşit basınç.",
-      extract: "<b>Çekiyoruz.</b> Başlat'a bas, akışı izle. Krema koyu baldan açık karamele dönerken, <b>25–30 saniyede ve ~36 gramda</b> Durdur.",
-      art:     "<b>Latte art.</b> Basılı tut ve fincanı doldur; beyaz daire büyür. %65–80 arasında bırak, sonra kayan çizgi ortaya gelince dokun: kalbin ucu kesilir.",
-      milk:    "<b>Süt köpürtüyoruz.</b> Basılı tut: önce yüzeyde hava ver (kâğıt yırtılma sesi), sonra parmağını aşağı kaydırıp girdap yap. <b>60–65 °C</b>'de bırak."
+      grind:   "<b>Öğütüyoruz.</b> Çubukta siyah ibre gidip geliyor. Koyu yeşil = mükemmel öğütüm; açık yeşil güzel, sarı idare eder. Çok kaba olursa su hızlı geçer, ekşi olur; çok ince olursa tıkanır, acı olur. İbre koyu yeşildeyken büyük <b>ÖĞÜT</b> düğmesine bas.",
+      dose:    "<b>Dozluyoruz.</b> Terazinin ibresi 14 ile 22 gram arasında gidip geliyor. Tam <b>18 gramda</b> (koyu yeşil) <b>DOZLA</b>'ya bas.",
+      tamp:    "<b>Sıkıştırıyoruz (tamping).</b> İbre baskı gücünü gösteriyor: hafif ile sert arasında gidip geliyor. Koyu yeşilde <b>BASTIR</b>; düz ve eşit basınç.",
+      extract: "<b>Çekiyoruz.</b> <b>BAŞLAT</b>'a bas; ibre saniyeleri sayarak sağa ilerler. Krema koyu baldan açık karamele dönerken, koyu yeşilde (<b>25–30 sn</b>) <b>DURDUR</b>.",
+      milk:    "<b>Süt köpürtüyoruz.</b> Düğmeyi basılı tut: süt ısınır, ibre sağa ilerler. Kâğıt yırtılır gibi hafif sesi duy; ibre koyu yeşildeyken (<b>60–65 °C</b>) bırak.",
+      art:     "<b>Latte art.</b> Basılı tut ve sütü dök; ibre doluluğu gösterir, koyu yeşilde bırak. Sonra kesim ibresi gidip gelir: koyu yeşildeyken <b>KES</b>."
     },
+
     done: "İşte ilk espresson. Gördün mü, para kazandın bile. Bundan sonra müşteriler gerçek: sabırları var, kaçarlarsa itibar düşer. Defterin köşede; hatalarını oraya yazarım."
   }
 };
