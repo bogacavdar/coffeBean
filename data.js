@@ -1,22 +1,23 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: 10 mükemmel servis DEĞİL — barista XP eşiği (unlockXp), §9.
+  // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
-    espresso:   { name: "Espresso",     level: 1, req: null,        unlockXp: 0,   price: 8,  cost: 2, steps: ["grind","dose","tamp","extract"],
+    espresso:   { name: "Espresso",     level: 1, req: null,        unlockXp: 0,   price: 10, cost: 2, steps: ["grind","dose","tamp","extract"],
       card: "18 g kahve → 36 g espresso (1:2), 25–30 sn. Ekşi tat = çok hızlı aktı, öğütümü incelt. Acı tat = çok yavaş aktı, öğütümü kabalaştır." },
-    americano:  { name: "Americano",    level: 2, req: "espresso",  unlockXp: 30,  price: 9,  cost: 2, steps: ["grind","dose","tamp","extract"],
+    americano:  { name: "Americano",    level: 2, req: "espresso",  unlockXp: 30,  price: 11, cost: 2, steps: ["grind","dose","tamp","extract"],
       card: "Espresso + sıcak su (1:3). Su üstüne espresso eklenirse krema korunur." },
-    lungo:      { name: "Lungo",        level: 2, req: "espresso",  unlockXp: 55,  price: 8,  cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 3,
+    lungo:      { name: "Lungo",        level: 2, req: "espresso",  unlockXp: 55,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 3,
       card: "Uzun espresso: 18 g → ~54 g (1:3), 35–40 sn. Daha hafif, daha acımsı." },
-    ristretto:  { name: "Ristretto",    level: 2, req: "espresso",  unlockXp: 80,  price: 8,  cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 1.5,
+    ristretto:  { name: "Ristretto",    level: 2, req: "espresso",  unlockXp: 80,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 1.5,
       card: "Kısa espresso: 18 g → ~27 g (1:1,5), 18–22 sn. Daha yoğun, daha tatlı." },
-    macchiato:  { name: "Macchiato",    level: 3, req: "espresso",  unlockXp: 110, price: 10, cost: 3, steps: ["grind","dose","tamp","extract","milk"], milk: "dollop",
+    macchiato:  { name: "Macchiato",    level: 3, req: "espresso",  unlockXp: 110, price: 13, cost: 3, steps: ["grind","dose","tamp","extract","milk"], milk: "dollop",
       card: "Espresso üzerine bir kaşık süt köpüğü. 'Lekelenmiş' demektir." },
-    cortado:    { name: "Cortado",      level: 3, req: "macchiato", unlockXp: 150, price: 12, cost: 3, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
+    cortado:    { name: "Cortado",      level: 3, req: "macchiato", unlockXp: 150, price: 15, cost: 3, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
       card: "Espresso ile eşit miktarda süt (1:1), az köpük. Küçük bardakta servis." },
-    latte:      { name: "Caffè latte",  level: 3, req: "macchiato", unlockXp: 195, price: 13, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
+    latte:      { name: "Caffè latte",  level: 3, req: "macchiato", unlockXp: 195, price: 16, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
       card: "Espresso + bol süt, ince mikro köpük (~1 cm). Latte art bu dokuyla yapılır." },
-    cappuccino: { name: "Cappuccino",   level: 3, req: "macchiato", unlockXp: 245, price: 14, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "foam",
+    cappuccino: { name: "Cappuccino",   level: 3, req: "macchiato", unlockXp: 245, price: 17, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "foam",
       card: "1/3 espresso, 1/3 süt, 1/3 köpük. Süt 60–65 °C; kalın ama ipeksi köpük." }
   },
 
@@ -53,12 +54,12 @@ window.DATA = {
       page: "Yıkanmış işleme, 1.200–2.000 m rakım. Temiz ve dengeli; meraklı müşteriler bunu arar." }
   },
 
-  // §8 – Ekipman (MVP: ilk 4 satın alınabilir ekipman)
+  // §8 – Ekipman (MVP: ilk 4 satın alınabilir ekipman). Prototip kalibrasyonu: ilk seviye daha ulaşılabilir olsun diye fiyatlar düşürüldü.
   equipment: {
-    dualGroup:  { name: "Çift gruplu makine",   price: 1200, effect: "2 paralel sipariş" },
-    autoGrind:  { name: "Otomatik öğütücü",     price: 600,  effect: "Öğütme adımı atlanır, sabit 85 puan" },
-    scaleTamp:  { name: "Tartılı tamper",       price: 300,  effect: "Tamping aralığı genişler" },
-    steamWand:  { name: "Buhar çubuğu yükseltmesi", price: 500, effect: "Süt köpürtme 2 sn kısalır" }
+    dualGroup:  { name: "Çift gruplu makine",   price: 700, effect: "2 paralel sipariş" },
+    autoGrind:  { name: "Otomatik öğütücü",     price: 350, effect: "Öğütme adımı atlanır, sabit 85 puan" },
+    scaleTamp:  { name: "Tartılı tamper",       price: 180, effect: "Tamping aralığı genişler" },
+    steamWand:  { name: "Buhar çubuğu yükseltmesi", price: 300, effect: "Süt köpürtme 2 sn kısalır" }
   },
 
   // §8 – Ekonomi

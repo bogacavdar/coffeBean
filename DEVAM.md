@@ -75,6 +75,18 @@ Prototip **v0.2**: görsel katman eklendi (aynı bağlantıda yayınlandı).
 ### Doküman eşleşme kontrolü (Kural 2) – v0.4
 Her sayısal değişiklik (gün uzunluğu, müşteri sayısı, XP eşikleri, unlockXp sırası) önce dokümana (§2, §3, §9) kalibrasyon notu olarak eklendi, sonra `data.js`/`game.js`'ye işlendi. Ek bir doküman dışı mekanik eklenmedi.
 
+## v0.5 – 31 Ekim 2026 (kullanıcı geri bildirimi: erişilebilirlik, büyük merkezi panel, ses, ayarlar, büyük ikonlar)
+Önce doküman güncellendi (§8, §11 → rev 25, `Tasarim_Dokumani.html` iletildi), sonra kod:
+- **İlk seviye daha ulaşılabilir:** kahve fiyatları yükseltildi (Espresso 8→10, diğerleri orantılı), ekipman fiyatları düşürüldü (Otomatik öğütücü 600→350, Tartılı tamper 300→180, Buhar çubuğu 500→300, Çift gruplu makine 1.200→700).
+- **Mini oyun paneli artık ortada ve büyük:** `#sheet` alttan açılan ince bir şerit olmaktan çıktı, tam ekran karartmalı arka plan üzerinde **sahnenin ortasında** büyük bir kart (`max-width:760px`) oldu; `closeup.js` tuvali 480×250 mantıksal ızgarayı CSS boyutuna ölçekleyecek şekilde yeniden yazıldı (`#closeup` artık 640×340, daha net ve büyük).
+- **Ses eklendi (`audio.js`, yeni dosya):** Web Audio API ile kodla üretilmiş efektler — öğütme uğultusu, dozlama tıkırtısı, tamping gümbürtüsü, ekstraksiyon başlat/durdur, süt tıslaması, bozuk para/bahşiş/mükemmel/üzgün/açılış melodileri; arka planda yumuşak akor pedleriyle cozy bir lo-fi döngü (`AUDIO.startMusic()`, ilk kullanıcı etkileşiminde başlar).
+- **Ayarlar paneli eklendi:** köşeye üçüncü ikon (dişli), müzik/efekt ses seviyesi kaydırıcıları + "Tüm sesleri kapat"; tercih `localStorage`'da kalıcı.
+- **Köşe ikonları büyütüldü:** 58px → 84px, yazı ve rozet de büyütüldü.
+- Playwright ile uçtan uca test edildi: panel gerçekten ekran ortasında (760px genişlik, merkez ~640,400); fiyat artışı doğrulandı (espresso ₺10); ayarlar paneli açılıp ses seviyesi değiştirilebiliyor; konsol hatası yok.
+
+### Doküman eşleşme kontrolü (Kural 2) – v0.5
+Tüm sayısal/arayüz değişiklikleri (fiyatlar, panel konumu/boyutu, ikon boyutu, ses + ayarlar) önce §8/§11'e kalibrasyon notu olarak eklendi, sonra kodlandı. Ek doküman dışı mekanik yok.
+
 ## Sonraki adımlar
 1. Prototipi test et, hataları gider.
 2. Kullanıcı geri bildirimine göre dokümanı güncelle → HTML'i yeniden ilet → kodu eşle.

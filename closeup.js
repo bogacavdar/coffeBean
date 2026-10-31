@@ -1,7 +1,15 @@
 // closeup.js – §11: gerçekçi tezgâh yakın planı. Her mini oyun için kodla çizilmiş foto-benzeri sahne.
 window.CLOSEUP = (() => {
-  let cv, ctx, W = 480, H = 250;
-  function init(canvas) { cv = canvas; ctx = cv.getContext("2d"); const dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  const W = 480, H = 250;        // mantıksal çizim ızgarası (tüm fonksiyonlar bu koordinatları kullanır)
+  let cv, ctx;
+  // §11: panel artık sahnenin ortasında büyük bir kart — tuval CSS'te büyütülür, burada mantıksal ızgara ona ölçeklenir (daha büyük, daha net).
+  function init(canvas) { cv = canvas; ctx = cv.getContext("2d"); size(); }
+  function size() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const cw = cv.clientWidth || W, ch = cv.clientHeight || H;
+    cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+    ctx.setTransform(dpr * cw / W, 0, 0, dpr * ch / H, 0, 0);
+  }
   const lg = (x0, y0, x1, y1, stops) => { const g = ctx.createLinearGradient(x0, y0, x1, y1); stops.forEach(([o, c]) => g.addColorStop(o, c)); return g; };
   const rg = (x, y, r0, r1, stops) => { const g = ctx.createRadialGradient(x, y, r0, x, y, r1); stops.forEach(([o, c]) => g.addColorStop(o, c)); return g; };
   function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }

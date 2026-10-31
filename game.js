@@ -78,6 +78,7 @@ function checkUnlocks() {
   Object.keys(D.drinks).forEach(id => {
     if (canUnlock(id)) {
       S.unlocked.push(id); S.perfect[id] = S.perfect[id] || 0;
+      AUDIO.sfx("unlock");
       modal(`<h3>Yeni tarif: ${D.drinks[id].name}</h3><p class="muted">Nejla Teyze'nin defterinden</p><p>${D.drinks[id].card}</p>` +
         (D.drinks[id].steps.includes("milk") && !S.taught.includes("milk") ? `<p><i>${D.tutorial.milk}</i></p>` : ""));
       if (D.drinks[id].steps.includes("milk")) S.taught.push("milk");
@@ -150,7 +151,7 @@ function leave(c) {
   c.leaving = true; c.angry = true;
   day.orders = day.orders.filter(o => o.cust !== c); day.active = 0;
   S.rep = Math.max(0, S.rep - 5); day.stats.left++;
-  SCENE.addFx(c, "−5", "#b5533c");
+  SCENE.addFx(c, "−5", "#b5533c"); AUDIO.sfx("sad");
   toast(c.name + " beklemekten vazgeçti (−5 itibar)"); renderBench(); renderHUD();
 }
 function takeOrder(id) {
@@ -205,7 +206,8 @@ function serve(o) {
   S.rep = Math.max(0, S.rep + repGain);
   S.xp += 5 + Math.round(service / 4);              // §9 kalibrasyon: her serviste taban XP + kaliteye bağlı bonus (kolay rütbe/tarif açılımı)
   SCENE.addFx(c, "+₺" + price, "#5f8a4b", true);                      // §7 geri bildirim efektleri
-  if (tip) SCENE.addFx(c, "+₺" + tip + " bahşiş", "#c9962b");
+  AUDIO.sfx("coin"); if (service >= 95) AUDIO.sfx("perfect");
+  if (tip) { SCENE.addFx(c, "+₺" + tip + " bahşiş", "#c9962b"); AUDIO.sfx("tip"); }
   if (repGain) SCENE.addFx(c, (repGain > 0 ? "+" : "") + repGain, repGain > 0 ? "#5f8a4b" : "#b5533c");
   c.leaving = true; c.ordered = false;
   day.orders = day.orders.filter(x => x !== o); day.active = 0;
@@ -269,12 +271,12 @@ function uiGrind(o, el) {
     (rank().guide ? `<div class="gauge" style="max-width:300px;margin:6px auto"><div class="zone" style="left:${target - t}%;width:${2 * t}%"></div><div class="needle" id="gN" style="left:50%"></div></div>` : "");
   CLOSEUP.grind(50);
   const r = $("#gR"); r.oninput = () => { o.v = +r.value; const n = $("#gN"); if (n) n.style.left = r.value + "%"; CLOSEUP.grind(o.v); };
-  $("#gOk").onclick = () => { const v = +r.value; finishStep(o, scoreFrom(v, target, t), v < target ? "grind_low" : "grind_high"); };
+  $("#gOk").onclick = () => { AUDIO.sfx("grind"); const v = +r.value; finishStep(o, scoreFrom(v, target, t), v < target ? "grind_low" : "grind_high"); };
 }
 // Dozlama: basılı tut, 18 g'da bırak
 function uiDose(o, el) {
   el.innerHTML = `<button class="hold" id="dH">Basılı tut, 18 g'da bırak</button>`; CLOSEUP.dose(0);
-  const h = $("#dH"); h.onpointerdown = e => { e.preventDefault(); o.phase = "hold"; };
+  const h = $("#dH"); h.onpointerdown = e => { e.preventDefault(); o.phase = "hold"; AUDIO.sfx("dose"); };
   h.onpointerup = h.onpointercancel = h.onpointerleave = () => { if (o.phase !== "hold") return; o.phase = "done"; const v = o.v; finishStep(o, scoreFrom(v, 18, 0.5 * tol()), v < 18 ? "dose_low" : "dose_high"); };
 }
 function drawDose(o) { CLOSEUP.dose(o.v); if (o.v > 24) { o.phase = "done"; finishStep(o, 0, "dose_high"); } }
@@ -283,14 +285,14 @@ function uiTamp(o, el) {
   const band = S.equipment.scaleTamp ? 0.16 : 0.1;                 // §8 tartılı tamper: aralık genişler
   o.band = band * tol();
   el.innerHTML = ``; CLOSEUP.tamp(0, o.band);
-  $("#closeup").onpointerdown = () => { if (o.steps[o.i] !== "tamp") return; const s = scoreFrom(o.v, 0.55, o.band); finishStep(o, s, o.v < 0.55 ? "tamp_low" : "tamp_high"); };
+  $("#closeup").onpointerdown = () => { if (o.steps[o.i] !== "tamp") return; AUDIO.sfx("tamp"); const s = scoreFrom(o.v, 0.55, o.band); finishStep(o, s, o.v < 0.55 ? "tamp_low" : "tamp_high"); };
 }
 function drawTamp(o) { if ($("#closeup")) CLOSEUP.tamp(o.v, o.band); }
 // Ekstraksiyon: başlat, 25–30 sn ve ~36 g'da durdur (tek birleşik ibre – açık soru §4)
 function uiExtract(o, el) {
   const d = D.drinks[o.drink]; const ratio = d.ratio || 2; o.tTarget = ratio === 1.5 ? 20 : ratio === 3 ? 37.5 : 27.5; o.tTol = 2.5 * tol();
   el.innerHTML = `<button class="hold pri" id="xB">Başlat</button>`; o.targetG = Math.round(18 * ratio); CLOSEUP.extract(0, 0, o.targetG, false, o.tTarget, o.tTol);
-  $("#xB").onclick = () => { if (o.phase === "ready") { o.phase = "run"; $("#xB").textContent = "Durdur"; } else if (o.phase === "run") { o.phase = "done"; finishStep(o, scoreFrom(o.v, o.tTarget, o.tTol), o.v < o.tTarget ? "extract_low" : "extract_high"); } };
+  $("#xB").onclick = () => { if (o.phase === "ready") { o.phase = "run"; $("#xB").textContent = "Durdur"; AUDIO.sfx("extractStart"); } else if (o.phase === "run") { o.phase = "done"; AUDIO.sfx("extractStop"); finishStep(o, scoreFrom(o.v, o.tTarget, o.tTol), o.v < o.tTarget ? "extract_low" : "extract_high"); } };
 }
 function drawExtract(o) {
   const ratio = D.drinks[o.drink].ratio || 2; const g = Math.max(0, (o.v - 6) * (18 * ratio) / (o.tTarget - 6));
@@ -302,7 +304,7 @@ function uiMilk(o, el) {
   el.innerHTML = `<div class="muted">hedef: ${kind === "foam" ? "kalın köpük" : kind === "dollop" ? "bir kaşık köpük" : "mikro köpük"} · 60–65 °C</div><button class="hold" id="mH">Basılı tut (hava), sonra aşağı sürükle (girdap)</button>`;
   CLOSEUP.milk(20, 0, o.texTarget, false, false);
   const h = $("#mH"); let y0 = 0;
-  h.onpointerdown = e => { e.preventDefault(); h.setPointerCapture(e.pointerId); y0 = e.clientY; o.phase = "hold"; o.v = 20; o.air = true; };
+  h.onpointerdown = e => { e.preventDefault(); h.setPointerCapture(e.pointerId); y0 = e.clientY; o.phase = "hold"; o.v = 20; o.air = true; AUDIO.sfx("milk"); };
   h.onpointermove = e => { if (o.phase === "hold") o.air = (e.clientY - y0) < 24; };
   h.onpointerup = h.onpointercancel = () => { if (o.phase !== "hold") return; o.phase = "done";
     const tempScore = scoreFrom(o.v, 62.5, 2.5 * tol()); const texScore = scoreFrom(o.tex, o.texTarget, 0.5 * tol());
@@ -360,9 +362,23 @@ function renderBook() {
   $("#bookX").onclick = () => closeOverlay("#ovBook");
 }
 
+// ---------- Ayarlar (§11: Ayarlar panelinden ses kısılır/kapatılır) ----------
+function renderSettings() {
+  const a = AUDIO.get();
+  $("#settingsCard").innerHTML = `<h2>Ayarlar<span class="x" id="setX">✕</span></h2>
+    <div class="box"><h4>Müzik</h4><div class="setrow"><span class="muted">🔈</span><input type="range" id="volMusic" min="0" max="100" value="${Math.round(a.music * 100)}"><span class="muted">🔊</span></div></div>
+    <div class="box"><h4>Efekt sesleri</h4><div class="setrow"><span class="muted">🔈</span><input type="range" id="volSfx" min="0" max="100" value="${Math.round(a.sfx * 100)}"><span class="muted">🔊</span></div></div>
+    <div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="muteAll" ${a.muted ? "checked" : ""}> Tüm sesleri kapat</label></div>`;
+  $("#setX").onclick = () => closeOverlay("#ovSettings");
+  $("#volMusic").oninput = e => AUDIO.setMusic(+e.target.value / 100);
+  $("#volSfx").oninput = e => { AUDIO.setSfx(+e.target.value / 100); AUDIO.sfx("click"); };
+  $("#muteAll").onchange = e => AUDIO.setMuted(e.target.checked);
+}
+
 // ---------- Başlat ----------
 function begin(state) {
   S = state; if (S.milk == null) S.milk = 0; mandatoryRestock = false;
+  AUDIO.startMusic();
   $("#menu").style.display = "none"; $("#hud").style.display = "flex"; $("#hint").style.display = "block"; $("#icons").style.display = "flex";
   day = null; renderHUD(); renderBench();
   lastT = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
@@ -370,12 +386,12 @@ function begin(state) {
   save();
 }
 SCENE.init($("#scene"));
-CLOSEUP.init ? null : null;
 $("#scene").addEventListener("pointerdown", e => { if (!day) return; const r = e.currentTarget.getBoundingClientRect(); const id = SCENE.hitTest(e.clientX - r.left, e.clientY - r.top); if (id) takeOrder(id); });
 $("#openDay").onclick = () => { if (!day && !mandatoryRestock) startDay(); };
-$("#icBook").onclick = () => { renderBook(); openOverlay("#ovBook"); };
-$("#icShop").onclick = () => { renderShop(false); openOverlay("#ovShop"); };
-["ovBook", "ovShop", "ovModal"].forEach(id => $("#" + id).addEventListener("click", e => { if (e.target.id === id) closeOverlay("#" + id); }));
+$("#icBook").onclick = () => { AUDIO.sfx("open"); renderBook(); openOverlay("#ovBook"); };
+$("#icShop").onclick = () => { AUDIO.sfx("open"); renderShop(false); openOverlay("#ovShop"); };
+$("#icSettings").onclick = () => { AUDIO.sfx("open"); renderSettings(); openOverlay("#ovSettings"); };
+["ovBook", "ovShop", "ovModal", "ovSettings"].forEach(id => $("#" + id).addEventListener("click", e => { if (e.target.id === id) closeOverlay("#" + id); }));
 $("#btnNew").onclick = () => { const ex = load(); if (ex) modal("<h3>Mevcut kayıt silinsin mi?</h3>", [{ label: "Vazgeç" }, { label: "Sil ve başla", pri: true, fn: () => begin(newState()) }]); else begin(newState()); };
 $("#btnContinue").onclick = () => { const ex = load(); if (ex) begin(ex); else toast("Kayıt bulunamadı"); };
 $("#btnExport").onclick = () => { const ex = load(); if (!ex) return toast("Kayıt yok"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(ex)], { type: "application/json" })); a.download = "cekirdek-kayit.json"; a.click(); };
