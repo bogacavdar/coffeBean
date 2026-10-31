@@ -1,23 +1,23 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  // §3 – Kahve öğrenme ağacı (MVP: seviye 1–3). Açılış: ön koşulda 10 mükemmel servis.
+  // §3 – Kahve öğrenme ağacı (MVP). Açılış: 10 mükemmel servis DEĞİL — barista XP eşiği (unlockXp), §9.
   drinks: {
-    espresso:   { name: "Espresso",     level: 1, req: null,        price: 8,  cost: 2, steps: ["grind","dose","tamp","extract"],
+    espresso:   { name: "Espresso",     level: 1, req: null,        unlockXp: 0,   price: 8,  cost: 2, steps: ["grind","dose","tamp","extract"],
       card: "18 g kahve → 36 g espresso (1:2), 25–30 sn. Ekşi tat = çok hızlı aktı, öğütümü incelt. Acı tat = çok yavaş aktı, öğütümü kabalaştır." },
-    ristretto:  { name: "Ristretto",    level: 2, req: "espresso",  price: 8,  cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 1.5,
-      card: "Kısa espresso: 18 g → ~27 g (1:1,5), 18–22 sn. Daha yoğun, daha tatlı." },
-    macchiato:  { name: "Macchiato",    level: 2, req: "espresso",  price: 10, cost: 3, steps: ["grind","dose","tamp","extract","milk"], milk: "dollop",
-      card: "Espresso üzerine bir kaşık süt köpüğü. 'Lekelenmiş' demektir." },
-    americano:  { name: "Americano",    level: 2, req: "espresso",  price: 9,  cost: 2, steps: ["grind","dose","tamp","extract"],
+    americano:  { name: "Americano",    level: 2, req: "espresso",  unlockXp: 30,  price: 9,  cost: 2, steps: ["grind","dose","tamp","extract"],
       card: "Espresso + sıcak su (1:3). Su üstüne espresso eklenirse krema korunur." },
-    lungo:      { name: "Lungo",        level: 2, req: "espresso",  price: 8,  cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 3,
+    lungo:      { name: "Lungo",        level: 2, req: "espresso",  unlockXp: 55,  price: 8,  cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 3,
       card: "Uzun espresso: 18 g → ~54 g (1:3), 35–40 sn. Daha hafif, daha acımsı." },
-    cappuccino: { name: "Cappuccino",   level: 3, req: "macchiato", price: 14, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "foam",
-      card: "1/3 espresso, 1/3 süt, 1/3 köpük. Süt 60–65 °C; kalın ama ipeksi köpük." },
-    latte:      { name: "Caffè latte",  level: 3, req: "macchiato", price: 13, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
+    ristretto:  { name: "Ristretto",    level: 2, req: "espresso",  unlockXp: 80,  price: 8,  cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 1.5,
+      card: "Kısa espresso: 18 g → ~27 g (1:1,5), 18–22 sn. Daha yoğun, daha tatlı." },
+    macchiato:  { name: "Macchiato",    level: 3, req: "espresso",  unlockXp: 110, price: 10, cost: 3, steps: ["grind","dose","tamp","extract","milk"], milk: "dollop",
+      card: "Espresso üzerine bir kaşık süt köpüğü. 'Lekelenmiş' demektir." },
+    cortado:    { name: "Cortado",      level: 3, req: "macchiato", unlockXp: 150, price: 12, cost: 3, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
+      card: "Espresso ile eşit miktarda süt (1:1), az köpük. Küçük bardakta servis." },
+    latte:      { name: "Caffè latte",  level: 3, req: "macchiato", unlockXp: 195, price: 13, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
       card: "Espresso + bol süt, ince mikro köpük (~1 cm). Latte art bu dokuyla yapılır." },
-    cortado:    { name: "Cortado",      level: 3, req: "macchiato", price: 12, cost: 3, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
-      card: "Espresso ile eşit miktarda süt (1:1), az köpük. Küçük bardakta servis." }
+    cappuccino: { name: "Cappuccino",   level: 3, req: "macchiato", unlockXp: 245, price: 14, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "foam",
+      card: "1/3 espresso, 1/3 süt, 1/3 köpük. Süt 60–65 °C; kalın ama ipeksi köpük." }
   },
 
   // §4 – Mini oyunlar (MVP: 5 adet). Aralıklar: Çırak rütbesinde geniş, yükseldikçe daralır.
@@ -30,10 +30,11 @@ window.DATA = {
   },
 
   // §9 – Barista rütbesi: kabul aralıkları. tol = hedefin etrafındaki tolerans çarpanı.
+  // Prototip kalibrasyonu: XP eşikleri küçültüldü (hız hissi için); her rütbe menüye doğrudan yeni tarif ekler (unlockXp, §3).
   ranks: [
-    { name: "Çırak",           xp: 0,    tol: 1.0,  tipMult: 1.0, guide: true },
-    { name: "Barista",         xp: 500,  tol: 0.8,  tipMult: 1.2, guide: false },
-    { name: "Kıdemli barista", xp: 2000, tol: 0.65, tipMult: 1.2, guide: false }
+    { name: "Çırak",           xp: 0,   tol: 1.0,  tipMult: 1.0, guide: true },
+    { name: "Barista",         xp: 120, tol: 0.8,  tipMult: 1.2, guide: false },
+    { name: "Kıdemli barista", xp: 350, tol: 0.65, tipMult: 1.2, guide: false }
   ],
 
   // §7 – Müşteri tipleri (MVP: 4). patience saniye.
@@ -63,11 +64,11 @@ window.DATA = {
   // §8 – Ekonomi
   economy: { startMoney: 300, weeklyRent: 200, beanPerCup: 0.018 /* kg */, milkPrice: 15 /* ₺/L */, milkPerCup: 0.2 /* L */, minBeans: 0.3, minMilk: 1, milkShelfDays: 3 },
 
-  // §9 – Dükkan seviyeleri (MVP: 3)
+  // §9 – Dükkan seviyeleri (MVP: 3). Prototip kalibrasyonu: günlük müşteri sayısı azaltıldı (gün kısa ve odaklı kalsın).
   shopLevels: [
-    { stars: 1, name: "Köşe büfesi",        money: 0,    rep: 0,   customersPerDay: 12 },
-    { stars: 2, name: "Mahalle kahvecisi",  money: 1500, rep: 100, customersPerDay: 18 },
-    { stars: 3, name: "Semt favorisi",      money: 5000, rep: 250, customersPerDay: 26 }
+    { stars: 1, name: "Köşe büfesi",        money: 0,    rep: 0,   customersPerDay: 6 },
+    { stars: 2, name: "Mahalle kahvecisi",  money: 1500, rep: 100, customersPerDay: 9 },
+    { stars: 3, name: "Semt favorisi",      money: 5000, rep: 250, customersPerDay: 13 }
   ],
 
   // §4 – "Her hata bir ders verir": Kahve Defteri ipuçları

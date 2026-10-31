@@ -4,7 +4,7 @@
 const D = window.DATA;
 const $ = s => document.querySelector(s);
 const SAVE_KEY = "cekirdek_save";
-const DAY_SECONDS = 150;            // §2: bir oyun günü 3–5 dk (hız için 2,5 dk)
+const DAY_SECONDS = 90;             // §2: prototip kalibrasyonu, kısa ve odaklı gün
 const EXTRACT_SPEED = 6;            // §4: mini oyun 3–8 sn → ekstraksiyon 6× hızlı akar
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -68,10 +68,11 @@ function renderHUD() {
   $("#openDay").style.display = (!day && !mandatoryRestock) ? "" : "none";
 }
 
-// ---------- Açılım (§3) ----------
+// ---------- Açılım (§3, §9) ----------
+// Prototip kalibrasyonu: tarif açılımı artık "10 mükemmel servis" değil, barista XP eşiğiyle (unlockXp) otomatik olur.
 function canUnlock(id) {
   const d = D.drinks[id];
-  return d.level <= shop().stars && (!d.req || (S.perfect[d.req] || 0) >= 10) && !S.unlocked.includes(id);
+  return S.xp >= d.unlockXp && !S.unlocked.includes(id);
 }
 function checkUnlocks() {
   Object.keys(D.drinks).forEach(id => {
@@ -197,11 +198,12 @@ function serve(o) {
   if (D.drinks[o.drink].steps.includes("milk")) S.milk = Math.max(0, (S.milk || 0) - D.economy.milkPerCup);   // §8 süt sarfı
   S.served[o.drink] = (S.served[o.drink] || 0) + 1;
   let repGain = 0, msg;
-  if (service >= 95) { S.perfect[o.drink] = (S.perfect[o.drink] || 0) + 1; repGain = 5; S.xp += 20; day.stats.perfect++; msg = "Mükemmel!"; SCENE.addFx(c, "★", "#c9962b", true); }
+  if (service >= 95) { S.perfect[o.drink] = (S.perfect[o.drink] || 0) + 1; repGain = 5; S.xp += 25; day.stats.perfect++; msg = "Mükemmel!"; SCENE.addFx(c, "★", "#c9962b", true); }
   else if (service >= 80) { repGain = 2; msg = "Güzel."; }
   else if (service >= 70) { msg = "İdare eder."; }
   else { repGain = -3; msg = "Şikâyet."; }
-  S.rep = Math.max(0, S.rep + repGain); S.xp += Math.round(service / 10);
+  S.rep = Math.max(0, S.rep + repGain);
+  S.xp += 5 + Math.round(service / 4);              // §9 kalibrasyon: her serviste taban XP + kaliteye bağlı bonus (kolay rütbe/tarif açılımı)
   SCENE.addFx(c, "+₺" + price, "#5f8a4b", true);                      // §7 geri bildirim efektleri
   if (tip) SCENE.addFx(c, "+₺" + tip + " bahşiş", "#c9962b");
   if (repGain) SCENE.addFx(c, (repGain > 0 ? "+" : "") + repGain, repGain > 0 ? "#5f8a4b" : "#b5533c");
@@ -349,8 +351,8 @@ function renderBook() {
   let html = `<h2>Kahve Defteri<span class="x" id="bookX">✕</span></h2>`;
   html += `<div class="box"><h4>Barista: ${r.name}</h4><p class="muted">XP ${S.xp}. Rütbe yükseldikçe kabul aralıkları daralır, bahşiş artar.</p></div>`;
   html += `<div class="box"><h4>Tarif kartları</h4>` + Object.entries(D.drinks).map(([id, d]) => {
-    const open = S.unlocked.includes(id); const req = d.req ? `${D.drinks[d.req].name}'da 10 mükemmel servis (${S.perfect[d.req] || 0}/10)` : "";
-    return `<div class="${open ? "" : "lock"}"><b>${d.name}</b> <span class="muted">· seviye ${d.level}${open ? ` · ${S.served[id] || 0} servis, ${S.perfect[id] || 0} mükemmel` : " · kilitli" + (req ? ": " + req : "")}</span><br>${open ? d.card : ""}</div><hr style="border:0;border-top:1px solid var(--cizgi)">`; }).join("") + `</div>`;
+    const open = S.unlocked.includes(id); const req = `Barista XP ${d.unlockXp} (şu an ${S.xp})`;
+    return `<div class="${open ? "" : "lock"}"><b>${d.name}</b> <span class="muted">· seviye ${d.level}${open ? ` · ${S.served[id] || 0} servis, ${S.perfect[id] || 0} mükemmel` : " · kilitli: " + req}</span><br>${open ? d.card : ""}</div><hr style="border:0;border-top:1px solid var(--cizgi)">`; }).join("") + `</div>`;
   html += `<div class="box"><h4>Öğrenilen ipuçları</h4>${S.tipsLearned.length ? "<ul>" + S.tipsLearned.map(k => `<li>${D.tips[k]}</li>`).join("") + "</ul>" : '<p class="muted">Henüz yok. Her hata bir ders verir.</p>'}</div>`;
   html += `<div class="box"><h4>Menşe sayfaları</h4>` + Object.entries(D.beans).filter(([id]) => S.beans[id]).map(([id, b]) => `<p><b>${b.name}</b><br>${b.page}<br><span class="muted">${b.notes}</span></p>`).join("") + `</div>`;
   html += `<div class="box"><h4>Günlük</h4><p class="muted">${S.log.slice(-8).reverse().join("<br>") || "—"}</p></div>`;
