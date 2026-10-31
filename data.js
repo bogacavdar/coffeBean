@@ -61,7 +61,7 @@ window.DATA = {
   },
 
   // §8 – Ekonomi
-  economy: { startMoney: 300, weeklyRent: 200, beanPerCup: 0.018 /* kg */ },
+  economy: { startMoney: 300, weeklyRent: 200, beanPerCup: 0.018 /* kg */, milkPrice: 15 /* ₺/L */, milkPerCup: 0.2 /* L */, minBeans: 0.3, minMilk: 1, milkShelfDays: 3 },
 
   // §9 – Dükkan seviyeleri (MVP: 3)
   shopLevels: [
@@ -88,6 +88,16 @@ window.DATA = {
   tutorial: {
     intro: "Hoş geldin. Burası benim eski dükkanım; artık senin. Defterimi tezgâhın altında bulacaksın. Önce espresso. Gerisi ondan türer.",
     espresso: "18 gram kahve, 36 gram espresso, 25–30 saniye. Bu üç sayıyı ezberle; her şey buradan başlar.",
-    milk: "Sütü köpürtürken kâğıt yırtılır gibi hafif bir ses duyarsın. O ses doğru sestir."
+    milk: "Sütü köpürtürken kâğıt yırtılır gibi hafif bir ses duyarsın. O ses doğru sestir.",
+    // §10 ilk kahve öğreticisi: ilk müşteri Nejla Teyze, adım adım
+    first: "İlk kahveyi bana yapacaksın. Acelem yok; zaman duruyor. Sırada dururken bana dokun ve siparişimi al.",
+    steps: {
+      grind:   "<b>Öğütüyoruz.</b> Kaydırıcıyı yeşil bölgeye getir. Çok kaba olursa su hızlı geçer, ekşi olur; çok ince olursa tıkanır, acı olur. Sonra <b>Öğüt</b>'e bas.",
+      dose:    "<b>Dozluyoruz.</b> Düğmeyi basılı tut; sepet dolarken tartıyı izle. <b>18 gramda</b> bırak.",
+      tamp:    "<b>Sıkıştırıyoruz (tamping).</b> Halka büyüyüp küçülüyor; yeşil banda geldiği an fincanın üstüne bir kez dokun. Düz ve eşit basınç.",
+      extract: "<b>Çekiyoruz.</b> Başlat'a bas, akışı izle. Krema koyu baldan açık karamele dönerken, <b>25–30 saniyede ve ~36 gramda</b> Durdur.",
+      milk:    "<b>Süt köpürtüyoruz.</b> Basılı tut: önce yüzeyde hava ver (kâğıt yırtılma sesi), sonra parmağını aşağı kaydırıp girdap yap. <b>60–65 °C</b>'de bırak."
+    },
+    done: "İşte ilk espresson. Gördün mü, para kazandın bile. Bundan sonra müşteriler gerçek: sabırları var, kaçarlarsa itibar düşer. Defterin köşede; hatalarını oraya yazarım."
   }
 };
