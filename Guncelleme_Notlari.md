@@ -39,6 +39,11 @@
 - **Tedarik ekranının** üstünde kasadaki para ve mevcut stok yazıyor: çekirdek (kaç shot eder), süt ve bardaklar.
 - Gün sonu hesabında bardak yokluğu ya da yanlış sipariş yüzünden giden müşteri sayısı gösteriliyor.
 
+### Telefonda dikey ekran düzeni
+- Telefon dik tutulduğunda üstteki bilgiler (gün, saat, para, itibar, XP, stok vb.) sol üstte **küçük yazıyla alt alta** dizilir.
+- Sipariş kartı ve köşe ikonları küçülür, günlük görev aşağı iner, **Günü başlat** alt ortaya geçer.
+- Bilgisayarda ve yatay ekranda düzen aynı kalır.
+
 ### Düzeltme
 - Eski kayıtlarda kredi ve süt bilgisinin yüklenmemesine yol açan bir satır hatası düzeltildi.
 
