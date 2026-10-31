@@ -7,8 +7,32 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.11)
-- (henüz yok)
+## Bekleyen paket (son yayın: v0.12)
+(boş)
+
+## v0.12 – YAYINLANDI (31 Ekim 2026, kullanıcı "her şeyi bitirdikten sonra paket çık" dedi)
+Doküman rev 50. Test yapılmadı (Kural 7).
+- **Tam ekran:** ana menünün sağ üstünde ve Ayarlar'da "⛶ Tam ekran" düğmesi (Fullscreen API, webkit yedeği). İzin verilmezse açıklayan bir uyarı çıkıyor (sayfa içinde açılmışsa ya da iPhone'daysa).
+- **Android "zaten yüklü" hatası:** oyun claude.ai sayfasının içinde açıldığı için Chrome'un "yükle" seçeneği oyunu değil, telefonda yüklü Claude uygulamasını görüyordu. Oyun artık kendi adresinden (GitHub Pages) **PWA** olarak yüklenebiliyor: `manifest.webmanifest` (CoffeBean, tam ekran açılıyor), `sw.js` (her zaman önce ağdan en yeni sürüm, çevrimdışıyken önbellekten yedek), `icons/` (192, 512, maskable, apple-touch). Tarayıcı izin verirse "📲 Uygulamayı yükle" düğmesi çıkıyor (`beforeinstallprompt`). Sayfa içinde açıksa Ayarlar'da oyunun kendi adresi gösteriliyor.
+- Yıldız Teyze açılış metni değişti (doküman rev 46): "…artık yoruldum; dükkan senin. Bütün kahveler espressodan yapılır. Gerisini tarif defterimden öğrenirsin, köşede duruyor." ("oynadıkça öğrenirsin" kaldırıldı).
+- **Sahne tam ekran** (doküman rev 47): zemin ve duvarlar ekran dışına uzatıldı (`EX = 10`, duvarlar `WTOP = 1400`), arka plan duvar rengi, sahne ölçeği büyüdü (`TW` en fazla 84), vinyet hafifletildi; kenarlarda siyah boşluk kalmıyor.
+- **"☕ Günü başlat"** düğmesi sol üstte, sahnenin içinde (HUD'ın altında); ilk gün parlıyor (`.glow`).
+- **İlk espresso öğreticisi zenginleşti:**
+  - Yıldız Teyze önce 4 adımı ve "ibre tam koyu yeşilde basılır, ustalık ister" kuralını anlatıyor, sonra her adımı nedeniyle birlikte açıklıyor.
+  - İbre mükemmelde durunca "İşte şimdi! / Şimdi bırak! / Şimdi durdur!" diyor.
+  - Erken basınca basmayı kabul etmiyor ve "acele etme" diyor.
+  - Dozlamada yeşile gelmeden bırakılırsa adım baştan başlıyor ve "koyu yeşile gelene kadar basılı tut" diye hatırlatıyor.
+  - Çekme sırasında kremayı anlatıyor.
+  - İlk espressodan sonra vedalaşıp gidiyor.
+  - Metinler: `tutorial.espressoIntro`, `steps`, `pressNow`, `tooEarly`, `release`, `holdRetry`, `extractRun`, `stopNow`, `done`.
+- **Sipariş sonu değerlendirme** (doküman rev 48): son adımdan sonra panelde fincanın üstten görüntüsü ve **tüm adımların ortalaması** (artık en düşük adım değil) yüzde olarak gösteriliyor. Etiketler: %95+ Mükemmel / 80–94 Lezzetli / 60–79 Ortalama / 40–59 Kötü / <40 Berbat (`D.reviews`).
+  - **Teslim et** ya da **Yeniden yap** seçilebiliyor. Yeniden yap'ta bir fincanlık çekirdek/süt hemen düşüyor ve elle yapılan adımlar baştan başlıyor; malzeme yetmezse düğme pasif. Öğreticide sadece Teslim et var.
+  - Müşteri teslimde kategorisinden rastgele bir yorumu baloncukta söyleyip çıkıyor.
+  - Otomatik makine ve yardımcının hazırladıkları doğrudan teslim ediliyor.
+- **Sipariş cümleleri** (doküman rev 49): öndeki müşteri rastgele bir cümleyle sipariş veriyor (`D.orderLines`): 12 genel kalıp (bozuk Türkçeli turist ağzı dahil) ve her tipe 3 özel kalıp. Tipe özel kalıpların seçilme şansı iki kat.
+- **Boylar ve bardaklar** (doküman rev 50): `D.sizes` / `D.cups` / `cupMin` / `startCups` / `noCupLines` / `wrongLines`; müşteri `c.size`; sipariş önce seçim adımı (`o.selecting`, `renderSelect`, `prepareOrder` bardağı düşer, `o.mismatch`); sağ üst `#orders` kartı (`renderOrders`); fiyat `sizePrice`, sarf `bean`/`milk` çarpanı, doz hedefi `size.dose`; Tedarik'te kasa + stok özeti ve bardak paketleri, eksik bardak Devam'ı kilitler; yardımcı da bardak harcar; yeniden yap seçim adımına döner.
+- Düzeltme: `begin()` içinde yorum satırına kaymış `S.loans` göçü / `syncDebt()` / `milkDay` ayrı satıra alındı.
+- **Paket dosya listesi artık:** index.html, *.js, `manifest.webmanifest`, `sw.js`, `icons/*.png` (yayına, zip'e ve GitHub'a).
 
 ## v0.10 – YAYINLANDI (31 Ekim 2026, kullanıcı "optimizasyondan sonra paketi çık" dedi)
 Doküman rev 33 (HTML yerelde güncel, pakette gönderilecek). Test yapılmadı (Kural 7), yalnız sözdizimi.

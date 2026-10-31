@@ -16,7 +16,7 @@ window.SCENE = (() => {
     const dpr = Math.min(Q.maxDpr, window.devicePixelRatio || 1) * Q.scale; const w = cv.clientWidth, h = cv.clientHeight;
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
     W = w; H = h; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    TW = Math.min(64, W / (COLS + ROWS) * 1.9, H / (COLS + ROWS) * 3.4); TH = TW / 2;
+    TW = Math.min(84, W / (COLS + ROWS) * 2.1, H / (COLS + ROWS) * 4.2); TH = TW / 2;   // §11 sahne ekranı tamamen kaplar (kenarlar ekran dışına taşar)
     OX = W / 2 + (ROWS - COLS) * TW / 2 * 0; OY = H * 0.5 - (COLS + ROWS) * TH / 2 + 30;
   }
   const iso = (x, y, z = 0) => [OX + (x - y) * TW, OY + (x + y) * TH - z * (TW / 40)];
@@ -31,18 +31,21 @@ window.SCENE = (() => {
 
   function room(L, st = {}) {
     // zemin: meşe tahtalar (x yönünde uzun), damar çizgileri
-    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-      const c = PAL.oak[(x * 3 + y * 5) % 3]; const dark = 1 - (x + y) / (COLS + ROWS) * .25;
+    const EX = 10;                                                   // zemin ve duvarlar ekranın dışına doğru devam eder (siyah boşluk kalmasın)
+    for (let y = 0; y < ROWS + EX; y++) for (let x = 0; x < COLS + EX; x++) {
+      const c = PAL.oak[(x * 3 + y * 5) % 3]; const dark = 1 - Math.min(1, (x + y) / (COLS + ROWS)) * .25 - (x >= COLS || y >= ROWS ? .06 : 0);
       poly([iso(x, y), iso(x + 1, y), iso(x + 1, y + 1), iso(x, y + 1)], shade(c, dark));
     }
     ctx.strokeStyle = "rgba(60,35,15,.25)"; ctx.lineWidth = 1;
-    if (Q.fx > 0) for (let y = 0; y <= ROWS; y += .5) { const a = iso(0, y), b = iso(COLS, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+    if (Q.fx > 0) for (let y = 0; y <= ROWS + EX; y += .5) { const a = iso(0, y), b = iso(COLS + EX, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
     // duvarlar
-    const WH = 170;
-    poly([iso(0, 0), iso(0, ROWS), iso(0, ROWS, WH), iso(0, 0, WH)], PAL.wallDark);
-    poly([iso(0, 0), iso(COLS, 0), iso(COLS, 0, WH), iso(0, 0, WH)], PAL.wall);
+    const WH = 170, WTOP = 1400;                                     // duvarlar ekranın üstüne kadar uzar
+    poly([iso(0, 0), iso(0, ROWS + EX), iso(0, ROWS + EX, WTOP), iso(0, 0, WTOP)], PAL.wallDark);
+    poly([iso(0, 0), iso(COLS + EX, 0), iso(COLS + EX, 0, WTOP), iso(0, 0, WTOP)], PAL.wall);
+    poly([iso(0, 0, WH + 26), iso(COLS + EX, 0, WH + 26), iso(COLS + EX, 0, WH + 34), iso(0, 0, WH + 34)], "#8d6440");   // tavan pervazı
+    poly([iso(0, 0, WH + 26), iso(0, ROWS + EX, WH + 26), iso(0, ROWS + EX, WH + 34), iso(0, 0, WH + 34)], "#6f4d31");
     // süpürgelik
-    poly([iso(0, 0, 0), iso(COLS, 0, 0), iso(COLS, 0, 6), iso(0, 0, 6)], "#8d6440"); poly([iso(0, 0, 0), iso(0, ROWS, 0), iso(0, ROWS, 6), iso(0, 0, 6)], "#6f4d31");
+    poly([iso(0, 0, 0), iso(COLS + EX, 0, 0), iso(COLS + EX, 0, 6), iso(0, 0, 6)], "#8d6440"); poly([iso(0, 0, 0), iso(0, ROWS + EX, 0), iso(0, ROWS + EX, 6), iso(0, 0, 6)], "#6f4d31");
     // vitrin (sağ duvar) – çerçeve + cam + ışık huzmesi
     const wx0 = 2.4, wx1 = 6.6;
     poly([iso(wx0 - .15, 0, 42), iso(wx1 + .15, 0, 42), iso(wx1 + .15, 0, 140), iso(wx0 - .15, 0, 140)], "#3b2a20");
@@ -213,13 +216,13 @@ window.SCENE = (() => {
     acc += dt; if (Q.fps && acc < 1 / Q.fps && dt > 0) return; dt = acc; acc = 0;   // düşük kalite: 30 kare/sn
     size(); time += dt; hits = [];
     const { customers = [], orders = [], t = .3, level = 1, slots = 1 } = state; const L = daylight(t);
-    ctx.fillStyle = "#1c1713"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = PAL.wall; ctx.fillRect(0, 0, W, H);
     room(L, state); furniture(level, slots, state);
     customers.forEach(c => step(c, dt));
     [...customers].sort((a, b) => (a.pos.x + a.pos.y) - (b.pos.x + b.pos.y)).forEach(c => person(c, orders.some(o => o.cust === c)));
     drawFx(dt);
     // akşam sıcaklığı + vinyet
-    if (Q.fx > 0) { const vg = ctx.createRadialGradient(W / 2, H * .45, H * .25, W / 2, H * .45, H * .95); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, `rgba(35,20,8,${.35 + .3 * L.warm})`); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H); }
+    if (Q.fx > 0) { const vg = ctx.createRadialGradient(W / 2, H * .45, H * .4, W / 2, H * .45, Math.max(W, H) * .85); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, `rgba(35,20,8,${.12 + .22 * L.warm})`); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H); }
     if (L.warm) { ctx.fillStyle = `rgba(255,150,60,${L.warm * .12})`; ctx.fillRect(0, 0, W, H); }
   }
   function hitTest(px, py) { const h = hits.find(h => px >= h.x && px <= h.x + h.w && py >= h.y && py <= h.y + h.h); return h ? h.id : null; }

@@ -1,24 +1,24 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.11",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.12",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
-    espresso:   { name: "Espresso",     level: 1, req: null,        unlockCups: 0,   price: 10, cost: 2, steps: ["grind","dose","tamp","extract"],
+    espresso:   { name: "Espresso", sizes: ["single","double"],     level: 1, req: null,        unlockCups: 0,   price: 10, cost: 2, steps: ["grind","dose","tamp","extract"],
       card: "18 g kahve → 36 g espresso (1:2), 25–30 sn. Ekşi tat = çok hızlı aktı, öğütümü incelt. Acı tat = çok yavaş aktı, öğütümü kabalaştır." },
-    americano:  { name: "Americano",    level: 2, req: "espresso",  unlockCups: 4,  price: 11, cost: 2, needs: ["kettle"], steps: ["grind","dose","tamp","extract","water"],
+    americano:  { name: "Americano", sizes: ["S","M","L"],    level: 2, req: "espresso",  unlockCups: 4,  price: 11, cost: 2, needs: ["kettle"], steps: ["grind","dose","tamp","extract","water"],
       card: "Espresso + sıcak su (1:3). Su üstüne espresso eklenirse krema korunur." },
-    lungo:      { name: "Lungo",        level: 2, req: "espresso",  unlockCups: 8,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 3,
+    lungo:      { name: "Lungo", sizes: ["single","double"],        level: 2, req: "espresso",  unlockCups: 8,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 3,
       card: "Uzun espresso: 18 g → ~54 g (1:3), 35–40 sn. Daha hafif, daha acımsı." },
-    ristretto:  { name: "Ristretto",    level: 2, req: "espresso",  unlockCups: 14,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 1.5,
+    ristretto:  { name: "Ristretto", sizes: ["single","double"],    level: 2, req: "espresso",  unlockCups: 14,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 1.5,
       card: "Kısa espresso: 18 g → ~27 g (1:1,5), 18–22 sn. Daha yoğun, daha tatlı." },
-    macchiato:  { name: "Macchiato",    level: 3, req: "espresso",  unlockCups: 22, price: 13, cost: 3, needs: ["milkKit"], steps: ["grind","dose","tamp","extract","milk"], milk: "dollop",
+    macchiato:  { name: "Macchiato", sizes: ["single","double"],    level: 3, req: "espresso",  unlockCups: 22, price: 13, cost: 3, needs: ["milkKit"], steps: ["grind","dose","tamp","extract","milk"], milk: "dollop",
       card: "Espresso üzerine bir kaşık süt köpüğü. 'Lekelenmiş' demektir." },
-    cortado:    { name: "Cortado",      level: 3, req: "macchiato", unlockCups: 32, price: 15, cost: 3, needs: ["milkKit"], steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
+    cortado:    { name: "Cortado", sizes: ["single","double"],      level: 3, req: "macchiato", unlockCups: 32, price: 15, cost: 3, needs: ["milkKit"], steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
       card: "Espresso ile eşit miktarda süt (1:1), az köpük. Küçük bardakta servis." },
-    latte:      { name: "Caffè latte",  level: 3, req: "macchiato", unlockCups: 44, shop: 2, art: true, price: 16, cost: 4, needs: ["milkKit","boiler"], steps: ["grind","dose","tamp","extract","pressure","milk"], milk: "micro",
+    latte:      { name: "Caffè latte", sizes: ["S","M","L"],  level: 3, req: "macchiato", unlockCups: 44, shop: 2, art: true, price: 16, cost: 4, needs: ["milkKit","boiler"], steps: ["grind","dose","tamp","extract","pressure","milk"], milk: "micro",
       card: "Espresso + bol süt, ince mikro köpük (~1 cm). Latte art bu dokuyla yapılır." },
-    cappuccino: { name: "Cappuccino",   level: 3, req: "macchiato", unlockCups: 58, shop: 2, art: true, price: 17, cost: 4, needs: ["milkKit","boiler","cocoa"], steps: ["grind","dose","tamp","extract","pressure","milk","cocoa"], milk: "foam",
+    cappuccino: { name: "Cappuccino", sizes: ["S","M","L"],   level: 3, req: "macchiato", unlockCups: 58, shop: 2, art: true, price: 17, cost: 4, needs: ["milkKit","boiler","cocoa"], steps: ["grind","dose","tamp","extract","pressure","milk","cocoa"], milk: "foam",
       card: "1/3 espresso, 1/3 süt, 1/3 köpük. Süt 60–65 °C; kalın ama ipeksi köpük." }
   },
 
@@ -90,6 +90,42 @@ window.DATA = {
     boiler:  { name: "Büyük buhar kazanı (makine)",              price: 600, stars: 2, step: "pressure", effect: "Latte ve cappuccino için yüksek basınçlı buhar" },
     cocoa:   { name: "Kakao serpici",                            price: 120, stars: 2, step: "cocoa",    effect: "Cappuccino'nun üstüne kakao" }
   },
+  // §7/§8 – Boyutlar ve bardaklar
+  sizes: {
+    single: { label: "Tek",   say: "",          cup: "espS", bean: 1, milk: 1,   price: 1,    dose: 18 },
+    double: { label: "Double", say: "double",   cup: "espD", bean: 2, milk: 1,   price: 1.7,  dose: 36 },
+    S:      { label: "Küçük", say: "küçük boy", cup: "cupS", bean: 1, milk: 1,   price: 1,    dose: 18 },
+    M:      { label: "Orta",  say: "orta boy",  cup: "cupM", bean: 1, milk: 1.5, price: 1.25, dose: 18 },
+    L:      { label: "Büyük", say: "büyük boy", cup: "cupL", bean: 2, milk: 2,   price: 1.6,  dose: 36 }
+  },
+  cups: {
+    espS: { name: "Espresso fincanı (tek)", pack: 10, price: 10 },
+    espD: { name: "Double fincan",          pack: 10, price: 12 },
+    cupS: { name: "Küçük bardak",           pack: 10, price: 12 },
+    cupM: { name: "Orta bardak",            pack: 10, price: 15 },
+    cupL: { name: "Büyük bardak",           pack: 10, price: 18 }
+  },
+  cupMin: 3, startCups: { espS: 20, espD: 10 },
+  noCupLines: ["Nasıl {s} bardağınız yok?!", "{S} bardak mı bitmiş? Olacak iş değil!", "Bardak yoksa ben de yokum!", "Bu dükkanda {s} bardak bile yok mu?"],
+  wrongLines: ["Ben bunu istemedim!", "Bu benim siparişim değil!", "Yanlış kahve verdin, almıyorum.", "Ben {d} istemiştim!"],
+  // §7 – Sipariş cümleleri ({d} = içecek adı); genel + tipe özel, rastgele seçilir
+  orderLines: {
+    any: ["Bir {d} lütfen.", "Bana bir {d} güzelim.", "Sende {d} var mı?", "Bir {d} alayım.", "{d} yapar mısın?", "Canım {d} istedi.",
+          "Sende var {d}?", "Ben istemek bir {d}.", "Merhaba! Bir {d} rica edebilir miyim?", "Bugün {d} günü, bir tane lütfen.", "Bir {d}, bol sevgili olsun.", "{d} alabilir miyim?"],
+    business: ["Bir {d}, çabuk lütfen.", "Toplantıya geç kalıyorum, bir {d}!", "Hızlıca bir {d} alayım."],
+    student:  ["Abi bir {d}, öğrenci indirimi var mı?", "Abla bir {d} lütfen, sınavım var.", "Bir {d}, hesabı bölüşemiyoruz ama."],
+    elder:    ["Evladım bana bir {d} yapıver.", "Kızım, bir {d} olsun, şekersiz.", "Yavrum bir {d} rica edeyim."],
+    geek:     ["Çekirdek ne? Bir {d} alayım.", "Bugünkü öğütümle bir {d} lütfen.", "Bir {d}, ekstraksiyonu 28 saniye olsun."],
+    regular:  ["Her zamankinden, bir {d}.", "Bildiğin gibi, bir {d}.", "Yine ben! Bir {d} lütfen."]
+  },
+  // §4 – Sipariş sonu değerlendirme: ortalama puana göre etiket ve rastgele müşteri yorumu
+  reviews: [
+    { min: 95, label: "Mükemmel", cls: "perfect", lines: ["İçtiğim en iyi kahve!", "Mükemmel! Her gün geleceğim.", "Bu kahve bir sanat eseri!", "Vay be, tam kıvamında!", "Hayatımın espressosu!"] },
+    { min: 80, label: "Lezzetli", cls: "good", lines: ["Çok lezzetli, eline sağlık!", "Harika olmuş, teşekkürler.", "Güzel kahve, yine gelirim.", "Mis gibi!"] },
+    { min: 60, label: "Ortalama", cls: "ok", lines: ["İdare eder.", "Fena değil.", "Sıradan bir kahve.", "Eh işte, içilir."] },
+    { min: 40, label: "Kötü", cls: "miss", lines: ["Biraz acı olmuş.", "Pek beğenmedim.", "Tadı biraz garip.", "Daha iyisini içmiştim."] },
+    { min: 0,  label: "Berbat", cls: "miss", lines: ["Bunu içemem!", "Berbat olmuş.", "Bir daha gelmem.", "Bu kahve mi şimdi?"] }
+  ],
   // §8 – Varsayılan fiyat ve müşteri tepkisi
   pricing: { markup: 2, neutral: 0.10, all: 0.50, step: 0.05, min: 0.5, max: 2.0 },
   // §8 – Kahve borsası (haftalık)
@@ -155,21 +191,30 @@ window.DATA = {
     art_high:     "Fincan taştı ya da kesim kaydı: desen dağıldı. %80'de bırak, ortadan kes."
   },
 
-  // §10 – Yıldız Teyze metinleri (kısa): açılış yalnızca dükkanın devrini anlatır, gerisi oynadıkça öğrenilir
+  // §10 – Yıldız Teyze metinleri (kısa): açılış dükkanın devrini, kahvelerin espressodan yapıldığını ve tarif defterini anlatır
   tutorial: {
-    intro: "Hoş geldin evladım. Ben Yıldız Teyze. Bu dükkanı yıllardır işletiyorum ama artık yoruldum. Bundan sonra dükkan senin. Gerisini oynadıkça öğrenirsin.",
+    intro: "Hoş geldin evladım. Ben Yıldız Teyze. Bu dükkanı yıllardır işletiyorum ama artık yoruldum; bundan sonra dükkan senin. Bil ki bütün kahveler espressodan yapılır. Gerisini tarif defterimden öğrenirsin, köşede duruyor.",
     milk: "Sütü köpürtürken kâğıt yırtılır gibi hafif bir ses duyarsın. O ses doğru sestir.",
     // §10 ilk kahve öğreticisi: ilk müşteri Yıldız Teyze, adım adım
     first: "İlk kahveyi bana yap bakalım; acelem yok. Sırada dururken bana dokun.",
+    // §10 ilk espresso: Yıldız Teyze her adımı sözlü anlatır
+    espressoIntro: "<b>Önce espresso.</b> Bütün kahvelerin anası odur ve dört adımda yapılır: <b>öğüt, dozla, sıkıştır, çek</b>. Her adımda bir ibre var; ibre tam <b>koyu yeşilde</b> durduğunda basarsın. Bu iş ustalık ister evladım, sabırla öğrenilir.",
     steps: {
-      grind:   "<b>Öğütüyoruz.</b> Çubukta siyah ibre hızla gidip geliyor. Ortadaki küçük koyu yeşil = mükemmel öğütüm; açık yeşil güzel, sarı idare eder. Çok kaba olursa su hızlı geçer, ekşi olur; çok ince olursa tıkanır, acı olur. İbre koyu yeşildeyken büyük <b>ÖĞÜT</b> düğmesine bas.",
-      dose:    "<b>Dozluyoruz.</b> Düğmeyi <b>basılı tut</b>: sepete kahve dolar, terazi artar. İbre <b>18 gramda</b> (koyu yeşil) iken bırak; 24 gramı geçersen taşar.",
-      tamp:    "<b>Sıkıştırıyoruz (tamping).</b> Tamper dairesi büyüyüp küçülüyor. Dairenin siyah kenarı koyu yeşil halkaya geldiği an daireye ya da <b>BASTIR</b>'a dokun. Düz ve eşit basınç.",
-      extract: "<b>Çekiyoruz.</b> <b>BAŞLAT</b>'a bas; ibre saniyeleri sayarak sağa ilerler. Krema koyu baldan açık karamele dönerken, koyu yeşilde (<b>25–30 sn</b>) <b>DURDUR</b>.",
-      milk:    "<b>Süt köpürtüyoruz.</b> Düğmeyi basılı tut: süt ısınır, ibre sağa ilerler. Kâğıt yırtılır gibi hafif sesi duy; ibre koyu yeşildeyken (<b>60–65 °C</b>) bırak.",
+      grind:   "<b>1. Öğütme.</b> Çekirdeği çok kaba öğütürsen su hızlı geçer, kahve ekşi olur; çok ince öğütürsen tıkanır, acı olur. İbre gidip geliyor; tam ortadaki <b>koyu yeşile</b> gelince <b>ÖĞÜT</b>'e bas. Bu sefer ibreyi senin için orada bekleteceğim, sonra kendi gözünle yakalayacaksın.",
+      dose:    "<b>2. Dozlama.</b> Sepete 18 gram kahve koyacağız. Düğmeyi <b>basılı tut</b>; kahve dolar, terazi artar. Sakın erken bırakma, ibre <b>koyu yeşile gelene kadar</b> basılı tut.",
+      tamp:    "<b>3. Tamping.</b> Kahveyi tamperla düz ve eşit sıkıştırırız ki su her yerden aynı hızda geçsin; gevşek kalırsa su kanal açar, kahve sulu olur. Tamper dairesi büyüyüp küçülüyor; siyah kenarı <b>koyu yeşil halkaya</b> gelince daireye ya da <b>BASTIR</b>'a dokun.",
+      extract: "<b>4. Çekme.</b> Portafiltreyi makineye taktık. <b>BAŞLAT</b>'a bas, kahve fincana akmaya başlasın. İbre saniyeleri sayar; <b>koyu yeşile</b> gelince <b>DURDUR</b>.",
+      milk:    "<b>Süt köpürtüyoruz.</b> Düğmeyi basılı tut: süt ısınır, ibre sağa ilerler. İbre koyu yeşildeyken (<b>60–65 °C</b>) bırak.",
       art:     "<b>Latte art.</b> Basılı tut ve sütü dök; ibre doluluğu gösterir, koyu yeşilde bırak. Sonra kesim ibresi gidip gelir: koyu yeşildeyken <b>KES</b>."
     },
+    pressNow:   "<b>İşte şimdi!</b> İbre tam koyu yeşilde. Bas bakalım.",
+    tooEarly:   "Acele etme evladım. İbre <b>koyu yeşile</b> gelsin, öyle bas.",
+    release:    "<b>Şimdi bırak!</b> İbre koyu yeşilde; tam 18 gram oldu.",
+    holdRetry:  "Erken bıraktın, sepet yarım kaldı. Baştan alalım: düğmeyi <b>koyu yeşile gelene kadar</b> bırakmadan basılı tut.",
+    extractRun: "Bak, kahve akıyor. Önce koyu bal rengi gelir, sonra açık karamel rengi bir krema oluşur; güzel espresso böyle akar. İbreyi izle, <b>koyu yeşile</b> gelince durduracağız.",
+    stopNow:    "<b>Şimdi durdur!</b> 25–30 saniye oldu, tam kıvamında.",
 
-    done: "İşte ilk espresson. Gördün mü, para kazandın bile. Bundan sonra müşteriler gerçek: sabırları var, kaçarlarsa itibar düşer. Defterin köşede; hatalarını oraya yazarım."
+
+    done: "Eline sağlık evladım, mis gibi olmuş! İlk espressonu yaptın, ilk paranı da kazandın. Artık ben gideyim; dükkan sana emanet. Müşteriler gerçek, sabırları var. Takıldığında tarif defterime bak."
   }
 };

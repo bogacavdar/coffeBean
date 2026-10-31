@@ -1,5 +1,47 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.12 – 31 Ekim 2026
+
+### Tam ekran ve Android'e yükleme
+- Ana menünün sağ üstünde ve Ayarlar'da **⛶ Tam ekran** düğmesi var.
+- Android'deki "zaten yüklü" hatasının nedeni şuydu: oyun claude.ai sayfasının içinde açılıyordu, bu yüzden Chrome oyunu değil Claude uygulamasını yüklemeye çalışıyordu.
+- Oyun artık kendi adresinden (GitHub Pages) **uygulama olarak yüklenebiliyor**. Tarayıcı izin verirse **📲 Uygulamayı yükle** düğmesi çıkıyor. Yüklenen uygulama tam ekran açılıyor ve kendi ikonu oluyor.
+
+### Dükkan tam ekran
+- Sahnenin kenarlarında siyah boşluk kalmıyor.
+- **☕ Günü başlat** düğmesi sol üstte, sahnenin içinde; ilk gün parlıyor.
+
+### Yıldız Teyze ile ilk espresso
+- Açılışta "Bütün kahveler espressodan yapılır, gerisini tarif defterimden öğrenirsin" diyor.
+- İlk siparişte her adımı sözlü anlatıyor: ibre koyu yeşile gelince "Şimdi!" diyor, erken basarsan "acele etme" diyor.
+- Dozlamada erken bırakırsan adım baştan başlıyor.
+- Çekme sırasında konuşuyor, ilk espressodan sonra vedalaşıp gidiyor.
+
+### Sipariş sonu değerlendirme
+- Son adımdan sonra fincan ve **tüm adımların ortalaması** gösteriliyor (Mükemmel / Lezzetli / Ortalama / Kötü / Berbat).
+- **Teslim et** ya da **Yeniden yap** seçebilirsin. Yeniden yaparken malzeme ve bardak yeniden harcanır.
+- Müşteri puana göre rastgele bir yorum yapıp gidiyor.
+
+### Siparişler, boylar ve bardaklar
+- Müşteriler 10'dan fazla farklı cümleyle ve **boyu söyleyerek** sipariş veriyor ("double espresso", "büyük boy latte" gibi).
+- Boylar:
+  - Espresso, ristretto, lungo, macchiato ve cortado: **Tek** ya da **Double**.
+  - Americano, latte ve cappuccino: **Küçük / Orta / Büyük**.
+- Büyük boylar daha çok çekirdek ve süt harcar, fiyatı da daha yüksek (Double ×1,7; Orta ×1,25; Büyük ×1,6). Double ve Büyük boyda dozlama hedefi 36 g.
+- **Sağ üstteki kart** aktif siparişleri gösteriyor.
+- Siparişi alınca önce **tarifi ve boyu seçiyorsun**, adımlar ona göre geliyor.
+  - Yanlış tarif ya da boy seçersen değerlendirme ekranı uyarıyor.
+  - Yine de teslim edersen müşteri almıyor ve itibar 3 düşüyor.
+- **Her boyun kendi bardağı var:** tek ve double espresso fincanı, küçük, orta ve büyük bardak. Bardaklar Tedarik'ten 10'lu paketle alınıyor (₺10–18).
+  - İstenen boyun bardağı yoksa müşteri "Nasıl büyük boy bardağınız yok?!" diye kızıp gidiyor (itibar −3).
+  - Gerekli her bardak türünden en az 3 adet olmadan gün başlamıyor.
+  - Başlangıçta 20 tek fincan ve 10 double fincan veriliyor.
+- **Tedarik ekranının** üstünde kasadaki para ve mevcut stok yazıyor: çekirdek (kaç shot eder), süt ve bardaklar.
+- Gün sonu hesabında bardak yokluğu ya da yanlış sipariş yüzünden giden müşteri sayısı gösteriliyor.
+
+### Düzeltme
+- Eski kayıtlarda kredi ve süt bilgisinin yüklenmemesine yol açan bir satır hatası düzeltildi.
+
 ## v0.11 – 31 Ekim 2026
 
 ### Gün sonu artık adım adım ekranlarla

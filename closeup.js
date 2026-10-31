@@ -47,7 +47,7 @@ window.CLOSEUP = (() => {
   function dose(g, target = 18) { bg(); shadow(240, H - 64, 110, 12);
     ctx.fillStyle = lg(140, 0, 340, 0, [[0, "#2a2a2d"], [.5, "#55575b"], [1, "#2a2a2d"]]); ctx.beginPath(); ctx.moveTo(150, 120); ctx.lineTo(330, 120); ctx.lineTo(310, 180); ctx.lineTo(170, 180); ctx.closePath(); ctx.fill(); // portafiltre
     ctx.fillStyle = lg(300, 0, 440, 0, [[0, "#2b1a10"], [.4, "#5a3a24"], [1, "#2b1a10"]]); rr(320, 135, 130, 26, 8); ctx.fill();     // sap
-    const fill = Math.min(1, g / 20); const top = 176 - fill * 54;
+    const fill = Math.min(1, g / (target * 1.11)); const top = 176 - fill * 54;
     ctx.fillStyle = lg(0, top, 0, 180, [[0, "#6a4124"], [1, "#2d1a0e"]]); ctx.beginPath(); ctx.moveTo(172 + (1 - fill) * 4, top); ctx.lineTo(308 - (1 - fill) * 4, top); ctx.lineTo(306, 178); ctx.lineTo(174, 178); ctx.closePath(); ctx.fill();
     ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.beginPath(); ctx.ellipse(240, top, 66, 7, 0, 0, Math.PI * 2); ctx.fill();
     if (g > 20) { for (let i = 0; i < 25; i++) { ctx.fillStyle = "#4a2c17"; ctx.beginPath(); ctx.arc(150 + Math.sin(i * 9.3) * 90 + 90, H - 70 + Math.abs(Math.cos(i * 5)) * 10, 2, 0, Math.PI * 2); ctx.fill(); } }

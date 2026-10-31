@@ -7,6 +7,13 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>CoffeBean</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2b1a0e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CoffeBean">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap" rel="stylesheet">
 <style>
@@ -35,7 +42,12 @@
   .icon{width:72px;height:72px;border-radius:20px;background:rgba(251,247,240,.95);border:1px solid var(--cizgi);box-shadow:0 8px 22px rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;font-weight:600;color:var(--kahve);cursor:pointer;position:relative}
   .icon svg{width:36px;height:36px}
   .icon .badge{position:absolute;top:-7px;right:-7px;background:var(--kiremit);color:#fff;border-radius:12px;font-size:12px;padding:2px 8px;font-weight:700}
-  #openDay{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:3;font-size:18px;padding:14px 28px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  #orders{position:fixed;right:16px;top:84px;z-index:6;max-width:min(300px,60vw);background:rgba(246,239,227,.96);color:#3a2a1e;border-radius:14px;padding:10px 14px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-size:14px;line-height:1.35;pointer-events:none}
+  #orders .ord{margin-top:4px}#orders .ord.bad{color:#b5533c}
+  tr.need td{background:rgba(181,83,60,.12)}
+  #openDay{position:fixed;left:16px;top:72px;z-index:3;font-size:19px;font-weight:800;padding:14px 26px;border-radius:16px;box-shadow:0 8px 0 #7d3424,0 12px 30px rgba(0,0,0,.35)}
+  #openDay.glow{animation:dayglow 1.3s ease-in-out infinite}
+  @keyframes dayglow{0%,100%{box-shadow:0 8px 0 #7d3424,0 0 0 0 rgba(255,216,154,.0)}50%{box-shadow:0 8px 0 #7d3424,0 0 0 10px rgba(255,216,154,.75),0 0 40px 12px rgba(255,200,120,.6)}}
   #hint{position:fixed;left:12px;bottom:14px;z-index:2;font-size:12px;color:#f6efe3;background:rgba(0,0,0,.4);padding:4px 10px;border-radius:10px;pointer-events:none}
   /* mini oyun paneli – §11: sahnenin ORTASINDA büyük bir kart, alttan şerit değil */
   #sheet{position:fixed;inset:0;background:rgba(20,14,9,.74);display:none;align-items:center;justify-content:center;padding:16px;z-index:5}
@@ -119,6 +131,8 @@
   #menu button.pri{background:#e6a960;border-color:#e6a960;color:#2b1a0e;font-weight:800;box-shadow:0 6px 0 #9a6431}
   #menu .mrow{display:flex;gap:8px;justify-content:center}#menu .mrow button{font-size:13px;padding:8px 12px;background:rgba(251,247,240,.12);color:#f6efe3;border-color:rgba(255,255,255,.2)}
   #menu .cup{position:absolute;bottom:-10px;right:6vw;width:min(220px,30vw);opacity:.9;pointer-events:none}
+  #menu .mtop{position:absolute;top:12px;right:12px;display:flex;gap:8px;z-index:2}
+  #menu .mtop button{font-size:14px;padding:8px 12px;background:rgba(251,247,240,.14);color:#f6efe3;border-color:rgba(255,255,255,.25)}
   /* kayıt yuvaları */
   .slot{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--cizgi);border-radius:14px;background:#fff;margin:10px 0}
   .slot .num{width:42px;height:42px;border-radius:12px;background:var(--kahve);color:#f7e6c8;display:flex;align-items:center;justify-content:center;font:800 20px "Fraunces",Georgia,serif;flex:none}
@@ -146,7 +160,8 @@
 </div>
 <div id="task" style="display:none"></div>
 <div id="hint" style="display:none"></div>
-<button id="openDay" class="pri" style="display:none">Dükkanı aç</button>
+<button id="openDay" class="pri" style="display:none">☕ Günü başlat</button>
+<div id="orders" style="display:none"></div>
 <div id="icons" style="display:none">
   <div class="icon" id="icBook" title="Kahve Defteri"><svg viewBox="0 0 24 24" fill="none" stroke="#2b2117" stroke-width="1.6"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4z"/><path d="M5 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2"/><path d="M9 8h6M9 12h6"/></svg>Defter</div>
   <div class="icon" id="icShop" title="Dükkan / Tedarik"><svg viewBox="0 0 24 24" fill="none" stroke="#2b2117" stroke-width="1.6"><path d="M4 8h16l-1 12H5L4 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Tedarik<span class="badge" id="shopBadge" style="display:none">!</span></div>
@@ -170,6 +185,7 @@
 <div class="overlay" id="ovSettings"><div class="card" id="settingsCard" style="max-width:420px"></div></div>
 
 <section id="menu">
+  <div class="mtop"><button id="btnInstall" style="display:none">📲 Uygulamayı yükle</button><button id="btnFull">⛶ Tam ekran</button></div>
   <div class="beans" aria-hidden="true"><span class="bean" style="left:6%;animation-duration:14s;animation-delay:-2s;transform:scale(1)"></span><span class="bean" style="left:15%;animation-duration:19s;animation-delay:-9s;transform:scale(0.8)"></span><span class="bean" style="left:24%;animation-duration:16s;animation-delay:-5s;transform:scale(1.2)"></span><span class="bean" style="left:37%;animation-duration:22s;animation-delay:-12s;transform:scale(0.7)"></span><span class="bean" style="left:48%;animation-duration:17s;animation-delay:-3s;transform:scale(1)"></span><span class="bean" style="left:58%;animation-duration:20s;animation-delay:-15s;transform:scale(0.9)"></span><span class="bean" style="left:67%;animation-duration:15s;animation-delay:-7s;transform:scale(1.1)"></span><span class="bean" style="left:76%;animation-duration:23s;animation-delay:-1s;transform:scale(0.75)"></span><span class="bean" style="left:85%;animation-duration:18s;animation-delay:-11s;transform:scale(1)"></span><span class="bean" style="left:93%;animation-duration:21s;animation-delay:-6s;transform:scale(0.85)"></span><span class="bean" style="left:31%;animation-duration:25s;animation-delay:-18s;transform:scale(0.6)"></span><span class="bean" style="left:72%;animation-duration:26s;animation-delay:-20s;transform:scale(0.65)"></span></div>
   <svg class="logo" viewBox="0 0 160 160" aria-hidden="true">
     <defs><radialGradient id="lgBean" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#b07a48"/><stop offset=".55" stop-color="#6b3f1e"/><stop offset="1" stop-color="#3a200e"/></radialGradient>
@@ -201,11 +217,11 @@
   </svg>
 </section>
 <div class="toast" id="toast"></div>
-<script>window.CB_VERSION = "0.11";</script>
-<script src="data.js?v=0.11"></script>
-<script src="audio.js?v=0.11"></script>
-<script src="scene.js?v=0.11"></script>
-<script src="closeup.js?v=0.11"></script>
-<script src="game.js?v=0.11"></script>
+<script>window.CB_VERSION = "0.12";</script>
+<script src="data.js?v=0.12"></script>
+<script src="audio.js?v=0.12"></script>
+<script src="scene.js?v=0.12"></script>
+<script src="closeup.js?v=0.12"></script>
+<script src="game.js?v=0.12"></script>
 </body>
 </html>
