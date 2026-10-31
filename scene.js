@@ -2,7 +2,7 @@
 // Sahne durumu: müşteriler iso koordinatta yürür (pos → target), uçuşan yazılar (fx) burada çizilir.
 window.SCENE = (() => {
   const PAL = { wall: "#e6dccb", wallDark: "#c8bca8", oak: ["#a3784f", "#8d6440", "#7a5536"], counterTop: "#2f2219", counterFront: "#5b4231", steel: "#c9ccd0", steelDark: "#7d8187", shadow: "rgba(25,15,8,.38)" };
-  const TYPE_COLOR = { hurry: ["#355b7d", "#1f3a52"], student: ["#6f8a4a", "#4a6130"], geek: ["#8a5a3a", "#5a3a22"], regular: ["#a0493c", "#6c2f27"], nejla: ["#7a4f7a", "#4e2f4e"] };
+  const TYPE_COLOR = { business: ["#2e3442", "#1a1e28"], elder: ["#9a7f9a", "#6b566b"], student: ["#6f8a4a", "#4a6130"], geek: ["#8a5a3a", "#5a3a22"], regular: ["#a0493c", "#6c2f27"], nejla: ["#7a4f7a", "#4e2f4e"] };
   let cv, ctx, W, H, hits = [], TW = 40, TH = 20, OX = 0, OY = 0, time = 0;
   const COLS = 10, ROWS = 8;
   const DOOR = { x: 8.2, y: 0 };                 // sağ duvardaki kapı (iso koordinat)
@@ -111,9 +111,11 @@ window.SCENE = (() => {
     const g = ctx.createLinearGradient(sx - 12 * s, 0, sx + 12 * s, 0); g.addColorStop(0, c2); g.addColorStop(.45, c1); g.addColorStop(1, c2);
     ctx.fillStyle = g; rr(sx - 12 * s, sy - 50 * s, 24 * s, 34 * s, 9 * s); ctx.fill();                                                                       // gövde
     ctx.fillStyle = "rgba(255,255,255,.12)"; rr(sx - 9 * s, sy - 48 * s, 7 * s, 28 * s, 4 * s); ctx.fill();
+    if (c.type === "business") { ctx.fillStyle = "#f2efe8"; ctx.beginPath(); ctx.moveTo(sx - 5 * s, sy - 50 * s); ctx.lineTo(sx + 5 * s, sy - 50 * s); ctx.lineTo(sx, sy - 42 * s); ctx.fill(); ctx.fillStyle = "#a33a2e"; ctx.beginPath(); ctx.moveTo(sx - 2 * s, sy - 46 * s); ctx.lineTo(sx + 2 * s, sy - 46 * s); ctx.lineTo(sx + 3 * s, sy - 30 * s); ctx.lineTo(sx, sy - 27 * s); ctx.lineTo(sx - 3 * s, sy - 30 * s); ctx.fill(); }
+    if (c.type === "student") { ctx.fillStyle = "#c9962b"; rr(sx + 8 * s, sy - 48 * s, 7 * s, 22 * s, 3 * s); ctx.fill(); }
     const hg = ctx.createRadialGradient(sx - 3 * s, sy - 60 * s, 2, sx, sy - 58 * s, 10 * s); hg.addColorStop(0, "#f3cfae"); hg.addColorStop(1, "#c48a62");
     ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(sx, sy - 58 * s, 9.5 * s, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = c.type === "nejla" ? "#d9d4cc" : "#3a2a22"; ctx.beginPath(); ctx.arc(sx, sy - 61 * s, 9.5 * s, Math.PI, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = (c.type === "nejla" || c.type === "elder") ? "#d9d4cc" : c.type === "student" ? "#6b4a2a" : "#3a2a22"; ctx.beginPath(); ctx.arc(sx, sy - 61 * s, 9.5 * s, Math.PI, Math.PI * 2); ctx.fill();
     if (active) { ctx.strokeStyle = "#ffd89a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(sx, sy + 2, 19 * s, 9 * s, 0, 0, Math.PI * 2); ctx.stroke(); }
     // baloncuk
     if (!c.leaving || c.angry) {
@@ -142,7 +144,7 @@ window.SCENE = (() => {
       ctx.strokeText(f.text, f.x, f.y - f.t * 40); ctx.fillText(f.text, f.x, f.y - f.t * 40); ctx.restore(); }
   }
   // ---- müşteri hareketi ----
-  function queueSlot(i) { return { x: QUEUE0.x + Math.min(i, 3) * .1, y: QUEUE0.y + i * .72 }; }
+  function queueSlot(i) { return { x: QUEUE0.x + Math.min(i, 4) * .18, y: QUEUE0.y + i * 1.15 }; }
   function step(c, dt) {
     const tg = c.target; if (!tg) { c.moving = false; return; }
     const dx = tg.x - c.pos.x, dy = tg.y - c.pos.y, d = Math.hypot(dx, dy), sp = 2.2 * dt;

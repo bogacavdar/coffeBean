@@ -38,12 +38,13 @@ window.DATA = {
     { name: "Kıdemli barista", xp: 350, tol: 0.65, tipMult: 1.2, guide: false }
   ],
 
-  // §7 – Müşteri tipleri (MVP: 4). patience saniye.
+  // §7 – Prototip müşteri tipleri (5). İsim yazılmaz, yalnızca tip (statü) görünür. patience saniye.
   customers: {
-    hurry:   { name: "Acelesi olan",   patience: 20, wants: ["espresso","americano"],            priceSens: 0.8, qualitySens: 0.6, tip: 1.0 },
-    student: { name: "Öğrenci",        patience: 40, wants: ["latte","cappuccino","macchiato"],  priceSens: 1.0, qualitySens: 0.6, tip: 0.5, discount: 0.8 },
-    geek:    { name: "Kahve meraklısı",patience: 50, wants: ["espresso","ristretto","cortado","lungo"], priceSens: 0.2, qualitySens: 1.0, tip: 2.0 },
-    regular: { name: "Düzenli",        patience: 60, wants: null,                                priceSens: 0.5, qualitySens: 0.8, tip: 1.2 }
+    business: { name: "İş adamı",        patience: 18, wants: ["espresso","americano","lungo"],             priceSens: 0.3, qualitySens: 0.7, tip: 2.0 },
+    student:  { name: "Öğrenci",         patience: 55, wants: ["latte","cappuccino","macchiato","americano"], priceSens: 1.0, qualitySens: 0.6, tip: 0.4, discount: 0.8 },
+    elder:    { name: "Yaşlı teyze",     patience: 70, wants: ["macchiato","cortado","latte","espresso"],    priceSens: 0.6, qualitySens: 0.7, tip: 1.0 },
+    geek:     { name: "Kahve meraklısı", patience: 40, wants: ["espresso","ristretto","cortado","lungo"],    priceSens: 0.2, qualitySens: 1.0, tip: 1.6 },
+    regular:  { name: "Düzenli müşteri", patience: 50, wants: null,                                         priceSens: 0.5, qualitySens: 0.8, tip: 1.2 }
   },
 
   // §6 – Çekirdekler (MVP: 2). qualityMod kaliteyi etkiler; tolMod espresso aralığını.

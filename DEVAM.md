@@ -87,6 +87,13 @@ Her sayısal değişiklik (gün uzunluğu, müşteri sayısı, XP eşikleri, unl
 ### Doküman eşleşme kontrolü (Kural 2) – v0.5
 Tüm sayısal/arayüz değişiklikleri (fiyatlar, panel konumu/boyutu, ikon boyutu, ses + ayarlar) önce §8/§11'e kalibrasyon notu olarak eklendi, sonra kodlandı. Ek doküman dışı mekanik yok.
 
+## v0.6 – 31 Ekim 2026 (ses yeniden + defter resimleri + isimsiz müşteri tipleri)
+Doküman önce güncellendi (§3, §7, §11 → rev 27, HTML iletildi), sonra kod:
+- `audio.js` baştan yazıldı: lo-fi caz müzik (Fmaj9→Em9→Dm9→Cmaj9, FM elektrik piyano, sıcak bas, fırça davul, swing, plak cızırtısı, yankı, ~70 BPM, ileri-zamanlı zamanlayıcı). Efektler: öğütücü motoru + çekirdek kırılması, dozlama, tamping gümbürtüsü, ekstraksiyon boyunca sürekli pompa + akış, süt buharı sürekli (hava = kâğıt yırtılma), satışta yazar kasa "çın" + bozuk para.
+- Sekme arka plana geçince (`visibilitychange`/`pagehide`) AudioContext askıya alınıyor; dönünce devam.
+- Defter: her tarifin SVG kesit resmi; öğrenilmemiş tarifler gri silüet + "???" + XP eşiği.
+- Müşteriler isimsiz, yalnızca tip etiketi: İş adamı (18 sn, bahşiş ×2), Öğrenci (55 sn, ×0,4, %20 indirim), Yaşlı teyze (70 sn, ×1), Kahve meraklısı (40 sn, ×1,6), Düzenli müşteri (50 sn, ×1,2). İş adamına kravat, öğrenciye çanta, teyzeye gri saç eklendi; kuyruk aralığı açıldı (etiketler binmesin).
+
 ## Sonraki adımlar
 1. Prototipi test et, hataları gider.
 2. Kullanıcı geri bildirimine göre dokümanı güncelle → HTML'i yeniden ilet → kodu eşle.
