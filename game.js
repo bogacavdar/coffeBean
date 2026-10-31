@@ -222,6 +222,8 @@ function tick(now) {
         day.toSpawn--; day.nextSpawn += day.spawnEvery * rnd(0.6, 1.4);
       }
       queueOf().forEach(c => { if (c.patienceMax) c.patience -= dt; });
+      day.orders.slice().forEach(o => { const c = o.cust; if (!c.patienceMax || c.leaving) return; c.patience -= dt; if (c.patience <= 0) leave(c, true); });   // §7 hazırlarken de sabır azalır; biterse sipariş iptal
+      updOrderBars();
       queueOf().filter(c => c.patienceMax && c.patience <= 0).forEach(leave);
     }
     day.orders.forEach((o, i) => { if (o.selecting) return; if (o.autoRun) autoTick(o, dt, i === day.active); else if (i === day.active) stepTick(o, dt); });
@@ -257,13 +259,14 @@ function spawnCustomer() {
   day.customers.push({ id: day.id++, type, name: ct.name, drink, size, patience: pat, patienceMax: pat,
     pos: { x: SCENE.DOOR.x, y: SCENE.DOOR.y }, target: null, moving: false });
 }
-function leave(c) {
-  c.leaving = true; c.angry = true;
+function leave(c, cancelled) {
+  c.leaving = true; c.angry = true; c.ordered = false;
   day.orders = day.orders.filter(o => o.cust !== c); day.active = 0; renderOrders();
   S.rep = Math.max(0, S.rep - 5); day.stats.left++; S.streak = 0;            // §7 kaçan müşteri seriyi sıfırlar
   if (day.task && day.task.kind === "noLeave" && !day.task.done) { day.task.failed = true; }
   SCENE.addFx(c, "−5", "#b5533c"); AUDIO.stopLoops(); AUDIO.sfx("sad");
-  toast(c.name + " beklemekten vazgeçti (−5 itibar)"); renderBench(); renderHUD();
+  if (cancelled) { c.say = "Bu kadar beklenmez! İptal!"; c.sayUntil = performance.now() + 2600; }
+  toast(c.name + (cancelled ? ": sipariş çok uzadı, iptal etti (−5 itibar)" : " beklemekten vazgeçti (−5 itibar)")); renderOrders(); renderBench(); renderHUD();
 }
 function takeOrder(id) {
   const c = day.customers.find(x => x.id === id && !x.ordered && !x.leaving); if (!c) return;
@@ -283,6 +286,7 @@ function takeOrder(id) {
     if (r === "cheap") { c.say = "Ne kadar ucuz!"; c.sayUntil = performance.now() + 1800; SCENE.addFx(c, "Ucuz!", "#9cc77a"); } else c.say = null;
   }
   c.ordered = true;
+  if (c.patienceMax) { c.patience += c.patienceMax * 0.5; c.patienceTop = c.patience; }   // §7 sipariş başlayınca sabır +%50
   const o = { cust: c, drink: c.drink, size: c.size, i: 0, scores: {}, phase: "ready", v: 0, dir: 1, start: null, tutorial: c.type === "nejla", selecting: true, sel: { drink: null, size: null }, all: [], steps: [], auto: new Set() };
   if (o.tutorial) prepareOrder(o, "espresso", "single");                         // §7 öğreticide seçim kendiliğinden
   day.orders.push(o); day.active = day.orders.length - 1; renderOrders();
@@ -318,7 +322,15 @@ function renderOrders() {
   const list = day ? day.orders : [];
   if (!list.length) { el.style.display = "none"; return; }
   el.style.display = "block";
-  el.innerHTML = `<b>Siparişler</b>` + list.map(o => `<div class="ord${o.mismatch ? " bad" : ""}">${o.cust.name}: <b>${cap1(sizedName(o.cust.drink, o.cust.size))}</b>${o.selecting ? " · seçim" : o.mismatch ? " · ⚠ yanlış" : ""}</div>`).join("");
+  el.innerHTML = `<div class="ohead">Siparişler</div>` + list.map((o, i) => `<div class="ord${o.mismatch ? " bad" : ""}"><div class="oname">${o.cust.name}</div>
+    <div class="odrink"><b>${D.drinks[o.cust.drink].name}</b><span class="osize">${SZ(o.cust.size).label}</span></div>
+    ${o.selecting ? '<div class="ostate">tarif ve boy seç</div>' : o.mismatch ? '<div class="ostate">⚠ yanlış seçim</div>' : ""}
+    ${o.cust.patienceMax ? `<div class="opat"><i id="opat${i}"></i></div>` : ""}</div>`).join("");
+  updOrderBars();
+}
+function updOrderBars() {                                                         // §7 kartta kalan sabır çubuğu
+  if (!day) return; day.orders.forEach((o, i) => { const b = document.getElementById("opat" + i), c = o.cust; if (!b || !c.patienceMax) return;
+    const p = clamp(c.patience / (c.patienceTop || c.patienceMax * 1.5), 0, 1); b.style.width = (p * 100).toFixed(1) + "%"; b.style.background = p < .3 ? "#b5533c" : p < .6 ? "#e0a93a" : "#5f9a4b"; });
 }
 
 // ---------- Mini oyunlar (§4) ----------

@@ -7,8 +7,13 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.13)
+## Bekleyen paket (son yayın: v0.14)
 (boş)
+
+## v0.14 – YAYINLANDI (31 Ekim 2026, kullanıcı "yayınla" dedi)
+Doküman rev 67. Test yapılmadı (Kural 7).
+- **Hazırlarken sabır:** `takeOrder` sabra +%50 (`c.patienceTop`); `tick` sipariş verenlerin sabrını da düşürür, biterse `leave(c, true)` (iptal, −5, "Bu kadar beklenmez! İptal!").
+- **Sipariş kartı büyüdü:** tarif adı + ayrı boy etiketi (`.osize`, Tek/Double/Küçük/Orta/Büyük) + sabır çubuğu (`updOrderBars`).
 
 ## v0.13 – YAYINLANDI (31 Ekim 2026, kullanıcı "hepsini yap paket çık" dedi)
 Doküman rev 66 (HTML dışa aktarımdan yenilendi). Oyun testi yapılmadı (Kural 7); yalnız sözdizimi ve sahne/küçük resim çiziminin hata vermediği kontrol edildi.

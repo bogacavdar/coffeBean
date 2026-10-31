@@ -1,5 +1,15 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.14 – 31 Ekim 2026
+
+### Sabır ve sipariş kartı
+- **Hazırlarken sabır:**
+  - Siparişe başlayınca müşterinin sabrına başlangıç sabrının %50'si kadar süre eklenir.
+  - Sabır hazırlarken de azalır. Teslim etmeden biterse müşteri "Bu kadar beklenmez! İptal!" deyip gider (itibar −5); kullanılan bardak ve malzeme geri gelmez.
+- **Sipariş kartı (sağ üst) büyüdü:**
+  - Tarif adı büyük yazıyor, yanında ayrı bir boy etiketi var (Tek / Double / Küçük / Orta / Büyük). Tek espresso da "Tek" diye açıkça görünüyor.
+  - Altında kalan sabrı gösteren renkli bir çubuk var (yeşil → sarı → kırmızı).
+
 ## v0.13 – 31 Ekim 2026
 
 ### Dükkan artık dolu ve canlı
