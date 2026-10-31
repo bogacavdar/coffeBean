@@ -93,11 +93,35 @@ window.CLOSEUP = (() => {
     ctx.font = "11px system-ui"; ctx.fillText(air ? "hava veriliyor" : "girdap", 240, 212); gauge(40, 228, 180, tex / (texTarget * 2), .35, .65, "doku");
   }
   // ---- Servis yakın planı: fincan üstten, krema/köpük
-  function cupTop(quality, milky) { bg(); ctx.fillStyle = rg(236, 120, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 125, 88, 0, Math.PI * 2); ctx.fill();
+  function heartShape(cx, cy, r, color) {
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(cx, cy + r * .9);
+    ctx.bezierCurveTo(cx - r * 1.3, cy + r * .1, cx - r * .9, cy - r * .95, cx, cy - r * .35);
+    ctx.bezierCurveTo(cx + r * .9, cy - r * .95, cx + r * 1.3, cy + r * .1, cx, cy + r * .9); ctx.fill();
+  }
+  // ---- Latte art (§5): üstten fincan, dökülen süt beyaz daire olarak büyür; sonra kesim çizgisi
+  function art(fill, mark) { bg();
+    ctx.fillStyle = rg(236, 120, 10, 96, [[0, "#ffffff"], [1, "#cfc8bd"]]); ctx.beginPath(); ctx.arc(240, 125, 94, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#e7e1d7"; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(352, 125, 20, -1.1, 1.1); ctx.stroke();       // kulp
+    ctx.fillStyle = rg(232, 118, 5, 78, [[0, "#c58a4c"], [.7, "#9a6230"], [1, "#5d3516"]]); ctx.beginPath(); ctx.arc(240, 125, 78, 0, Math.PI * 2); ctx.fill();   // krema
+    const f = Math.max(0, Math.min(100, fill)) / 100, r = 8 + f * 62;
+    ctx.fillStyle = "rgba(205,160,110,.55)"; ctx.beginPath(); ctx.arc(240, 125, Math.min(78, r + 10), 0, Math.PI * 2); ctx.fill();   // karışan süt
+    ctx.save(); ctx.beginPath(); ctx.arc(240, 125, 78, 0, Math.PI * 2); ctx.clip();
+    ctx.fillStyle = rg(236, 120, 2, r, [[0, "#fffdf8"], [1, "#f1e6d4"]]); ctx.beginPath(); ctx.arc(240, 125 + (1 - f) * 10, r * .62, 0, Math.PI * 2); ctx.fill();   // beyaz daire
+    if (mark != null) {
+      const x = 170 + mark * 140; ctx.fillStyle = "rgba(111,125,74,.25)"; ctx.fillRect(228, 40, 24, 170);
+      ctx.strokeStyle = "#b5533c"; ctx.lineWidth = 3; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.moveTo(x, 42); ctx.lineTo(x, 208); ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.restore();
+    if (fill > 0 && mark == null) { ctx.strokeStyle = "rgba(255,253,248,.9)"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(240, 10); ctx.quadraticCurveTo(246, 60, 240, 125); ctx.stroke(); }   // süt akışı
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 15px system-ui"; ctx.textAlign = "left"; ctx.fillText("%" + Math.round(Math.min(100, fill)), 360, 60);
+    gauge(40, 228, 400, Math.min(100, fill) / 100, .65, .80, mark == null ? "doluluk: %65–80'de bırak" : "kesim: çizgi yeşil bantta iken dokun");
+  }
+  function cupTop(quality, milky, heart) { bg(); ctx.fillStyle = rg(236, 120, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 125, 88, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = milky ? rg(232, 118, 5, 74, [[0, "#f7f1e6"], [.7, "#e9dcc6"], [1, "#b8824a"]]) : rg(232, 118, 5, 74, [[0, "#d9a86a"], [.6, "#b77a3c"], [1, "#6a3d1a"]]);
     ctx.beginPath(); ctx.arc(240, 125, 74, 0, Math.PI * 2); ctx.fill();
     if (!milky) { ctx.fillStyle = "rgba(255,255,255,.18)"; for (let i = 0; i < 60; i++) { ctx.beginPath(); ctx.arc(240 + Math.sin(i * 9.1) * 60, 125 + Math.cos(i * 4.7) * 60, 1 + (i % 3) * .6 * (quality / 100), 0, Math.PI * 2); ctx.fill(); } }
+    if (heart) { heartShape(240, 122, 34, "#fffaf2"); heartShape(240, 122, 22, "rgba(233,214,190,.6)"); }
     ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; ctx.fillText("Kalite " + quality, 240, 235);
   }
-  return { init, grind, dose, tamp, extract, milk, cupTop };
+  return { init, grind, dose, tamp, extract, milk, art, cupTop };
 })();

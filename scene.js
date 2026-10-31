@@ -25,7 +25,7 @@ window.SCENE = (() => {
   function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
   function daylight(t) { const k = Math.sin(Math.PI * Math.min(1, Math.max(0, t))); return { k, warm: t > .72 ? (t - .72) / .28 : 0, sky: `rgb(${Math.round(140 + 90 * k - 40 * (t > .8 ? t - .8 : 0) * 5)},${Math.round(165 + 60 * k)},${Math.round(205 + 30 * k)})` }; }
 
-  function room(L) {
+  function room(L, st = {}) {
     // zemin: meşe tahtalar (x yönünde uzun), damar çizgileri
     for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
       const c = PAL.oak[(x * 3 + y * 5) % 3]; const dark = 1 - (x + y) / (COLS + ROWS) * .25;
@@ -59,6 +59,7 @@ window.SCENE = (() => {
     // raf + çekirdek torbaları (sol duvar)
     poly([iso(0, 5.2, 80), iso(0.45, 5.2, 80), iso(0.45, 7.6, 80), iso(0, 7.6, 80)], "#7a5536"); poly([iso(0, 5.2, 76), iso(0.45, 5.2, 76), iso(0.45, 7.6, 76), iso(0, 7.6, 76)], "#5c3f28");
     for (let i = 0; i < 4; i++) prism(.05, 5.35 + i * .55, .35, .4, 26, i % 2 ? "#c9a46a" : "#b89055", "#8f6e3f", i % 2 ? "#a98a52" : "#9a7746", 80);
+    if (st.assistant) staff(.42, 2.2, st.asstBusy);                 // §8 yardımcı barista: tezgâhın arkasında
     // tezgâh (sol duvara paralel)
     shadowE(1.7, 3.6, TW * 2.4, TW * 1.1);
     prism(1, 1, 1.3, 5.0, 40, PAL.counterTop, PAL.counterFront, "#4a3327");
@@ -67,7 +68,7 @@ window.SCENE = (() => {
     // tezgâh ön paneli ahşap çıtalar
     ctx.strokeStyle = "rgba(0,0,0,.18)"; for (let i = 0; i < 12; i++) { const a = iso(2.3, 1 + i * .42, 2), b = iso(2.3, 1 + i * .42, 38); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
   }
-  function furniture(level, slots) {
+  function furniture(level, slots, st = {}) {
     // espresso makinesi + grup kafası + fincanlar
     machine(1.05, 1.25); if (slots > 1) machine(1.05, 2.75);
     prism(1.25, 4.5, .5, .5, 24, "#2a2a2e", "#111113", "#3a3a3f", 40);             // öğütücü
@@ -84,12 +85,36 @@ window.SCENE = (() => {
     });
     // bitkiler
     plant(.5, 7.2); if (level >= 2) plant(9.2, 7.0); if (level >= 3) plant(9.2, 1.2);
+    const dec = st.decor || {};
+    if (st.superAuto) { prism(1.1, 3.5, .9, .85, 34, "#2b2b30", "#121214", "#3a3a40", 40);              // §8 süper otomatik makine
+      const [sx, sy] = iso(1.55, 4.35, 62); ctx.fillStyle = "#7fd3ff"; ctx.globalAlpha = .8; rr(sx - 7, sy - 5, 14, 9, 2); ctx.fill(); ctx.globalAlpha = 1; }
+    if (dec.plant) { prism(4.9, 7.2, .7, .7, 26, "#b07a48", "#7a5232", "#8f6440"); const [px, py] = iso(5.25, 7.55, 26);   // §8 dekor: büyük bitki
+      for (let i = 0; i < 14; i++) { ctx.fillStyle = i % 3 ? "#4f7a3a" : "#77a656"; ctx.beginPath(); ctx.ellipse(px + Math.cos(i * 1.1) * TW * .3, py - 18 - Math.abs(Math.sin(i * 1.9)) * TW * .55, TW * .18, TW * .42, i * .7, 0, Math.PI * 2); ctx.fill(); } }
+    if (dec.lamp) { shadowE(.5, 6.3, TW * .5, TW * .25); prism(.45, 6.25, .1, .1, 110, "#3a2c22", "#21180f", "#2c2018");   // ayaklı lamba
+      const [lx, ly] = iso(.5, 6.3, 118); const g = ctx.createRadialGradient(lx, ly + 10, 2, lx, ly + 10, TW * 2); g.addColorStop(0, "rgba(255,214,150,.55)"); g.addColorStop(1, "rgba(255,214,150,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(lx, ly + 10, TW * 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f3dfb8"; ctx.beginPath(); ctx.moveTo(lx - 14, ly + 8); ctx.lineTo(lx + 14, ly + 8); ctx.lineTo(lx + 8, ly - 12); ctx.lineTo(lx - 8, ly - 12); ctx.closePath(); ctx.fill(); }
+    if (dec.record) { prism(6.9, .15, .9, .6, 34, "#7a5536", "#55391f", "#664629");                 // pikap dolabı
+      prism(7.0, .22, .7, .45, 5, "#2a2420", "#171310", "#201a16", 34); const [rx, ry] = iso(7.32, .44, 40);
+      ctx.fillStyle = "#111"; ctx.beginPath(); ctx.ellipse(rx, ry, TW * .26, TH * .26, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#b5533c"; ctx.beginPath(); ctx.ellipse(rx, ry, TW * .07, TH * .07, 0, 0, Math.PI * 2); ctx.fill(); }
+
     // sarkıt lambalar
     [[3.0, 3.0], [6.0, 4.0]].forEach(([x, y]) => { const [lx, ly] = iso(x, y, 150), [bx, by] = iso(x, y, 120);
       ctx.strokeStyle = "#2b2117"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(lx, ly - 40); ctx.lineTo(bx, by); ctx.stroke();
       const g = ctx.createRadialGradient(bx, by + 8, 2, bx, by + 8, TW * 1.4); g.addColorStop(0, "rgba(255,225,170,.55)"); g.addColorStop(1, "rgba(255,225,170,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bx, by + 8, TW * 1.4, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#1f1a16"; ctx.beginPath(); ctx.moveTo(bx - 12, by + 4); ctx.lineTo(bx + 12, by + 4); ctx.lineTo(bx + 6, by - 10); ctx.lineTo(bx - 6, by - 10); ctx.closePath(); ctx.fill();
       ctx.fillStyle = "#ffe6b0"; ctx.beginPath(); ctx.ellipse(bx, by + 4, 11, 3, 0, 0, Math.PI * 2); ctx.fill(); });
+  }
+  function staff(x, y, busy) {                                     // yardımcı barista: önlüklü, tezgâhın arkasında
+    const [sx, sy] = iso(x, y), s = TW / 40, bob = busy ? Math.sin(time * 8) * 1.5 * s : 0;
+    ctx.fillStyle = PAL.shadow; ctx.beginPath(); ctx.ellipse(sx, sy + 2, 14 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#2b2117"; rr(sx - 8 * s, sy - 20 * s, 6 * s, 20 * s, 3); ctx.fill(); rr(sx + 2 * s, sy - 20 * s, 6 * s, 20 * s, 3); ctx.fill();
+    ctx.fillStyle = "#f2ece2"; rr(sx - 12 * s, sy - 50 * s + bob, 24 * s, 34 * s, 9 * s); ctx.fill();
+    ctx.fillStyle = "#5b4231"; rr(sx - 9 * s, sy - 42 * s + bob, 18 * s, 26 * s, 4 * s); ctx.fill();          // önlük
+    ctx.fillStyle = "#e8bf98"; ctx.beginPath(); ctx.arc(sx, sy - 58 * s + bob, 9.5 * s, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#2a1c14"; ctx.beginPath(); ctx.arc(sx, sy - 61 * s + bob, 9.5 * s, Math.PI, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.font = `600 ${11 * s}px system-ui`; ctx.textAlign = "center"; ctx.shadowColor = "rgba(0,0,0,.7)"; ctx.shadowBlur = 3; ctx.fillText(busy ? "Yardımcı · hazırlıyor" : "Yardımcı", sx, sy - 74 * s); ctx.shadowBlur = 0;
   }
   function machine(x, y) {
     prism(x, y, 1.05, 1.25, 30, PAL.steel, PAL.steelDark, "#aeb2b7", 40);
@@ -154,7 +179,7 @@ window.SCENE = (() => {
     if (!cv) return; size(); time += dt; hits = [];
     const { customers = [], orders = [], t = .3, level = 1, slots = 1 } = state; const L = daylight(t);
     ctx.fillStyle = "#1c1713"; ctx.fillRect(0, 0, W, H);
-    room(L); furniture(level, slots);
+    room(L, state); furniture(level, slots, state);
     customers.forEach(c => step(c, dt));
     [...customers].sort((a, b) => (a.pos.x + a.pos.y) - (b.pos.x + b.pos.y)).forEach(c => person(c, orders.some(o => o.cust === c)));
     drawFx(dt);

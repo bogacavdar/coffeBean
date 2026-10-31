@@ -15,9 +15,9 @@ window.DATA = {
       card: "Espresso üzerine bir kaşık süt köpüğü. 'Lekelenmiş' demektir." },
     cortado:    { name: "Cortado",      level: 3, req: "macchiato", unlockXp: 150, price: 15, cost: 3, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
       card: "Espresso ile eşit miktarda süt (1:1), az köpük. Küçük bardakta servis." },
-    latte:      { name: "Caffè latte",  level: 3, req: "macchiato", unlockXp: 195, price: 16, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
+    latte:      { name: "Caffè latte",  level: 3, req: "macchiato", unlockXp: 195, shop: 2, art: true, price: 16, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
       card: "Espresso + bol süt, ince mikro köpük (~1 cm). Latte art bu dokuyla yapılır." },
-    cappuccino: { name: "Cappuccino",   level: 3, req: "macchiato", unlockXp: 245, price: 17, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "foam",
+    cappuccino: { name: "Cappuccino",   level: 3, req: "macchiato", unlockXp: 245, shop: 2, art: true, price: 17, cost: 4, steps: ["grind","dose","tamp","extract","milk"], milk: "foam",
       card: "1/3 espresso, 1/3 süt, 1/3 köpük. Süt 60–65 °C; kalın ama ipeksi köpük." }
   },
 
@@ -27,7 +27,8 @@ window.DATA = {
     dose:    { name: "Dozlama",      hint: "Basılı tut, 18 g'da bırak (±0,5 g)." },
     tamp:    { name: "Tamping",      hint: "Halka yeşil banda gelince tek tıkla bas." },
     extract: { name: "Ekstraksiyon", hint: "Akışı izle; 25–30 sn ve ~36 g'da durdur." },
-    milk:    { name: "Süt köpürtme", hint: "Basılı tut: önce hava, sonra girdap. 60–65 °C'de bırak." }
+    milk:    { name: "Süt köpürtme", hint: "Basılı tut: önce hava, sonra girdap. 60–65 °C'de bırak." },
+    art:     { name: "Latte art",    hint: "Basılı tut, fincan %65–80 dolunca bırak; sonra işaret ortaya gelince dokun." }
   },
 
   // §9 – Barista rütbesi: kabul aralıkları. tol = hedefin etrafındaki tolerans çarpanı.
@@ -55,23 +56,49 @@ window.DATA = {
       page: "Yıkanmış işleme, 1.200–2.000 m rakım. Temiz ve dengeli; meraklı müşteriler bunu arar." }
   },
 
-  // §8 – Ekipman (MVP: ilk 4 satın alınabilir ekipman). Prototip kalibrasyonu: ilk seviye daha ulaşılabilir olsun diye fiyatlar düşürüldü.
+  // §8 – Ekipman + otomasyon (prototip). stars = gereken dükkan seviyesi; auto = otomatik yaptığı adımlar (sabit 85 puan).
   equipment: {
-    dualGroup:  { name: "Çift gruplu makine",   price: 700, effect: "2 paralel sipariş" },
-    autoGrind:  { name: "Otomatik öğütücü",     price: 350, effect: "Öğütme adımı atlanır, sabit 85 puan" },
-    scaleTamp:  { name: "Tartılı tamper",       price: 180, effect: "Tamping aralığı genişler" },
-    steamWand:  { name: "Buhar çubuğu yükseltmesi", price: 300, effect: "Süt köpürtme 2 sn kısalır" }
+    autoGrind:   { name: "Otomatik öğütücü",          price: 350,  stars: 1, auto: ["grind"], effect: "Öğütme otomatik (85 puan)" },
+    scaleGrind:  { name: "Tartılı öğütücü",           price: 400,  stars: 1, auto: ["dose"],  effect: "Dozlama otomatik (85 puan)" },
+    scaleTamp:   { name: "Tartılı tamper",            price: 180,  stars: 1, effect: "Tamping aralığı genişler" },
+    steamWand:   { name: "Buhar çubuğu yükseltmesi",  price: 300,  stars: 1, effect: "Süt köpürtme hızlanır" },
+    autoTamp:    { name: "Otomatik tamper",           price: 450,  stars: 2, auto: ["tamp"],  effect: "Tamping otomatik (85 puan)" },
+    dualGroup:   { name: "Çift gruplu makine",        price: 700,  stars: 2, effect: "2 paralel sipariş" },
+    fridge:      { name: "Süt buzdolabı",             price: 400,  stars: 2, effect: "Süt 3 gün dayanır" },
+    superAuto:   { name: "Süper otomatik espresso makinesi", price: 2500, stars: 3, auto: ["grind","dose","tamp","extract"], effect: "Espressonun tüm adımları tek tuş (85 puan)" },
+    autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  effect: "Süt adımı otomatik (85 puan)" }
+  },
+  // §8 – Personel (prototip)
+  staff: { assistant: { name: "Yardımcı barista", stars: 2, wage: 40, prepTime: 7, score: 85, effect: "Kuyruktaki sütsüz siparişleri kendisi hazırlar" } },
+  // §8 – Dekor (prototip): alınan dekor dükkanda görünür
+  decor: {
+    plant:  { name: "Büyük bitki",   price: 120, effect: "Günde +1 itibar", rep: 1 },
+    lamp:   { name: "Ayaklı lamba",  price: 200, effect: "Bahşiş ×1,1", tip: 1.1 },
+    record: { name: "Pikap",         price: 350, effect: "Müşteri sabrı ×1,15", patience: 1.15 }
   },
 
+
   // §8 – Ekonomi
-  economy: { startMoney: 300, weeklyRent: 200, beanPerCup: 0.018 /* kg */, milkPrice: 15 /* ₺/L */, milkPerCup: 0.2 /* L */, minBeans: 0.3, minMilk: 1, milkShelfDays: 3 },
+  economy: { startMoney: 300, beanPerCup: 0.018 /* kg */, milkPrice: 15 /* ₺/L */, milkPerCup: 0.2 /* L */, minBeans: 0.3, minMilk: 1, milkShelfDays: 3, autoScore: 85, loanInterest: 0.10, loanDailyCut: 0.20 },
 
   // §9 – Dükkan seviyeleri (MVP: 3). Prototip kalibrasyonu: günlük müşteri sayısı azaltıldı (gün kısa ve odaklı kalsın).
   shopLevels: [
-    { stars: 1, name: "Köşe büfesi",        money: 0,    rep: 0,   customersPerDay: 6 },
-    { stars: 2, name: "Mahalle kahvecisi",  money: 1500, rep: 100, customersPerDay: 9 },
-    { stars: 3, name: "Semt favorisi",      money: 5000, rep: 250, customersPerDay: 13 }
+    { stars: 1, name: "Köşe büfesi",        money: 0,    rep: 0,   customersPerDay: 6, rent: 150, loanLimit: 600 },
+    { stars: 2, name: "Mahalle kahvecisi",  money: 1500, rep: 100, customersPerDay: 9, rent: 350, loanLimit: 1500 },
+    { stars: 3, name: "Semt favorisi",      money: 5000, rep: 250, customersPerDay: 13, rent: 700, loanLimit: 3000 }
   ],
+
+  // §2 – Hafta
+  weekdays: ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"],
+  // §7 – Günlük görevler (prototip). {n} sayı, {d} içecek adı
+  tasks: [
+    { kind: "serveDrink", text: "Bugün {n} {d} sat", n: [2, 3], money: 40, xp: 20 },
+    { kind: "perfect",    text: "{n} mükemmel servis yap", n: [1, 2], money: 50, xp: 25 },
+    { kind: "noLeave",    text: "Hiç müşteri kaçırma", money: 60, xp: 30 },
+    { kind: "earn",       text: "Bugün {n}₺ kazan", n: [60, 90], money: 40, xp: 20 }
+  ],
+  // §7 – Mükemmel seri: her ardışık mükemmel servis +0,1 bahşiş çarpanı, en fazla ×1,5
+  streak: { step: 0.1, max: 1.5 },
 
   // §4 – "Her hata bir ders verir": Kahve Defteri ipuçları
   tips: {
@@ -84,7 +111,9 @@ window.DATA = {
     extract_low:  "Çok erken durdurdun: az ekstraksiyon, ekşi ve ince.",
     extract_high: "Çok geç durdurdun: fazla ekstraksiyon, acı ve kuru.",
     milk_low:     "Süt soğuk kaldı: köpük tutmaz. 60 °C'yi bekle.",
-    milk_high:    "Süt kaynadı: tatlılık gider, kabarcıklar irileşir. 65 °C'yi geçme."
+    milk_high:    "Süt kaynadı: tatlılık gider, kabarcıklar irileşir. 65 °C'yi geçme.",
+    art_low:      "Döküm erken bitti: kalbin tabanı küçük kaldı. %65'e kadar doldur.",
+    art_high:     "Fincan taştı ya da kesim kaydı: desen dağıldı. %80'de bırak, ortadan kes."
   },
 
   // §10 – Nejla Teyze eğitim metinleri (kısa, atlanabilir)
@@ -99,6 +128,7 @@ window.DATA = {
       dose:    "<b>Dozluyoruz.</b> Düğmeyi basılı tut; sepet dolarken tartıyı izle. <b>18 gramda</b> bırak.",
       tamp:    "<b>Sıkıştırıyoruz (tamping).</b> Halka büyüyüp küçülüyor; yeşil banda geldiği an fincanın üstüne bir kez dokun. Düz ve eşit basınç.",
       extract: "<b>Çekiyoruz.</b> Başlat'a bas, akışı izle. Krema koyu baldan açık karamele dönerken, <b>25–30 saniyede ve ~36 gramda</b> Durdur.",
+      art:     "<b>Latte art.</b> Basılı tut ve fincanı doldur; beyaz daire büyür. %65–80 arasında bırak, sonra kayan çizgi ortaya gelince dokun: kalbin ucu kesilir.",
       milk:    "<b>Süt köpürtüyoruz.</b> Basılı tut: önce yüzeyde hava ver (kâğıt yırtılma sesi), sonra parmağını aşağı kaydırıp girdap yap. <b>60–65 °C</b>'de bırak."
     },
     done: "İşte ilk espresson. Gördün mü, para kazandın bile. Bundan sonra müşteriler gerçek: sabırları var, kaçarlarsa itibar düşer. Defterin köşede; hatalarını oraya yazarım."

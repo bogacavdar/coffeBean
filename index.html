@@ -19,6 +19,11 @@
   #hud .pill{background:rgba(0,0,0,.4);padding:6px 14px;border-radius:14px;border:1px solid rgba(255,216,154,.25)}
   #hud .pill.money b{color:#8fd97a}
   #hud .pill.xp{font-size:.82em}
+  #hud .pill.warn{background:rgba(181,83,60,.75);border-color:#ffb49a}
+  #hud .pill.debt{background:rgba(120,30,20,.6);color:#ffc9b8}
+  #hud .pill.streak{background:rgba(201,150,43,.55)}
+  #task{position:fixed;top:66px;left:16px;z-index:2;background:rgba(251,247,240,.92);color:var(--kahve);padding:7px 14px;border-radius:14px;font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.3);pointer-events:none;max-width:70vw}
+  #task.done{background:rgba(111,125,74,.95);color:#fff}#task.failed{background:rgba(181,83,60,.9);color:#fff}
   /* köşe ikonları (§11) – büyük, kolay dokunulur */
   #icons{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:14px;z-index:3}
   .icon{width:84px;height:84px;border-radius:20px;background:rgba(251,247,240,.95);border:1px solid var(--cizgi);box-shadow:0 8px 22px rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;font-weight:600;color:var(--kahve);cursor:pointer;position:relative}
@@ -74,14 +79,18 @@
 <body>
 <canvas id="scene"></canvas>
 <div id="hud" style="display:none">
-  <span class="pill">Gün <b id="hDay">1</b> · <b id="hClock">08:00</b></span>
+  <span class="pill"><b id="hDay">Pzt</b> · <b id="hClock">08:00</b></span>
+  <span class="pill" id="hRent"></span>
   <span class="pill money">₺<b id="hMoney">0</b></span>
   <span class="pill">İtibar <b id="hRep">0</b></span>
   <span class="pill" id="hStars">★</span>
+  <span class="pill debt" id="hDebt" style="display:none"></span>
+  <span class="pill streak" id="hStreak" style="display:none"></span>
   <span class="sp"></span>
   <span class="pill xp" id="hRank"></span>
   <span class="pill xp" id="hStock"></span>
 </div>
+<div id="task" style="display:none"></div>
 <div id="hint" style="display:none"></div>
 <button id="openDay" class="pri" style="display:none">Dükkanı aç</button>
 <div id="icons" style="display:none">
@@ -100,7 +109,7 @@
 
 <section id="menu">
   <h1>Çekirdek</h1>
-  <p>Espresso çekmeyi öğren, dükkanı büyüt, dünyayı fincanda tat.<br><span class="muted">Oynanabilir prototip v0.6</span></p>
+  <p>Espresso çekmeyi öğren, dükkanı büyüt, dünyayı fincanda tat.<br><span class="muted">Oynanabilir prototip v0.7</span></p>
   <button class="pri" id="btnNew">Yeni oyun</button>
   <button id="btnContinue">Devam et</button>
   <div class="row" style="justify-content:center"><button id="btnExport">Kaydı dışa aktar</button><button id="btnImport">Kaydı içe aktar</button><input type="file" id="fileImport" accept="application/json" hidden></div>

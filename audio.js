@@ -1,10 +1,10 @@
 // audio.js – §11 Ses: tüm sesler Web Audio API ile kodla üretilir (dış dosya yok).
-// Müzik: sakin lo-fi caz döngüsü (elektrik piyano, bas, fırça davul, plak cızırtısı, yankı, ~70 BPM).
+// Müzik: sıcak, ev gibi (keçe piyano, yumuşak ped, bas, ninni motifi, yankı, ~60 BPM, davulsuz).
 // Efektler: öğütücü, dozlama, tamping, ekstraksiyon (sürekli pompa + akış), süt buharı (sürekli), yazar kasa.
 // Sekme arka plana geçince tüm ses durur (§11).
 window.AUDIO = (() => {
   const KEY = "cekirdek_audio";
-  let settings = { music: 0.55, sfx: 0.8, muted: false };
+  let settings = { music: 0.6, sfx: 0.8, muted: false };
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) Object.assign(settings, s); } catch (e) {}
   let ctx, master, musicBus, sfxBus, reverb, revSend, noiseBuf, started = false, sched = null;
   const loops = {};
@@ -118,50 +118,66 @@ window.AUDIO = (() => {
     L.g2.gain.setTargetAtTime(air ? .07 : 0, t, .04); L.f.frequency.setTargetAtTime(air ? 2600 : 1400, t, .08); }
   function stopLoops() { Object.keys(loops).forEach(k => { if (k !== "milkAir") loop(k, false); }); delete loops.milkAir; }
 
-  // ---- müzik: lo-fi caz döngüsü ----
-  const BPM = 70, BEAT = 60 / BPM, S16 = BEAT / 4;
-  const PROG = [                                    // Fmaj9 → Em9 → Dm9 → Cmaj9 (iniş, dinlendirici)
-    { bass: 41, v: [57, 60, 64, 67] }, { bass: 40, v: [55, 59, 62, 66] },
-    { bass: 38, v: [53, 57, 60, 64] }, { bass: 36, v: [52, 55, 59, 62] }
+  // ---- müzik: sıcak, ev gibi (§11) — keçe piyano + yumuşak ped + bas + ninni motifi, ~60 BPM, davulsuz ----
+  const BPM = 60, BEAT = 60 / BPM, E8 = BEAT / 2;
+  const PROG = [                                     // Fmaj7 → Dm7 → B♭maj7 → Csus4/C (majör, sıcak)
+    { bass: 41, pad: [53, 57, 60, 64], arp: [65, 69, 72, 76] },
+    { bass: 38, pad: [50, 53, 57, 60], arp: [62, 65, 69, 72] },
+    { bass: 46, pad: [53, 57, 58, 62], arp: [65, 70, 74, 77] },
+    { bass: 36, pad: [55, 60, 65, 67], arp: [67, 72, 77, 79], res: [55, 60, 64, 67] }
   ];
-  const PENTA = [72, 74, 76, 79, 81, 84];
-  let step = 0, nextT = 0, crackle = null;
-  function epiano(m, t, dur, vel) {            // yumuşak Rhodes benzeri: sinüs + hafif FM çan + tremolo
-    const f = mtof(m), out = ctx.createGain(); out.gain.value = vel; out.connect(musicBus);
-    const car = ctx.createOscillator(), mod = ctx.createOscillator(), mg = ctx.createGain(), g = ctx.createGain();
-    car.type = "sine"; car.frequency.value = f; car.detune.value = (Math.random() - .5) * 8;
-    mod.frequency.value = f * 2; mg.gain.setValueAtTime(f * 1.2, t); mg.gain.exponentialRampToValueAtTime(f * .05, t + .6);
-    mod.connect(mg); mg.connect(car.frequency); car.connect(g); g.connect(out);
-    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(.12, t + .012); g.gain.setTargetAtTime(.05, t + .02, .5); g.gain.setTargetAtTime(0.0001, t + dur, .35);
-    car.start(t); mod.start(t); car.stop(t + dur + 1.6); mod.stop(t + dur + 1.6);
+  const MELODY = [[[0, 69], [4, 72]], [[0, 74], [4, 72]], [[0, 70], [4, 69]], [[0, 67], [6, 64]]];   // 8'lik adım, nota
+  const ARP = [0, 1, 2, 3, 2, 1, 2, 1];
+  let step = 0, nextT = 0, musicOut = null;
+  function musicChain() {
+    if (musicOut) return musicOut;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1300; lp.Q.value = .3;
+    const g = ctx.createGain(); g.gain.value = .9; lp.connect(g); g.connect(musicBus);
+    const rs = ctx.createGain(); rs.gain.value = .55; lp.connect(rs); rs.connect(revSend);
+    return (musicOut = lp);
   }
-  function kick(t, v) { osc("sine", 110, t, .32, .22 * v, musicBus, { to: 42, glide: .12 }); }
-  function brush(t, v, open) { noise(t, open ? .14 : .05, .035 * v, musicBus, "highpass", 6500); }
-  function snare(t, v) { noise(t, .16, .05 * v, musicBus, "bandpass", 1900, .8); osc("triangle", 190, t, .08, .03 * v, musicBus); }
-  function startCrackle() {
-    const n = ctx.sampleRate * 3, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
-    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * .015 + (Math.random() < .0004 ? (Math.random() - .5) * .6 : 0);
-    const s = ctx.createBufferSource(); s.buffer = b; s.loop = true; const f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 2500; f.Q.value = .5;
-    const g = ctx.createGain(); g.gain.value = .5; s.connect(f); f.connect(g); g.connect(musicBus); s.start(); crackle = s;
+  function feltPiano(m, t, vel) {                    // yumuşak, boğuk keçe piyano: sinüs + zayıf harmonikler, yavaş sönüm
+    const f = mtof(m), out = musicChain();
+    [[1, 1], [2, .22], [3, .06]].forEach(([h, a]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(); o.type = "sine"; o.frequency.value = f * h; o.detune.value = (Math.random() - .5) * 6;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vel * a, t + .018); g.gain.exponentialRampToValueAtTime(vel * a * .35, t + .4); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
+      o.connect(g); g.connect(out); o.start(t); o.stop(t + 2.7);
+    });
+  }
+  function pad(notes, t, dur) {                      // sıcak ped: iki hafif ayrık sinüs/üçgen, yavaş giriş-çıkış
+    const out = musicChain();
+    notes.forEach(m => [-5, 5].forEach(dt => {
+      const o = ctx.createOscillator(), g = ctx.createGain(); o.type = "triangle"; o.frequency.value = mtof(m); o.detune.value = dt;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(.018, t + 1.4); g.gain.setValueAtTime(.018, t + dur - 1.2); g.gain.linearRampToValueAtTime(0.0001, t + dur + .6);
+      o.connect(g); g.connect(out); o.start(t); o.stop(t + dur + .7);
+    }));
+  }
+  function softBass(m, t, dur) { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = "sine"; o.frequency.value = mtof(m);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(.11, t + .08); g.gain.exponentialRampToValueAtTime(.03, t + dur); g.gain.linearRampToValueAtTime(0.0001, t + dur + .3);
+    o.connect(g); g.connect(musicChain()); o.start(t); o.stop(t + dur + .35); }
+  function lullaby(m, t) {                           // ninni motifi: hafif vibratolu yumuşak ses
+    const o = ctx.createOscillator(), g = ctx.createGain(), v = ctx.createOscillator(), vg = ctx.createGain();
+    o.type = "sine"; o.frequency.value = mtof(m); v.frequency.value = 4.5; vg.gain.value = 3; v.connect(vg); vg.connect(o.detune);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(.045, t + .25); g.gain.setTargetAtTime(.0001, t + 1.4, .5);
+    o.connect(g); g.connect(musicChain()); o.start(t); v.start(t); o.stop(t + 3.5); v.stop(t + 3.5);
   }
   function scheduleStep(i, t) {
-    const bar = Math.floor(i / 16) % PROG.length, s = i % 16, ch = PROG[bar];
-    const swing = (s % 2) ? S16 * .28 : 0, tt = t + swing;
-    if (s === 0) { ch.v.forEach((m, k) => epiano(m, t + k * .025, BEAT * 3.6, .55)); osc("sine", mtof(ch.bass), t, BEAT * 3.2, .16, musicBus, { a: .03 }); }
-    if (s === 10) { ch.v.slice(1).forEach((m, k) => epiano(m, tt + k * .02, BEAT * 1.4, .3)); osc("sine", mtof(ch.bass + 7), tt, BEAT * 1.2, .11, musicBus, { a: .03 }); }
-    if (s === 0 || s === 7 && Math.random() < .5 || s === 10) kick(tt, s === 0 ? 1 : .7);
-    if (s === 4 || s === 12) snare(tt, .9);
-    if (s % 2 === 0 || Math.random() < .25) brush(tt, s % 4 === 0 ? 1 : .6, s === 14);
-    if ((s === 2 || s === 6 || s === 9 || s === 13) && Math.random() < .32) epiano(PENTA[Math.floor(Math.random() * PENTA.length)], tt, BEAT * .9, .32);
+    const barN = Math.floor(i / 8), bar = barN % PROG.length, s = i % 8, ch = PROG[bar], cycle = Math.floor(barN / PROG.length);
+    const human = (Math.random() - .5) * .02;
+    if (s === 0) { pad(ch.pad, t, BEAT * 4); softBass(ch.bass, t, BEAT * 3.6); }
+    if (bar === 3 && s === 4 && ch.res) pad(ch.res, t, BEAT * 2);
+    const notes = (bar === 3 && s >= 4 && ch.res) ? ch.res.map(n => n + 12) : ch.arp;
+    if (s % 2 === 0 || cycle % 2 === 1) feltPiano(notes[ARP[s]], t + human, s === 0 ? .07 : .045);
+    if (cycle % 2 === 0) MELODY[bar].forEach(([at, m]) => { if (at === s) lullaby(m, t); });
   }
   function scheduler() {
     if (!started || ctx.state !== "running") return;
-    while (nextT < ctx.currentTime + .25) { scheduleStep(step, nextT); step++; nextT += S16; }
+    while (nextT < ctx.currentTime + .3) { scheduleStep(step, nextT); step++; nextT += E8; }
   }
   function startMusic() {
     ensureCtx(); if (ctx.state === "suspended" && !document.hidden) ctx.resume();
-    if (started) return; started = true; step = 0; nextT = ctx.currentTime + .1;
-    if (!crackle) startCrackle(); sched = setInterval(scheduler, 60);
+    if (started) return; started = true; step = 0; nextT = ctx.currentTime + .2;
+    sched = setInterval(scheduler, 80);
   }
   function stopMusic() { started = false; clearInterval(sched); sched = null; }
 

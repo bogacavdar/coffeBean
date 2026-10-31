@@ -94,6 +94,22 @@ Doküman önce güncellendi (§3, §7, §11 → rev 27, HTML iletildi), sonra ko
 - Defter: her tarifin SVG kesit resmi; öğrenilmemiş tarifler gri silüet + "???" + XP eşiği.
 - Müşteriler isimsiz, yalnızca tip etiketi: İş adamı (18 sn, bahşiş ×2), Öğrenci (55 sn, ×0,4, %20 indirim), Yaşlı teyze (70 sn, ×1), Kahve meraklısı (40 sn, ×1,6), Düzenli müşteri (50 sn, ×1,2). İş adamına kravat, öğrenciye çanta, teyzeye gri saç eklendi; kuyruk aralığı açıldı (etiketler binmesin).
 
+## v0.7 – 31 Ekim 2026 (gelişim paketi: otomasyon, hafta/kira/banka, dükkan kilitleri, latte art, görev, seri, dekor; müzik yenilendi)
+Kullanıcıya öneriler sunuldu, hepsi seçildi. Doküman önce güncellendi (§2, §5, §7, §8, §9, §11 → rev 29, HTML iletildi), sonra kod:
+- **Müzik** (kullanıcı rahatsız edici buldu): davul, cızırtı, FM çan atakları kaldırıldı. Yerine ~60 BPM keçe piyano arpejleri, sıcak üçgen ped, yumuşak bas ve tek döngüde bir ninni motifi geldi (Fmaj7→Dm7→B♭maj7→Csus4/C). Tizler 1300 Hz'de kısık, uzun yankı var.
+- **Otomasyon** (`equipment[].auto`): otomatik adım sabit 85 puan verir ve panelde ⚙ ile gösterilir. Her adım otomatikse sipariş 1,8 sn'de makinede kendiliğinden hazırlanır. Eklenen ekipmanlar: tartılı öğütücü, otomatik tamper, süper otomatik makine, otomatik süt köpürtücü, süt buzdolabı. Öğretici (Nejla) her adımı yine elle öğretir.
+- **Yardımcı barista** (`staff.assistant`, 2★, günlük maaş 40): kuyruktaki sütsüz siparişi alır, 7 sn'de 85 puanla hazırlar. Tezgâhın arkasında önlüklü bir figür olarak çizilir.
+- **Hafta / kira / banka:** HUD'da "Pzt · 1. Hafta" ve "Kiraya N gün" görünür (son gün kırmızı). Kira her Pazar alınır: 150/350/700. Kasa eksiye düşerse gün kapanışında kredi çekmeden devam edilemez (50'ye yuvarlanır, geri ödeme %10 fazla). Borç varken her gün gelirin %20'si otomatik kesilir. Tedarik'teki Banka kutusundan ₺100/₺250 kredi çekilebilir ve borç kapatılabilir; limitler 600/1.500/3.000. Borç varken seviye atlanamaz.
+- **Dükkan kilitleri:** latte ve cappuccino için `shop: 2` gerekir; ekipmanlarda `stars` kilidi var. Defter'de iki şart ayrı gösterilir (XP ✓ · 2★ 🔒). Seviye kartında kira ve açılacaklar yazar.
+- **Latte art** (3★, latte/cappuccino): (1) basılı tut, %65–80'de bırak; (2) kayan kesim çizgisi ortadayken dokun. Servis yakın planında kalp çizilir.
+- **Günlük görev** (`D.tasks`): HUD altında ilerlemesiyle görünür, tamamlanınca para + XP verir ve gün kapanışında satırı yazılır. **Mükemmel seri:** her ardışık mükemmel servis bahşişe ×0,1 ekler (en fazla ×1,5); kaçan müşteri ya da mükemmel olmayan servis seriyi sıfırlar. HUD'da 🔥 olarak görünür.
+- **Dekor:** bitki (+1 itibar/gün), ayaklı lamba (bahşiş ×1,1), pikap (sabır ×1,15). Alınanlar sahnede çizilir.
+- Birden çok tarif aynı anda açılırsa tek pencerede, resimleriyle birlikte gösterilir.
+- Test (Playwright): 1★'da latte/cappuccino kilitli; 3★ + tam otomasyonda latte'de yalnız süt + latte art elle kalıyor (diğer adımlar 85); yardımcı espresso siparişini kendisi verdi; 7. günde kasa −640 → ₺650 kredi zorunlu → borç ₺715; HUD hafta/kira/borç doğru; konsol hatası yok.
+
+### Doküman eşleşme kontrolü (Kural 2) – v0.7
+Tüm sayılar (kira, limit, faiz, kesinti, ekipman fiyat/kilit, maaş, dekor etkileri, seri çarpanı, görev ödülleri, latte art aralıkları) önce dokümana yazıldı. Uygulamaya özgü küçük detaylar: kredi tutarı 50'ye yuvarlanıyor, yardımcı siparişi 7 sn'de hazırlıyor, otomatik sipariş 1,8 sn sürüyor, görev ödülleri ₺40–60 / 20–30 XP. Bunlar da §8'e "Uygulama ayrıntıları" notu olarak eklendi (rev 30).
+
 ## Sonraki adımlar
 1. Prototipi test et, hataları gider.
 2. Kullanıcı geri bildirimine göre dokümanı güncelle → HTML'i yeniden ilet → kodu eşle.
