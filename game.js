@@ -74,8 +74,11 @@ const restockOk = () => (S.beans[S.bean]?.kg || 0) >= D.economy.minBeans && (!ne
 // §8 otomasyon: sahip olunan ekipmanların otomatik yaptığı adımlar
 function autoSteps() { const set = new Set(); Object.keys(S.equipment).forEach(k => { if (S.equipment[k] && D.equipment[k] && D.equipment[k].auto) D.equipment[k].auto.forEach(x => set.add(x)); }); return set; }
 // §5 latte art adımı 3★ dükkanda latte/cappuccino'ya eklenir
-function stepsFor(id) { const d = D.drinks[id]; const st = d.steps.slice(); if (d.art && shop().stars >= 3) st.splice(st.indexOf("milk") + 1, 0, "art"); return st; }
-const decorMult = key => Object.keys(S.decor || {}).reduce((m, k) => (S.decor[k] && D.decor[k][key]) ? m * D.decor[k][key] : m, 1);
+function stepsFor(id) { const d = D.drinks[id]; const st = d.steps.slice(); if (d.art && shop().stars >= 3) st.splice(st.indexOf(st.includes("swirl") ? "swirl" : "milk") + 1, 0, "art"); return st; }
+// §8 dekor dükkana özel: yalnızca bu dükkanın (stars) dekoru görünür ve etki eder
+const activeDecor = () => { const o = {}; Object.keys(S.decor || {}).forEach(k => { if (S.decor[k] && D.decor[k] && (D.decor[k].stars || 1) === shop().stars) o[k] = true; }); return o; };
+const decorMult = key => Object.keys(activeDecor()).reduce((m, k) => D.decor[k][key] ? m * D.decor[k][key] : m, 1);
+const th = key => { const u = SCENE.thumb && SCENE.thumb(key); return u ? `<img class="thumb" src="${u}" alt="">` : ""; };   // §8 satın alma listelerinde ürün görseli
 // §9 müşteri trafiği: sıra sınırı (X), günlük en fazla (Y), geliş sıklığı; Y ve sıklık dükkana özel 3 kademe
 const tr = () => (S.traffic && S.traffic[S.shopLevel]) || { cust: 0, freq: 0 };
 const dayCap = () => shop().customersPerDay + tr().cust * shop().custStep;
@@ -202,7 +205,8 @@ function layout() {
   day.customers.forEach(c => {
     if (c.leaving) { c.target = { x: SCENE.DOOR.x, y: SCENE.DOOR.y }; return; }
     if (c.ordered) { c.target = c.byAssistant ? { x: 3.5, y: 1.0 } : { x: 2.6, y: 1.0 }; return; }
-    if (i === 0 && !c.say) c.say = c.type === "nejla" ? "Bir espresso, evladım" : orderLine(c);   // §7 yalnızca öndeki sorar (rastgele cümle)
+    const free = day.orders.length < slots(), atDesk = c.pos && Math.hypot(c.pos.x - SCENE.queueSlot(0).x, c.pos.y - SCENE.queueSlot(0).y) < .15;
+    if (i === 0 && !c.say && free && atDesk) c.say = c.type === "nejla" ? "Bir espresso, evladım" : orderLine(c);   // §7 kasaya varıp makine boşalınca söyler
     c.target = SCENE.queueSlot(i++);
   });
 }
@@ -233,7 +237,7 @@ let lastHint = "", lastClock = "", sceneSkip = 0, sceneAcc = 0;
 function renderScene(dt) {
   if (day) day.customers = day.customers.filter(c => !c.gone);
   SCENE.draw({ customers: day ? day.customers : [], orders: day ? day.orders : [], t: day ? day.t / DAY_SECONDS : 0.3, level: shop().stars, slots: slots(),
-    decor: S.decor || {}, assistant: !!(S.staff && S.staff.assistant), asstBusy: !!(day && day.asst), superAuto: !!S.equipment.superAuto,
+    decor: activeDecor(), equipment: S.equipment || {}, tools: S.tools || {}, traffic: tr(), cups: S.cups || {}, assistant: !!(S.staff && S.staff.assistant), asstBusy: !!(day && day.asst), superAuto: !!S.equipment.superAuto,
     baristaBusy: !!(day && day.orders.length) }, dt || 0);
   const hint = !day ? "Dükkan kapalı. Hazır olunca aç." : `Sıra ${queueOf().length}/${shop().maxQueue} · ` + (queueOf().length ? "Sırada bekleyen müşteriye dokun" : day.orders.length ? "Sipariş hazırlanıyor" : day.toSpawn > 0 ? "Müşteri bekleniyor…" : "Bugünkü müşteriler bitti");
   if (hint !== lastHint) { lastHint = hint; $("#hint").textContent = hint; }                 // performans: DOM'a yalnız değişince yaz
@@ -264,6 +268,7 @@ function leave(c) {
 function takeOrder(id) {
   const c = day.customers.find(x => x.id === id && !x.ordered && !x.leaving); if (!c) return;
   if (c !== queueOf()[0]) { toast("Önce sıranın en önündeki müşteri"); return; }   // §7 yalnızca öndeki müşteri sipariş verir
+  if (!c.say && c.type !== "nejla" && day.orders.length < slots()) { toast("Müşteri kasaya gelsin, siparişini söylesin"); return; }
   if (day.orders.length >= slots()) { toast(slots() === 1 ? "Makine dolu: önce eldeki siparişi bitir" : "İki grup kafası da dolu"); return; }
   const sz = SZ(c.size);
   if ((S.cups[sz.cup] || 0) <= 0 && c.type !== "nejla") {                      // §7 istenen boyun bardağı yoksa kızıp gider
@@ -278,7 +283,7 @@ function takeOrder(id) {
     if (r === "cheap") { c.say = "Ne kadar ucuz!"; c.sayUntil = performance.now() + 1800; SCENE.addFx(c, "Ucuz!", "#9cc77a"); } else c.say = null;
   }
   c.ordered = true;
-  const o = { cust: c, drink: c.drink, size: c.size, i: 0, scores: {}, phase: "ready", v: 0, dir: 1, start: null, tutorial: c.type === "nejla", selecting: true, sel: { drink: c.drink, size: null }, all: [], steps: [], auto: new Set() };
+  const o = { cust: c, drink: c.drink, size: c.size, i: 0, scores: {}, phase: "ready", v: 0, dir: 1, start: null, tutorial: c.type === "nejla", selecting: true, sel: { drink: null, size: null }, all: [], steps: [], auto: new Set() };
   if (o.tutorial) prepareOrder(o, "espresso", "single");                         // §7 öğreticide seçim kendiliğinden
   day.orders.push(o); day.active = day.orders.length - 1; renderOrders();
   layout(); renderBench();
@@ -295,17 +300,17 @@ function prepareOrder(o, drink, size) {
   save(); renderOrders();
 }
 function renderSelect(o, tabs) {
-  const menu = S.unlocked.filter(hasTools), sel = o.sel, sizes = D.drinks[sel.drink].sizes || ["single"];
-  $("#sheetBody").innerHTML = `${tabs}<h3>${o.cust.name}: "${cap1(sizedName(o.cust.drink, o.cust.size))}"</h3>
-    <p class="muted" style="margin:2px 0 6px">Önce tarifi ve boyu seç; seçtiğin bardak harcanır. Yanlış seçersen müşteri almaz.</p>
+  const menu = S.unlocked.filter(hasTools), sel = o.sel, sizes = sel.drink ? (D.drinks[sel.drink].sizes || ["single"]) : [];   // §7 sipariş burada yazmaz; sağ üstteki karttan okunur
+  $("#sheetBody").innerHTML = `${tabs}<h3>Siparişi hazırla</h3>
+    <p class="muted" style="margin:2px 0 6px">Siparişi sağ üstteki karttan oku. Önce tarifi, sonra boyu seç; seçtiğin bardak harcanır. Yanlış seçersen müşteri almaz.</p>
     <div class="box" style="text-align:left"><h4>Tarif</h4><div class="row" style="justify-content:flex-start;margin-top:4px">${menu.map(id => `<button data-sd="${id}" class="${sel.drink === id ? "pri" : ""}">${D.drinks[id].name}</button>`).join("")}</div></div>
-    <div class="box" style="text-align:left"><h4>Boy / bardak</h4><div class="row" style="justify-content:flex-start;margin-top:4px">${sizes.map(z => { const sz = SZ(z), n = S.cups[sz.cup] || 0;
+    <div class="box" style="text-align:left"><h4>Boy / bardak</h4><div class="row" style="justify-content:flex-start;margin-top:4px">${sizes.length ? "" : '<span class="muted">Önce tarifi seç</span>'}${sizes.map(z => { const sz = SZ(z), n = S.cups[sz.cup] || 0;
       return `<button data-sz="${z}" class="${sel.size === z ? "pri" : ""}" ${n > 0 ? "" : "disabled"}>${sz.label}<br><span style="font-size:11px">${D.cups[sz.cup].name} · ${n} adet</span></button>`; }).join("")}</div></div>
-    <button class="hold big pri" id="selGo" ${sel.size && sizes.includes(sel.size) ? "" : "disabled"}>Hazırlamaya başla</button>`;
+    <button class="hold big pri" id="selGo" ${sel.drink && sel.size && sizes.includes(sel.size) ? "" : "disabled"}>Hazırlamaya başla</button>`;
   $("#sheet").classList.add("on");
   $("#sheetBody").querySelectorAll("[data-sd]").forEach(b => b.onclick = () => { sel.drink = b.dataset.sd; if (!(D.drinks[sel.drink].sizes || ["single"]).includes(sel.size)) sel.size = null; AUDIO.sfx("click"); renderBench(); });
   $("#sheetBody").querySelectorAll("[data-sz]").forEach(b => b.onclick = () => { sel.size = b.dataset.sz; AUDIO.sfx("click"); renderBench(); });
-  $("#selGo").onclick = () => { if (!sel.size || (S.cups[SZ(sel.size).cup] || 0) <= 0) return; prepareOrder(o, sel.drink, sel.size); AUDIO.sfx("click"); renderBench(); };
+  $("#selGo").onclick = () => { if (!sel.drink || !sel.size || (S.cups[SZ(sel.size).cup] || 0) <= 0) return; prepareOrder(o, sel.drink, sel.size); AUDIO.sfx("click"); renderBench(); };
 }
 // §7 sağ üstte sipariş kartı
 function renderOrders() {
@@ -320,14 +325,17 @@ function renderOrders() {
 function scoreFrom(val, target, tolerance) { const d = Math.abs(val - target) / tolerance; return Math.round(clamp(100 - d * 40, 0, 100)); }
 function stepTick(o, dt) {                                  // §4 renkli hedef çubuğu: ibre hareketi
   const s = o.steps[o.i]; if (!s || !MG[s]) return; const c = MG[s];
+  if (c.mode === "act") { if (o.holdTick && c.act === "hold") o.holdTick(dt); if ($("#closeup")) c.draw(o, o.v); return; }
   if (o.phase === "run" && o.tutorial && o.frozen) { setNeedle(o.v); if ($("#closeup")) c.draw(o, o.v); return; }   // §4 ilk sipariş: mükemmel noktada bekler
   const v0 = o.v;
   if (o.phase === "run") {
-    if ((o.mode || c.mode) === "osc") { o.v += o.dir * c.speed * dt; if (o.v > 100) { o.v = 100; o.dir = -1; } if (o.v < 0) { o.v = 0; o.dir = 1; } }
+    if ((o.mode || c.mode) === "osc") { o.v += o.dir * c.speed * dt; if (o.v > 100) { o.v = 100; o.dir = -1; o.bounces = (o.bounces || 0) + 1; } if (o.v < 0) { o.v = 0; o.dir = 1; o.bounces = (o.bounces || 0) + 1; } }
     else { o.v += (typeof c.speed === "function" ? c.speed() : c.speed) * dt; if (o.v >= 100) { o.v = 100; stopZone(o, s); return; } }
     if (c.onTick) c.onTick(o);
-    if (o.tutorial && o.phase === "run" && (v0 - o.tgt) * (o.v - o.tgt) <= 0) { o.v = o.tgt; o.frozen = true; if (s === "extract" || s === "milk") AUDIO.stopLoops();
-      const mode = o.mode || c.mode; setTut(mode === "hold" ? D.tutorial.release : mode === "sweep" ? D.tutorial.stopNow : D.tutorial.pressNow); }
+    const mode = o.mode || c.mode;
+    if (o.tutorial && o.phase === "run" && (mode !== "osc" || (o.bounces || 0) >= 2) && (v0 - o.tgt) * (o.v - o.tgt) <= 0) { o.v = o.tgt; o.frozen = true; if (s === "extract" || s === "milk") AUDIO.stopLoops();
+      setTut(mode === "hold" ? D.tutorial.release : mode === "sweep" ? D.tutorial.stopNow : D.tutorial.pressNow);
+      if (mode === "osc") { const b = $("#zB"); if (b) { b.disabled = false; b.classList.add("pulse"); } const r = $("#zRes"); if (r) { r.className = "zres perfect"; r.style.fontSize = "30px"; r.textContent = "Tam şimdi!"; } AUDIO.sfx("click"); } }   // §10 1–2 tur sonra yeşilde sabitlenir
   }
   setNeedle(o.v); if ($("#closeup")) c.draw(o, o.v);
 }
@@ -359,7 +367,7 @@ function assistantTick(dt) {
   if (day.asst.t >= A.prepTime) { const c = day.asst.c; day.asst = null; if (!c.leaving) serve({ cust: c, drink: c.drink, size: c.size, scores: { asst: A.score }, assist: true }); }
 }
 // §4 sipariş sonu: ortalama puan, etiket, rastgele müşteri yorumu
-const orderQuality = o => { const v = Object.values(o.scores); return clamp(Math.round(v.reduce((a, b) => a + b, 0) / Math.max(1, v.length)) + beanQualityMod(), 0, 100); };
+const orderQuality = o => { const v = Object.values(o.scores); return clamp(Math.round(v.reduce((a, b) => a + b, 0) / Math.max(1, v.length)), 0, 100); };   // §4 kalite yalnızca renklerin ortalaması
 const reviewOf = q => D.reviews.find(r => q >= r.min);
 function cupCost(id, size) { const z = SZ(size); return { kg: +(D.economy.beanPerCup * z.bean).toFixed(3), milk: D.drinks[id].steps.includes("milk") ? +(D.economy.milkPerCup * z.milk).toFixed(2) : 0, cup: z.cup }; }
 function renderReview(o, tabs) {
@@ -367,7 +375,7 @@ function renderReview(o, tabs) {
   const canRedo = (S.beans[S.bean]?.kg || 0) >= cc.kg * 2 && (!cc.milk || (S.milk || 0) >= cc.milk * 2 - 1e-9) && Object.values(S.cups).some(n => n > 0);
   const steps = `<div class="steps">${o.all.map(st => `<span class="done">${o.auto.has(st) ? "⚙ " : ""}${D.minigames[st].name} ${o.scores[st]}</span>`).join("")}</div>`;
   $("#sheetBody").innerHTML = `${tabs}<h3>${o.cust.name} için ${cap1(sizedName(o.drink, o.size))}</h3>${steps}${o.mismatch ? `<div class="miss">⚠ Müşteri "${cap1(sizedName(o.cust.drink, o.cust.size))}" istemişti; teslim edersen almaz (itibar −3). Yeniden yap ile doğrusunu seç.</div>` : ""}<canvas id="closeup"></canvas>
-    <div class="zres ${rv.cls}" style="font-size:30px">%${q} · ${rv.label}</div><p class="muted" style="margin:2px 0 0">Tüm adımların ortalaması${beanQualityMod() ? ` (çekirdek tazeliği ${beanQualityMod() > 0 ? "+" : ""}${beanQualityMod()})` : ""}</p>
+    <div class="zres ${rv.cls}" style="font-size:30px">%${q} · ${rv.label}</div><p class="muted" style="margin:2px 0 0">Tüm adımların ortalaması</p>
     <div class="row" style="justify-content:center"><button class="hold big pri" id="rvServe" style="max-width:300px">Teslim et</button>
     ${o.tutorial ? "" : `<button class="hold big" id="rvRedo" style="max-width:300px;box-shadow:none" ${canRedo ? "" : "disabled"}>Yeniden yap<br><span style="font-size:12px;font-weight:600">−${cc.kg} kg çekirdek${cc.milk ? `, −${cc.milk} L süt` : ""} · yeni bardak${canRedo ? "" : " · malzeme yetmiyor"}</span></button>`}</div>`;
   CLOSEUP.init($("#closeup")); CLOSEUP.cupTop(q, d.steps.includes("milk"), o.scores.art != null && o.scores.art >= 70);
@@ -375,7 +383,7 @@ function renderReview(o, tabs) {
   $("#rvServe").onclick = () => { o.reviewing = false; serve(o); };
   const rd = $("#rvRedo"); if (rd) rd.onclick = () => {                         // §4 yeniden yap: bu fincanın malzemesi tekrar harcanır
     S.beans[S.bean].kg = Math.max(0, S.beans[S.bean].kg - cc.kg); if (cc.milk) S.milk = Math.max(0, S.milk - cc.milk);
-    o.reviewing = false; o.selecting = true; o.sel = { drink: o.cust.drink, size: null }; o.mismatch = false; o.phase = "ready"; o.v = 0;   // §7 yeniden: tarif/boy tekrar seçilir
+    o.reviewing = false; o.selecting = true; o.sel = { drink: null, size: null }; o.mismatch = false; o.phase = "ready"; o.v = 0;   // §7 yeniden: tarif/boy tekrar seçilir
     AUDIO.sfx("click"); save(); renderHUD(); renderBench(); };
 }
 function serve(o) {
@@ -437,7 +445,7 @@ function endDay() {
     S.loans.slice().sort((a, b) => a.due - b.due).forEach(l => { const x = Math.min(l.rem, cut); l.rem -= x; cut -= x; }); syncDebt(); }
   const lateLoan = (S.loans || []).find(l => l.rem > 0 && S.day >= l.due);
   if (lateLoan) { day = null; AUDIO.stopLoops(); return bankrupt(lateLoan); }   // §2 bir kredinin vadesi doldu: iflas
-  if (S.decor && S.decor.plant) { L.plant = D.decor.plant.rep; S.rep += L.plant; }
+  { const r = Object.keys(activeDecor()).reduce((a, k) => a + (D.decor[k].rep || 0), 0); if (r) { L.plant = r; S.rep += r; } }   // §8 dekor itibarı
   if (S.day % 7 === 0) L.news = updateMarket();                                                // §8 hafta sonu borsa
   const repDelta = S.rep - st.repStart; const dayNum = S.day;
   if (!S.equipment.fridge || S.day - (S.milkDay || S.day) + 1 >= D.economy.milkShelfDays) { L.spoiled = S.milk > 0; S.milk = 0; }   // §8 süt bozulur (buzdolabıyla 3 gün)
@@ -462,7 +470,7 @@ function showLedger(dayNum, st, L, repDelta) {
       ${L.rent ? `<tr><td>Haftalık kira (${shop().name})</td><td class="num">−₺${L.rent}</td></tr>` : ""}
       ${L.wage ? `<tr><td>Yardımcı barista maaşı</td><td class="num">−₺${L.wage}</td></tr>` : ""}
       ${L.cut ? `<tr><td>Kredi taksiti (gelirin %20'si)</td><td class="num">−₺${L.cut}</td></tr>` : ""}
-      ${L.plant ? `<tr><td>Büyük bitki</td><td class="num">+${L.plant} itibar</td></tr>` : ""}
+      ${L.plant ? `<tr><td>Dekorasyon</td><td class="num">+${L.plant} itibar</td></tr>` : ""}
       ${L.spoiled ? `<tr><td>Kalan süt bozuldu</td><td class="num">0 L</td></tr>` : ""}
       <tr><td>İtibar değişimi</td><td class="num">${repDelta >= 0 ? "+" : ""}${repDelta}</td></tr>
       <tr class="total"><td>Kasa</td><td class="num">₺${S.money}</td></tr>
@@ -501,7 +509,7 @@ function renderBench() {
   uiZone(o, $("#mgBody"));
   if (o.tutorial) pulseControl(s);
 }
-function pulseControl(s) { const el = $("#zB"); if (el) el.classList.add("pulse"); }
+function pulseControl(s) { const el = $("#zB"); if (el && !el.disabled) el.classList.add("pulse"); }
 function setTut(html) { const t = $("#tut"); if (t) t.innerHTML = html; }   // §10 Yıldız Teyze balonu
 // ---------- §4 Renkli hedef çubuğu: tüm mini oyunlar ----------
 // Ortada koyu yeşil Mükemmel (100), yanında açık yeşil Güzel (88), en dışta sarı İyi (72); dışı Kaçtı.
@@ -511,7 +519,7 @@ function zoneSet(step) { const Z = D.zones, w = Math.min(1, tol()) * (hasWiden(s
 function zoneScore(v, t, z) {
   const d = Math.abs(v - t), sc = D.zones.score;
   if (d <= z.p) return [sc.perfect, "perfect"]; if (d <= z.g) return [sc.good, "good"]; if (d <= z.k) return [sc.ok, "ok"];
-  return [Math.round(Math.max(20, 60 - (d - z.k) * 2)), "miss"];
+  return [0, "miss"];                                                             // §4 renkli bölgelerin dışı 0
 }
 function zoneBar(t, z, left, right) {
   const seg = (h, cls) => { const a = clamp(t - h, 0, 100), b = clamp(t + h, 0, 100); return `<div class="zb ${cls}" style="left:${a}%;width:${b - a}%"></div>`; };
@@ -539,13 +547,39 @@ const MG = {
              onStart: () => AUDIO.loop("extract", true), onStop: () => AUDIO.loop("extract", false), draw: (o, v) => CLOSEUP.water(v, o.phase === "run") },
   pressure:{ mode: "osc", dial: true, speed: 55, btn: "VİDAYI KAPAT", target: () => 62, sfx: "tamp", tipLow: "pressure_low", tipHigh: "pressure_high",
              draw: (o, v) => CLOSEUP.pressure(v, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }) },
-  cocoa:   { mode: "osc", speed: 75, btn: "SERP", left: "sol", right: "sağ", target: () => 50, sfx: "dose", tipLow: "cocoa_low", tipHigh: "cocoa_high",
-             draw: (o, v) => CLOSEUP.cocoa(v, o.phase === "done") },
+  // §4 hareket adımları (beceri istemez, tamamlanınca 100): karıştır, sürahiyi çevir, çalkala, dök
+  cocoa:   { mode: "act", act: "shake", need: 8,  btn: "Serpiciyi sağa-sola kaydırarak çalkala", draw: (o, v) => CLOSEUP.shake(o.shx == null ? 50 : o.shx, v) },
+  stir:    { mode: "act", act: "circle", need: 3, btn: "Fincanın içinde parmağınla daire çiz", draw: (o, v) => CLOSEUP.stir(v, o.ang || 0) },
+  swirl:   { mode: "act", act: "circle", need: 3, btn: "Sürahiyi daire çizerek çevir", draw: (o, v) => CLOSEUP.swirl(v, o.ang || 0, D.drinks[o.drink].milk) },
+  pour:    { mode: "act", act: "hold", speed: 34, btn: "BASILI TUT · sütü dök", draw: (o, v) => CLOSEUP.pour(v, o.phase === "run", D.drinks[o.drink].milk) },
   art:     { mode: "hold", speed: 32, btn: "BASILI TUT · dök", left: "%0", right: "%100", target: () => 72.5, tipLow: "art_low", tipHigh: "art_high",
              draw: (o, v) => o.artCut ? CLOSEUP.art(o.fill, v / 100) : CLOSEUP.art(v, null) }
 };
+function uiAct(o, el, s) {                                                        // §4 hareket adımı: ilerleme çubuğu + gerçek hareket
+  const c = MG[s]; o.v = 0; o.ang = 0; o.shx = 50; o.phase = "run"; o.frozen = false; let last = null, acc = 0, dir = 0, run = 0;
+  el.innerHTML = `<div class="actbar"><i id="actFill"></i></div><div class="acthint">${c.btn}</div>` + (c.act === "hold" ? `<button class="hold big pri" id="zB">${c.btn}</button>` : "") + `<div id="zRes" class="zres"></div>`;
+  const cv = $("#closeup"), done = () => { if (o.phase === "done") return; o.phase = "done"; AUDIO.stopLoops(); showZone("perfect", 100); finishStep(o, 100); };
+  const set = p => { o.v = clamp(p, 0, 100); const f = $("#actFill"); if (f) f.style.width = o.v + "%"; if (o.v >= 100) done(); };
+  const pt = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left - r.width / 2, y: e.clientY - r.top - r.height / 2, w: r.width }; };
+  if (c.act === "hold") { const b = $("#zB"); o.phase = "ready";
+    b.onpointerdown = e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {} if (o.phase === "done") return; o.phase = "run"; AUDIO.loop("extract", true); };
+    b.onpointerup = b.onpointercancel = () => { if (o.phase === "run") { o.phase = "ready"; AUDIO.loop("extract", false); } };
+    o.holdTick = dt => { if (o.phase === "run") set(o.v + c.speed * dt); };
+    return; }
+  cv.style.touchAction = "none";
+  cv.onpointerdown = e => { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (x) {} last = pt(e); };
+  cv.onpointerup = cv.onpointercancel = () => { last = null; };
+  cv.onpointermove = e => { if (!last || o.phase === "done") return; const p = pt(e);
+    if (c.act === "circle") { const a0 = Math.atan2(last.y, last.x), a1 = Math.atan2(p.y, p.x); let d = a1 - a0; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+      if (Math.hypot(p.x, p.y) > 12) { acc += Math.abs(d); o.ang += d; set(acc / (2 * Math.PI * c.need) * 100); if (Math.random() < .08) AUDIO.sfx("click"); } }
+    else { const dx = p.x - last.x; o.shx = clamp(50 + p.x / p.w * 120, 0, 100); const sg = Math.sign(dx);
+      if (sg) { if (sg === dir) run += Math.abs(dx); else { if (run > p.w * .06) { set(o.v + 100 / c.need); AUDIO.sfx("dose"); } dir = sg; run = Math.abs(dx); } } }
+    last = p; };
+}
 function uiZone(o, el) {
   const s = o.steps[o.i], c = MG[s];
+  if (c.mode === "act") { uiAct(o, el, s); c.draw(o, 0); return; }
+  $("#closeup").onpointerdown = $("#closeup").onpointermove = null;
   o.z = zoneSet(s); o.tgt = c.target(o); o.mode = null; o.artCut = false; o.dir = 1; o.frozen = false;
   o.v = c.mode === "osc" ? Math.random() * 100 : 0; o.phase = c.mode === "osc" ? "run" : "ready";
   const legend = `<div class="zends" style="justify-content:center"><span class="zleg"><i class="perf"></i>Mükemmel <i class="good"></i>Güzel <i class="ok"></i>İyi</span></div>`;
@@ -553,6 +587,14 @@ function uiZone(o, el) {
   el.innerHTML = (c.ring || c.dial ? legend : zoneBar(o.tgt, o.z, fx(c.left), fx(c.right))) + `<button class="hold big pri" id="zB">${c.btn0 || c.btn}</button><div id="zRes" class="zres"></div>`;
   if (c.ring || c.dial) $("#closeup").onpointerdown = e => { e.preventDefault(); if (o.phase !== "run" || o.steps[o.i] !== s) return; if (o.tutorial && !o.frozen) return setTut(D.tutorial.tooEarly); stopZone(o, s); };   // §4 tamping: daireye dokun
   bindZone(o, s); setNeedle(o.v); c.draw(o, o.v);
+  if (o.tutorial && $("#tut")) {                                                 // §10 öğretici: önce anlatım + Anladım; sonra işlem başlar
+    const osc = c.mode === "osc";                                               // öğütme/tamping: Anladım → ibre 1–2 tur → yeşilde "Tam şimdi!"
+    o.phase = "intro"; o.v = 0; o.dir = 1; o.bounces = 0; setNeedle(0); c.draw(o, 0);
+    const b = $("#zB"); b.disabled = true; b.classList.remove("pulse");
+    $("#tut").insertAdjacentHTML("beforeend", `<div style="text-align:right;margin-top:6px"><button class="pri" id="tutOk">Anladım</button></div>`);
+    $("#tutOk").onclick = () => { if (o.phase !== "intro") return; $("#tutOk").parentNode.remove(); AUDIO.sfx("click");
+      if (osc) o.phase = "run"; else { o.phase = "ready"; b.disabled = false; b.classList.add("pulse"); } };   // dozlama/çekme: düğme şimdi açılır
+  }
 }
 function bindZone(o, s) {
   const c = MG[s], b = $("#zB"), mode = o.mode || c.mode;
@@ -602,18 +644,20 @@ function renderSupply() {
   const lv = shop(), miss = supplyMissing(), flow = dayFlow === "supply";
   let html = `<h2>Tedarik${flow ? "" : '<span class="x" id="supX">✕</span>'}</h2>`;
   const kgNow = S.beans[S.bean]?.kg || 0;                                         // §7 kasa ve mevcut stok özeti
-  html += `<div class="box" style="text-align:left"><h4>Kasa: ₺${S.money} · Mevcut stok</h4><p style="margin:4px 0 0">☕ Çekirdek: <b>${kgNow.toFixed(2)} kg</b> (≈ ${Math.floor(kgNow / D.economy.beanPerCup + 1e-9)} tek shot)${needsMilk() || S.tools.milkKit ? ` · 🥛 Süt: <b>${(S.milk || 0).toFixed(1)} L</b>` : ""}<br>
+  const bill = `<svg viewBox="0 0 48 28" width="54" height="32" aria-hidden="true"><rect x="1.5" y="1.5" width="45" height="25" rx="4" fill="#4f9a44" stroke="#2f6b2a" stroke-width="2"/><rect x="6" y="6" width="36" height="16" rx="2.5" fill="none" stroke="#bfe6b2" stroke-width="1.4"/><circle cx="24" cy="14" r="5.5" fill="#bfe6b2"/><text x="24" y="17.6" text-anchor="middle" font-size="9" font-weight="800" fill="#2f6b2a">₺</text><circle cx="10.5" cy="14" r="1.6" fill="#bfe6b2"/><circle cx="37.5" cy="14" r="1.6" fill="#bfe6b2"/></svg>`;
+  html += `<div class="cash">${bill}<span>₺${S.money}</span><small>Kasa</small></div>`;   // §7 para belirgin, yeşil kağıt para ikonu
+  html += `<div class="box" style="text-align:left"><h4>Mevcut stok</h4><p style="margin:4px 0 0">☕ Çekirdek: <b>${kgNow.toFixed(2)} kg</b> (≈ ${Math.floor(kgNow / D.economy.beanPerCup + 1e-9)} tek shot)${needsMilk() || S.tools.milkKit ? ` · 🥛 Süt: <b>${(S.milk || 0).toFixed(1)} L</b>` : ""}<br>
     🥤 Bardak: ${cupsNeeded().map(k => `${D.cups[k].name} <b>${S.cups[k] || 0}</b>`).join(" · ")}</p></div>`;
   html += miss.length ? miss.map(t => `<div class="miss">EKSİK: ${t}</div>`).join("") : `<div class="req ok" style="font-size:15px">Malzemeler tamam ✓</div>`;
   const beanLow = (S.beans[S.bean]?.kg || 0) < D.economy.minBeans, milkLow = needsMilk() && (S.milk || 0) < D.economy.minMilk;
   html += `<div class="box ${beanLow ? "need" : ""}"><h4>Çekirdek (₺/kg) · kullanımda: ${D.beans[S.bean].name} ${(S.beans[S.bean]?.kg || 0).toFixed(2)} kg</h4><table>` + Object.entries(D.beans).filter(([, b]) => b.unlock <= lv.stars).map(([id, b]) => { const st = S.beans[id];
-    return `<tr><td><b>${b.name}</b><br><span class="muted">${b.notes}</span></td><td>₺${b.price}<br><span class="muted">${st ? st.kg.toFixed(2) + " kg" : "stok yok"}</span></td>
+    return `<tr><td>${th("sup:bean")}<b>${b.name}</b><br><span class="muted">${b.notes}</span></td><td>₺${b.price}<br><span class="muted">${st ? st.kg.toFixed(2) + " kg" : "stok yok"}</span></td>
       <td><button data-buy="${id}" ${S.money < b.price ? "disabled" : ""}>1 kg al</button><br><button data-use="${id}" ${!st || S.bean === id ? "disabled" : ""}>${S.bean === id ? "kullanımda" : "kullan"}</button></td></tr>`; }).join("") + `</table></div>`;
-  if (needsMilk() || S.tools.milkKit) html += `<div class="box ${milkLow ? "need" : ""}"><h4>Süt (₺${D.economy.milkPrice}/L)</h4><p class="muted">Sütlü içecek başına ${D.economy.milkPerCup} L harcanır. ${S.equipment.fridge ? "Buzdolabı var: süt 3 gün dayanır." : "Buzdolabı yok: gün sonunda kalan süt bozulur."}</p>
+  if (needsMilk() || S.tools.milkKit) html += `<div class="box ${milkLow ? "need" : ""}">${th("sup:milk")}<h4>Süt (₺${D.economy.milkPrice}/L)</h4><p class="muted">Sütlü içecek başına ${D.economy.milkPerCup} L harcanır. ${S.equipment.fridge ? "Buzdolabı var: süt 3 gün dayanır." : "Buzdolabı yok: gün sonunda kalan süt bozulur."}</p>
     <p>Stok: <b>${(S.milk || 0).toFixed(1)} L</b> <button id="buyMilk" ${S.money < D.economy.milkPrice ? "disabled" : ""}>1 L al</button></p></div>`;
   html += `<div class="box">${"<h4>Bardaklar (10'lu paket)</h4>"}<p class="muted">Her içecek kendi bardağıyla servis edilir; bardak yoksa müşteri o boyu alamadan kızıp gider. Her bardak türünden en az ${D.cupMin} adet olmalı.</p><table>` +
     cupsNeeded().map(k => { const cp = D.cups[k], n = S.cups[k] || 0;
-      return `<tr class="${n < D.cupMin ? "need" : ""}"><td><b>${cp.name}</b><br><span class="muted">stok ${n} adet</span></td><td>₺${cp.price}</td><td><button data-cup="${k}" ${S.money < cp.price ? "disabled" : ""}>${cp.pack}'lu paket al</button></td></tr>`; }).join("") + `</table></div>`;
+      return `<tr class="${n < D.cupMin ? "need" : ""}"><td>${th("cup:" + k)}<b>${cp.name}</b><br><span class="muted">stok ${n} adet</span></td><td>₺${cp.price}</td><td><button data-cup="${k}" ${S.money < cp.price ? "disabled" : ""}>${cp.pack}'lu paket al</button></td></tr>`; }).join("") + `</table></div>`;
   html += `<div class="row"><button id="supLoan" class="loanbtn">🏦 Kredi al</button><button class="pri" id="supNext" ${flow && miss.length ? "disabled" : ""}>${flow ? "Devam →" : "Kapat"}</button></div>`;
   $("#shopCard").innerHTML = html;
   const re = () => renderSupply();
@@ -657,17 +701,17 @@ function openLoans(after) {
 function eqRow(id, e) {
   const miss = (e.requires || []).filter(r => !S.equipment[r]);
   const st = S.equipment[id] ? "✓ alındı" : miss.length ? `🔒 Önce: ${miss.map(r => D.equipment[r].name).join(", ")}` : `<button data-eq="${id}" ${S.money < e.price ? "disabled" : ""}>Satın al</button>`;
-  return `<tr class="${miss.length && !S.equipment[id] ? "lock" : ""}"><td><b>${e.auto ? "⚙ " : e.widen ? "🎯 " : ""}${e.name}</b><br><span class="muted">${e.effect}</span></td><td>₺${e.price}</td><td>${st}</td></tr>`;
+  return `<tr class="${miss.length && !S.equipment[id] ? "lock" : ""}"><td>${th("eq:" + id)}<b>${e.auto ? "⚙ " : e.widen ? "🎯 " : ""}${e.name}</b><br><span class="muted">${e.effect}</span></td><td>₺${e.price}</td><td>${st}</td></tr>`;
 }
 function hubContent() {
   const lv = shop(), vis = e => (e.stars || 1) <= lv.stars;
   if (hubTab === "upg") {
     const T = tr(), cost = k => lv.tierCost[k], E = Object.entries(D.equipment).filter(([, e]) => vis(e));
     const sec = (title, desc, rows) => rows ? `<div class="box"><h4>${title}</h4>${desc ? `<p class="muted">${desc}</p>` : ""}<table>${rows}</table></div>` : "";
-    const traffic = `<tr><td><b>Günlük müşteri</b> (kademe ${T.cust}/3)<br><span class="muted">${T.cust < 3 ? D.traffic.cust[T.cust] + ": +" + lv.custStep + " müşteri/gün" : "en üst kademe"}</span></td><td>${T.cust < 3 ? "₺" + cost(T.cust) : ""}</td><td>${T.cust < 3 ? `<button data-tr="cust" ${S.money < cost(T.cust) ? "disabled" : ""}>Yükselt</button>` : "✓"}</td></tr>
-      <tr><td><b>Geliş sıklığı</b> (kademe ${T.freq}/3)<br><span class="muted">${T.freq < 3 ? D.traffic.freq[T.freq] + ": müşteriler daha sık gelir" : "en üst kademe"}</span></td><td>${T.freq < 3 ? "₺" + cost(T.freq) : ""}</td><td>${T.freq < 3 ? `<button data-tr="freq" ${S.money < cost(T.freq) ? "disabled" : ""}>Yükselt</button>` : "✓"}</td></tr>`;
+    const traffic = `<tr><td>${th("tr:cust" + Math.min(3, T.cust + 1))}<b>Günlük müşteri</b> (kademe ${T.cust}/3)<br><span class="muted">${T.cust < 3 ? D.traffic.cust[T.cust] + ": +" + lv.custStep + " müşteri/gün" : "en üst kademe"}</span></td><td>${T.cust < 3 ? "₺" + cost(T.cust) : ""}</td><td>${T.cust < 3 ? `<button data-tr="cust" ${S.money < cost(T.cust) ? "disabled" : ""}>Yükselt</button>` : "✓"}</td></tr>
+      <tr><td>${th("tr:freq" + Math.min(3, T.freq + 1))}<b>Geliş sıklığı</b> (kademe ${T.freq}/3)<br><span class="muted">${T.freq < 3 ? D.traffic.freq[T.freq] + ": müşteriler daha sık gelir" : "en üst kademe"}</span></td><td>${T.freq < 3 ? "₺" + cost(T.freq) : ""}</td><td>${T.freq < 3 ? `<button data-tr="freq" ${S.money < cost(T.freq) ? "disabled" : ""}>Yükselt</button>` : "✓"}</td></tr>`;
     const A = D.staff.assistant;
-    const staff = A.stars <= lv.stars ? `<tr><td><b>${A.name}</b><br><span class="muted">${A.effect} (${A.score} puan) · günlük maaş ₺${A.wage}</span></td><td></td><td>${S.staff.assistant ? `<button id="fire">Çıkar</button>` : `<button id="hire">İşe al</button>`}</td></tr>` : "";
+    const staff = A.stars <= lv.stars ? `<tr><td>${th("staff")}<b>${A.name}</b><br><span class="muted">${A.effect} (${A.score} puan) · günlük maaş ₺${A.wage}</span></td><td></td><td>${S.staff.assistant ? `<button id="fire">Çıkar</button>` : `<button id="hire">İşe al</button>`}</td></tr>` : "";
     return sec("👥 Müşteri gelişi", `Sıra en fazla ${lv.maxQueue} kişi · günde en fazla ${dayCap()} müşteri · ~${arrivalEvery().toFixed(1)} sn'de bir müşteri. Kademeler bu dükkana özeldir.`, traffic)
       + sec("🎯 Kolaylaştırıcılar ve göstergeler", "Renkli hedef bölgelerini genişletir ya da adımı hızlandırır.", E.filter(([id, e]) => e.widen || id === "steamWand").map(([id, e]) => eqRow(id, e)).join(""))
       + sec("⚙ Otomasyon", "Adımı atlar, sabit 85 puan verir; önce o adımın kolaylaştırıcısı gerekir.", E.filter(([, e]) => e.auto).map(([id, e]) => eqRow(id, e)).join(""))
@@ -675,11 +719,11 @@ function hubContent() {
   }
   if (hubTab === "tools") {
     const rows = Object.entries(D.tools).filter(([, t]) => vis(t)).map(([id, t]) => { const uses = Object.keys(D.drinks).filter(k => (D.drinks[k].needs || []).includes(id)).map(k => D.drinks[k].name);
-      return `<tr><td><b>${t.name}</b><br><span class="muted">${t.effect} · gerektiren: ${uses.join(", ")} · mini oyun: ${D.minigames[t.step].name}</span></td><td>₺${t.price}</td><td>${S.tools[id] ? "✓ dükkanda" : `<button data-tool="${id}" ${S.money < t.price ? "disabled" : ""}>Satın al</button>`}</td></tr>`; }).join("");
+      return `<tr><td>${th("tool:" + id)}<b>${t.name}</b><br><span class="muted">${t.effect} · gerektiren: ${uses.join(", ")} · mini oyun: ${D.minigames[t.step].name}</span></td><td>₺${t.price}</td><td>${S.tools[id] ? "✓ dükkanda" : `<button data-tool="${id}" ${S.money < t.price ? "disabled" : ""}>Satın al</button>`}</td></tr>`; }).join("");
     return `<div class="box"><p class="muted">Bazı tarifler bu aletler ya da makineler olmadan yapılamaz. Aldıkların dükkan büyüyünce yeni dükkana taşınır.</p><table>${rows}</table></div>`;
   }
   if (hubTab === "loans") return `<div class="box">${loansHTML()}</div>`;
-  return `<div class="box"><table>` + Object.entries(D.decor).map(([id, dc]) => `<tr><td><b>${dc.name}</b><br><span class="muted">${dc.effect}</span></td><td>₺${dc.price}</td><td>${S.decor[id] ? "✓ dükkanda" : `<button data-dec="${id}" ${S.money < dc.price ? "disabled" : ""}>Satın al</button>`}</td></tr>`).join("") + `</table></div>`;
+  return `<div class="box"><p class="muted">Dekorasyon bu dükkana özeldir: yalnızca burada görünür ve etki eder. Dükkan büyüyünce yeni dükkanın kendi dekorları gelir.</p><table>` + Object.entries(D.decor).filter(([, dc]) => (dc.stars || 1) === lv.stars).map(([id, dc]) => `<tr><td>${th("decor:" + id)}<b>${dc.name}</b><br><span class="muted">${dc.effect}</span></td><td>₺${dc.price}</td><td>${S.decor[id] ? "✓ dükkanda" : `<button data-dec="${id}" ${S.money < dc.price ? "disabled" : ""}>Satın al</button>`}</td></tr>`).join("") + `</table></div>`;
 }
 function renderHub() {
   const lv = shop(), flow = dayFlow === "hub";

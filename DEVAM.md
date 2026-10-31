@@ -7,8 +7,22 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.12)
+## Bekleyen paket (son yayın: v0.13)
 (boş)
+
+## v0.13 – YAYINLANDI (31 Ekim 2026, kullanıcı "hepsini yap paket çık" dedi)
+Doküman rev 66 (HTML dışa aktarımdan yenilendi). Oyun testi yapılmadı (Kural 7); yalnız sözdizimi ve sahne/küçük resim çiziminin hata vermediği kontrol edildi.
+- **Öğretici, öğütme ve tamping:** adım açılınca ibre durur, Yıldız Teyze balonunda **Anladım** düğmesi çıkar (`o.phase = "intro"`, eylem düğmesi kapalı). Anladım'dan sonra ibre 0'dan başlayıp bir kez gidip gelir (`o.bounces >= 2`), sonra koyu yeşilde sabitlenir, `#zRes`'te büyük "Tam şimdi!" yazısı çıkar ve düğme açılır.
+- **Öğretici, dozlama ve çekme:** aynı şekilde önce anlatım ve Anladım; Anladım'a kadar BASILI TUT / BAŞLAT kapalı, sonra açılıp yanıp sönüyor.
+- **Seçim ekranı:** müşterinin siparişi artık seçim ekranında yazmıyor ve önceden seçili gelmiyor (`sel.drink = null`); başlık "Siparişi hazırla", sipariş yalnızca sağ üst kartta. Boylar tarif seçilince çıkıyor.
+- **Tedarik'te kasa:** üstte yeşil çerçeveli `.cash` kutusu, SVG yeşil kağıt para ikonu ve 32px yeşil tutar.
+- **Sahne (scene.js baştan):** `vgrad` ile yüz ışık geçişi, `cyl` silindir, `wallText`/`wallRect` duvar düzlemine çizim; lambri, AO, cam yansıması. `CLEN(lv)` tezgâh 5/6/7. `backCounter` (fridge, kettle, milkKit, thermoPitcher, pourPitcher, cocoa, boiler, autoMilk), `machine(x,y,f)` (pidGauge, steamWand), `superAuto`, `grinder(f)` (grindPrecise, autoGrind, scaleGrind), `counterTools` (precScale, scaleTamp, autoTamp), `cupStacks`, `pastryCase`, `register`; `trafficDeco(T)` (c1–c3, f1–f3); `DECOR` 18 öğe; `TABLES` dükkana göre + 3★ ortak masa; lamba sayısı level×2. Barista yeniden (yazı yok). Müşteriye kol/ayakkabı.
+- **Küçük resimler:** `SCENE.thumb(key)` aynı çizim fonksiyonlarını küçük tuvale çizer (`TH_ITEMS`, ölçek tablosu `SC`); anahtarlar `eq:`, `tool:`, `decor:`, `tr:cust1..3/freq1..3`, `staff`, `sup:bean`, `sup:milk`, `cup:<tür>`. `game.js` `th(key)`.
+- **Dekor dükkana özel:** `D.decor[*].stars`; `activeDecor()` yalnız bu dükkanın dekoru; itibar toplamı gün sonunda (`L.plant` = dekor itibarı).
+- **Hareket adımları:** `MG` `mode:"act"` (`act: circle|shake|hold`), `uiAct`; yeni adımlar `stir`, `swirl`, `pour`; `cocoa` artık çalkalama. CLOSEUP `shake/stir/swirl/pour`. `stepsFor` art'ı swirl'den sonra ekler.
+- **Puan:** `zoneScore` dışı 0; `orderQuality` çekirdek tazeliği eklemez.
+- **Sipariş söyleme:** `layout()` öndeki müşteri kasaya varıp (`atDesk`) makine boşken (`free`) söyler; söylemeden dokunulursa uyarı.
+- **Canlı paneller:** `.card` büyük yazı, kart satırlar, `.thumb`; ana menü `@media (min-width:900px)` büyük.
 
 ## v0.12 – YAYINLANDI (31 Ekim 2026, kullanıcı "her şeyi bitirdikten sonra paket çık" dedi)
 Doküman rev 51. Test yapılmadı (Kural 7).

@@ -1,5 +1,52 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.13 – 31 Ekim 2026
+
+### Dükkan artık dolu ve canlı
+- **Her alet, makine ve geliştirme dükkanda görünüyor.**
+  - Ön tezgâhta: makinenin üstünde PID göstergesi ve yükseltilmiş buhar çubuğu, ikinci makine, süper otomatik makine, mikro ayar halkalı, ekranlı ya da teraziye oturtulmuş öğütücü, hassas terazi, tartılı tamper ve otomatik tamper istasyonu.
+  - Yeni arka tezgâhta: buzdolabı, kettle, süt sürahileri, kakao serpici, buhar kazanı ve otomatik süt köpürtücü.
+- **Müşteri gelişi geliştirmeleri görünüyor:**
+  - Kapı yanında kaldırım tabelası.
+  - Duvarda QR kodlu sosyal medya afişi ve çerçeveli gazete ilanı.
+  - Vitrinde yanıp sönen ampuller ve ışıklı "AÇIK" tabelası.
+  - Kapı yanında menü panosu.
+  - Kapının üstünde dönen kahve kokusu fanı.
+- **Dekorasyon 18 ürün oldu ve dükkana özel.**
+  - Her dükkanın kendi 6 dekoru var; seviye atlayınca yeni dükkanın dekorları gelir, eskiler taşınmaz.
+  - Örnekler: neon kahve tabelası, Chester koltuk, kitaplık, akvaryum, duvar piyanosu, kristal avize, pirinç tabela.
+- **Dükkan büyüdükçe dolulaşıyor:**
+  - Tezgâh 5 → 6 → 7 birim uzuyor.
+  - Masalar 3 → 5 → 6 oluyor, üstüne uzun ortak masa ekleniyor. Masa ve sandalye tipi dükkana göre değişiyor.
+  - Pasta vitrini, kasa, bahşiş kavanozu, çöp kutusu, askılık, duvar rafları, halı ve daha fazla sarkıt lamba var.
+- **Daha gerçekçi çizim:**
+  - Yüzeylerde ışık geçişi ve kenar parlaması, duvar dibi gölgeleri, ahşap lambri, cam yansıması.
+  - Müşterilerin kolları, ayakkabıları ve kıyafet gölgeleri var.
+- **Barista:** üstündeki "Sen" yazısı kaldırıldı. Uzun sarı saçlı, gerçekçi bir genç kadın olarak yeniden çizildi: mavi gözler, kaşlar, dudaklar, kollar, bluz ve kiremit önlük (cep, logo, bağcık).
+
+### Resimli ve canlı paneller
+- Geliştirmeler, Aletler, Dekorasyon ve Tedarik listelerinde her ürünün dükkanda görüneceği hâlinin resmi var.
+- Çekirdek torbası, süt kutusu ve bardaklar da resimli.
+- Paneller büyük ve okunaklı yazılı renkli kartlar oldu; dokununca hafifçe büyüyorlar.
+- Ana menünün yazıları ve düğmeleri bilgisayarda büyüdü.
+
+### Mini oyunlar
+- **Hareket adımları:** her adım beceri istemiyor; gerçek hazırlığa benzeyen hareketler eklendi. Tamamlanınca tam puan verirler.
+  - Americano: kaşıkla 3 tur karıştır.
+  - Latte ve Cappuccino: sürahiyi 3 tur çevir.
+  - Cappuccino: kakaoyu serpiciyi sağa-sola kaydırarak çalkala.
+  - Macchiato ve Cortado: sütü basılı tutarak dök.
+- **Puan yalnızca renge bağlı:** koyu yeşilin her yeri 100, açık yeşil 88, sarı 72, renkli bölgelerin dışı 0. Kahve kalitesi bu renklerin ortalaması; çekirdek tazeliği kaliteye eklenmiyor.
+- **Öğretici:**
+  - Öğütme ve tampingde önce Yıldız Teyze anlatıyor ve **Anladım**'a basılmasını bekliyor.
+  - Sonra ibre bir kez gidip geliyor, koyu yeşilde durunca "Tam şimdi!" yazıyor.
+  - Dozlama ve çekmede de önce anlatım geliyor; düğme Anladım'dan sonra açılıyor.
+
+### Siparişler
+- Sıradaki müşteri siparişini kapıdan girer girmez değil, kasaya varıp eldeki sipariş teslim edilince söylüyor.
+- Tarif ve boy seçim ekranında müşterinin siparişi yazmıyor ve önceden seçili gelmiyor; siparişi sağ üstteki karttan okuyorsun.
+- Tedarik ekranında para en üstte, yeşil kağıt para ikonuyla büyük yazıyor.
+
 ## v0.12 – 31 Ekim 2026
 
 ### Tam ekran ve Android'e yükleme

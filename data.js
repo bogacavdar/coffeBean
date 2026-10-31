@@ -1,24 +1,24 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.12",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.13",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
     espresso:   { name: "Espresso", sizes: ["single","double"],     level: 1, req: null,        unlockCups: 0,   price: 10, cost: 2, steps: ["grind","dose","tamp","extract"],
       card: "18 g kahve → 36 g espresso (1:2), 25–30 sn. Ekşi tat = çok hızlı aktı, öğütümü incelt. Acı tat = çok yavaş aktı, öğütümü kabalaştır." },
-    americano:  { name: "Americano", sizes: ["S","M","L"],    level: 2, req: "espresso",  unlockCups: 4,  price: 11, cost: 2, needs: ["kettle"], steps: ["grind","dose","tamp","extract","water"],
+    americano:  { name: "Americano", sizes: ["S","M","L"],    level: 2, req: "espresso",  unlockCups: 4,  price: 11, cost: 2, needs: ["kettle"], steps: ["grind","dose","tamp","extract","water","stir"],
       card: "Espresso + sıcak su (1:3). Su üstüne espresso eklenirse krema korunur." },
     lungo:      { name: "Lungo", sizes: ["single","double"],        level: 2, req: "espresso",  unlockCups: 8,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 3,
       card: "Uzun espresso: 18 g → ~54 g (1:3), 35–40 sn. Daha hafif, daha acımsı." },
     ristretto:  { name: "Ristretto", sizes: ["single","double"],    level: 2, req: "espresso",  unlockCups: 14,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 1.5,
       card: "Kısa espresso: 18 g → ~27 g (1:1,5), 18–22 sn. Daha yoğun, daha tatlı." },
-    macchiato:  { name: "Macchiato", sizes: ["single","double"],    level: 3, req: "espresso",  unlockCups: 22, price: 13, cost: 3, needs: ["milkKit"], steps: ["grind","dose","tamp","extract","milk"], milk: "dollop",
+    macchiato:  { name: "Macchiato", sizes: ["single","double"],    level: 3, req: "espresso",  unlockCups: 22, price: 13, cost: 3, needs: ["milkKit"], steps: ["grind","dose","tamp","extract","milk","pour"], milk: "dollop",
       card: "Espresso üzerine bir kaşık süt köpüğü. 'Lekelenmiş' demektir." },
-    cortado:    { name: "Cortado", sizes: ["single","double"],      level: 3, req: "macchiato", unlockCups: 32, price: 15, cost: 3, needs: ["milkKit"], steps: ["grind","dose","tamp","extract","milk"], milk: "micro",
+    cortado:    { name: "Cortado", sizes: ["single","double"],      level: 3, req: "macchiato", unlockCups: 32, price: 15, cost: 3, needs: ["milkKit"], steps: ["grind","dose","tamp","extract","milk","pour"], milk: "micro",
       card: "Espresso ile eşit miktarda süt (1:1), az köpük. Küçük bardakta servis." },
-    latte:      { name: "Caffè latte", sizes: ["S","M","L"],  level: 3, req: "macchiato", unlockCups: 44, shop: 2, art: true, price: 16, cost: 4, needs: ["milkKit","boiler"], steps: ["grind","dose","tamp","extract","pressure","milk"], milk: "micro",
+    latte:      { name: "Caffè latte", sizes: ["S","M","L"],  level: 3, req: "macchiato", unlockCups: 44, shop: 2, art: true, price: 16, cost: 4, needs: ["milkKit","boiler"], steps: ["grind","dose","tamp","extract","pressure","milk","swirl"], milk: "micro",
       card: "Espresso + bol süt, ince mikro köpük (~1 cm). Latte art bu dokuyla yapılır." },
-    cappuccino: { name: "Cappuccino", sizes: ["S","M","L"],   level: 3, req: "macchiato", unlockCups: 58, shop: 2, art: true, price: 17, cost: 4, needs: ["milkKit","boiler","cocoa"], steps: ["grind","dose","tamp","extract","pressure","milk","cocoa"], milk: "foam",
+    cappuccino: { name: "Cappuccino", sizes: ["S","M","L"],   level: 3, req: "macchiato", unlockCups: 58, shop: 2, art: true, price: 17, cost: 4, needs: ["milkKit","boiler","cocoa"], steps: ["grind","dose","tamp","extract","pressure","milk","swirl","cocoa"], milk: "foam",
       card: "1/3 espresso, 1/3 süt, 1/3 köpük. Süt 60–65 °C; kalın ama ipeksi köpük." }
   },
 
@@ -31,7 +31,10 @@ window.DATA = {
     milk:    { name: "Süt köpürtme", hint: "Basılı tut, süt ısınır; ibre koyu yeşildeyken bırak (60–65 °C)." },
     water:   { name: "Su dök",       hint: "Kettle'ı basılı tut, su seviyesi koyu yeşildeyken bırak." },
     pressure:{ name: "Basınç",       hint: "Kadran ibresi dönüyor: renkli yayın ortasındayken VİDAYI KAPAT." },
-    cocoa:   { name: "Kakao serp",   hint: "Serpici sağa-sola gidiyor: fincanın tam ortasındayken SERP." },
+    cocoa:   { name: "Kakao çalkala", hint: "Serpiciyi fincanın üstünde sağa-sola kaydırarak çalkala; her çalkalamada kakao yağar." },
+    stir:    { name: "Karıştır",     hint: "Kaşıkla fincanın içinde daire çizerek 3 tur karıştır." },
+    swirl:   { name: "Sürahiyi çevir", hint: "Sürahiyi daire çizerek 3 tur çevir; süt ile köpük birleşsin." },
+    pour:    { name: "Sütü dök",     hint: "Basılı tut, sürahiden fincana süt dök; fincan dolunca biter." },
     art:     { name: "Latte art",    hint: "Basılı tut ve dök, koyu yeşilde bırak; sonra kesim ibresi koyu yeşildeyken KES." }
   },
 
@@ -133,10 +136,26 @@ window.DATA = {
   // §8 – Personel (prototip)
   staff: { assistant: { name: "Yardımcı barista", stars: 2, wage: 40, prepTime: 7, score: 85, effect: "Kuyruktaki sütsüz siparişleri kendisi hazırlar" } },
   // §8 – Dekor (prototip): alınan dekor dükkanda görünür
+  // §8 dekorasyon dükkana özeldir: stars = hangi dükkanda satılır/görünür/etki eder
   decor: {
-    plant:  { name: "Büyük bitki",   price: 120, effect: "Günde +1 itibar", rep: 1 },
-    lamp:   { name: "Ayaklı lamba",  price: 200, effect: "Bahşiş ×1,1", tip: 1.1 },
-    record: { name: "Pikap",         price: 350, effect: "Müşteri sabrı ×1,15", patience: 1.15 }
+    plant:      { stars: 1, name: "Büyük bitki",            price: 120,  effect: "Günde +1 itibar", rep: 1 },
+    lamp:       { stars: 1, name: "Ayaklı lamba",           price: 200,  effect: "Bahşiş ×1,1", tip: 1.1 },
+    record:     { stars: 1, name: "Pikap",                  price: 350,  effect: "Müşteri sabrı ×1,15", patience: 1.15 },
+    poster:     { stars: 1, name: "Vintage kahve posteri",  price: 70,   effect: "Bahşiş ×1,03", tip: 1.03 },
+    mat:        { stars: 1, name: "Hoş geldin paspası",     price: 50,   effect: "Müşteri sabrı ×1,05", patience: 1.05 },
+    stools:     { stars: 1, name: "Pencere önü tabureleri", price: 150,  effect: "Bahşiş ×1,05", tip: 1.05 },
+    sofa:       { stars: 2, name: "Chester koltuk",         price: 450,  effect: "Bahşiş ×1,1", tip: 1.1 },
+    bookshelf:  { stars: 2, name: "Kitaplık",               price: 300,  effect: "Müşteri sabrı ×1,1", patience: 1.1 },
+    ivy:        { stars: 2, name: "Sarmaşık saksılar",      price: 200,  effect: "Günde +1 itibar", rep: 1 },
+    photos:     { stars: 2, name: "Mahalle fotoğrafları",   price: 150,  effect: "Bahşiş ×1,04", tip: 1.04 },
+    clock:      { stars: 2, name: "Duvar saati",            price: 120,  effect: "Müşteri sabrı ×1,05", patience: 1.05 },
+    neon:       { stars: 2, name: "Neon kahve tabelası",    price: 380,  effect: "Bahşiş ×1,08", tip: 1.08 },
+    piano:      { stars: 3, name: "Duvar piyanosu",         price: 1200, effect: "Müşteri sabrı ×1,15", patience: 1.15 },
+    aquarium:   { stars: 3, name: "Akvaryum",               price: 800,  effect: "Müşteri sabrı ×1,1", patience: 1.1 },
+    olive:      { stars: 3, name: "Zeytin ağacı",           price: 500,  effect: "Günde +1 itibar", rep: 1 },
+    artwall:    { stars: 3, name: "Sanat duvarı",           price: 600,  effect: "Günde +2 itibar", rep: 2 },
+    chandelier: { stars: 3, name: "Kristal avize",          price: 900,  effect: "Bahşiş ×1,12", tip: 1.12 },
+    brass:      { stars: 3, name: "Pirinç tabela",          price: 700,  effect: "Bahşiş ×1,1", tip: 1.1 }
   },
 
 

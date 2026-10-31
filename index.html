@@ -45,6 +45,10 @@
   #orders{position:fixed;right:16px;top:84px;z-index:6;max-width:min(300px,60vw);background:rgba(246,239,227,.96);color:#3a2a1e;border-radius:14px;padding:10px 14px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-size:14px;line-height:1.35;pointer-events:none}
   #orders .ord{margin-top:4px}#orders .ord.bad{color:#b5533c}
   tr.need td{background:rgba(181,83,60,.12)}
+  .actbar{height:26px;max-width:640px;margin:16px auto 6px;background:#e6ddcd;border-radius:13px;overflow:hidden;box-shadow:inset 0 2px 7px rgba(0,0,0,.18)}.actbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6fae5f,#3f7d34);transition:width .12s}
+  .acthint{font-size:18px;font-weight:700;color:var(--kahve);margin:4px 0}
+  .cash{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px auto 10px;padding:10px 18px;background:#e9f5e4;border:2px solid #4f9a44;border-radius:16px;max-width:360px}
+  .cash span{font-size:32px;font-weight:800;color:#2f7a2a;font-variant-numeric:tabular-nums}.cash small{font-size:13px;color:#4f7a48;font-weight:700}
   /* §11 telefon dikey düzeni: bilgiler sol üstte küçük ve alt alta; bilgisayar/yatay ekran değişmez */
   @media (orientation:portrait) and (max-width:620px){
     #hud{right:auto;flex-direction:column;flex-wrap:nowrap;align-items:flex-start;gap:3px;padding:6px;font-size:11.5px;background:none;max-width:56vw}
@@ -152,6 +156,36 @@
   .slot .num{width:42px;height:42px;border-radius:12px;background:var(--kahve);color:#f7e6c8;display:flex;align-items:center;justify-content:center;font:800 20px "Fraunces",Georgia,serif;flex:none}
   .slot .info{flex:1;text-align:left}.slot .info b{display:block}.slot.empty .num{background:#cfc6b8}
   .slot .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  /* §11 canlı paneller: büyük, okunaklı yazı; ürünler resimli kartlar */
+  .card{font-size:17px;max-width:760px;padding:20px 24px;background:linear-gradient(#fbf7f0,#f3ebdf);border:3px solid #e6d6bf}
+  .card h2{font-size:28px;font-family:"Fraunces",Georgia,serif;font-weight:800;color:#3a2414;padding-bottom:8px;border-bottom:3px dashed #e0cfb5;margin-bottom:12px}
+  .card h2 .x{font-size:22px;padding:4px 10px;border-radius:10px;background:#efe3d2;cursor:pointer}
+  .card .box{border:none;border-radius:16px;padding:14px 16px;margin:14px 0;box-shadow:0 4px 0 #e2d3bd,0 8px 18px rgba(60,35,15,.12)}
+  .card .box h4{font-size:20px;font-family:"Fraunces",Georgia,serif;color:#5b3a22;margin:0 0 8px}
+  .card table{font-size:17px;border-collapse:separate;border-spacing:0 8px}
+  .card td{border:none;padding:10px 10px;vertical-align:middle;background:#fbf7f0}
+  .card tr td:first-child{border-radius:14px 0 0 14px}.card tr td:last-child{border-radius:0 14px 14px 0;text-align:right;white-space:nowrap}
+  .card tr{transition:transform .15s}.card tr:hover{transform:scale(1.015)}
+  .card td b{font-size:18px;color:#3a2414}
+  .card .muted{font-size:15px}
+  .card button{font-size:17px;padding:10px 16px;border-radius:12px;font-weight:700;box-shadow:0 3px 0 #d8c7ae}
+  .card button.pri{box-shadow:0 4px 0 #7d3424}
+  .card button:disabled{box-shadow:none}
+  .thumb{float:left;width:84px;height:64px;border-radius:12px;margin:0 12px 0 0;box-shadow:0 3px 8px rgba(60,35,15,.25);background:#efe5d6}
+  .cash span{font-size:36px}
+  @media (max-width:560px){.card{font-size:16px;padding:14px}.card h2{font-size:23px}.thumb{width:64px;height:50px}.card td{padding:8px 6px}.card td b{font-size:16px}}
+  /* §11 ana menü: geniş ekranda büyük yazı */
+  @media (min-width:900px){
+    #menu .logo{width:200px;height:200px}
+    #menu h1{font-size:clamp(82px,8vw,120px)}
+    #menu .tag{font-size:22px;max-width:640px}
+    #menu .ver{font-size:16px}
+    #menu .mbtns{width:min(440px,90vw);gap:14px}
+    #menu button{font-size:24px;padding:18px 34px}
+    #menu .mrow button{font-size:18px;padding:12px 18px}
+    #menu .mtop button{font-size:18px;padding:12px 16px}
+    .slot{font-size:18px}.slot .num{width:54px;height:54px;font-size:26px}
+  }
   button.danger{color:var(--kotu);border-color:#e7b9ad}
   .toast{position:fixed;left:50%;top:56px;transform:translateX(-50%);background:rgba(43,33,23,.92);color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:10;max-width:90vw;text-align:center}
   .toast.on{opacity:1}
@@ -231,11 +265,11 @@
   </svg>
 </section>
 <div class="toast" id="toast"></div>
-<script>window.CB_VERSION = "0.12";</script>
-<script src="data.js?v=0.12"></script>
-<script src="audio.js?v=0.12"></script>
-<script src="scene.js?v=0.12"></script>
-<script src="closeup.js?v=0.12"></script>
-<script src="game.js?v=0.12"></script>
+<script>window.CB_VERSION = "0.13";</script>
+<script src="data.js?v=0.13"></script>
+<script src="audio.js?v=0.13"></script>
+<script src="scene.js?v=0.13"></script>
+<script src="closeup.js?v=0.13"></script>
+<script src="game.js?v=0.13"></script>
 </body>
 </html>

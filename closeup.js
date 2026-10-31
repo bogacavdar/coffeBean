@@ -162,6 +162,49 @@ window.CLOSEUP = (() => {
     ctx.strokeStyle = "rgba(43,33,23,.35)"; ctx.setLineDash([4, 5]); ctx.beginPath(); ctx.moveTo(x, 48); ctx.lineTo(x, 210); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.textAlign = "center"; ctx.fillText("serpici fincanın ortasındayken SERP", 240, 235);
   }
+  // ---- §4 hareket adımları: çalkala, karıştır, sürahiyi çevir, dök
+  function shake(x, v) { bg();                                       // üstten köpüklü fincan, serpiciyi parmakla sağa-sola çalkala
+    ctx.fillStyle = rg(236, 140, 10, 86, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 140, 84, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = rg(232, 136, 5, 70, [[0, "#fbf6ee"], [.75, "#efe3cf"], [1, "#c99b66"]]); ctx.beginPath(); ctx.arc(240, 140, 70, 0, Math.PI * 2); ctx.fill();
+    const n = Math.round(v * 2.6); ctx.fillStyle = "rgba(92,52,24,.72)";
+    for (let i = 0; i < n; i++) { const a = i * 2.39996, r = Math.sqrt(i / 260) * 64; ctx.beginPath(); ctx.arc(240 + Math.cos(a) * r, 140 + Math.sin(a) * r * .92, 1.3 + (i % 3) * .4, 0, Math.PI * 2); ctx.fill(); }
+    const sx = 120 + x / 100 * 240, tilt = (x - 50) / 220;
+    ctx.save(); ctx.translate(sx, 30); ctx.rotate(tilt); ctx.fillStyle = lg(-26, 0, 26, 0, [[0, "#7c8085"], [.4, "#f2f4f6"], [1, "#6f7378"]]); rr(-26, -22, 52, 44, 11); ctx.fill();
+    ctx.fillStyle = "#5a3418"; for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.arc(-15 + i * 5, 20, 1.6, 0, Math.PI * 2); ctx.fill(); } ctx.restore();
+    ctx.fillStyle = "rgba(92,52,24,.55)"; for (let i = 0; i < 10; i++) { ctx.beginPath(); ctx.arc(sx - 12 + (i * 7) % 26, 58 + (i * 13 + v * 3) % 50, 1.2, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("sağa-sola kaydır · çalkala", 240, 240);
+  }
+  function stir(v, ang) { bg();                                      // üstten americano, kaşık daire çizer
+    ctx.fillStyle = rg(236, 128, 10, 92, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 128, 90, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = rg(236, 124, 5, 76, [[0, "#8a5a36"], [.7, "#5a3418"], [1, "#2e180a"]]); ctx.beginPath(); ctx.arc(240, 128, 76, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(230,190,140,.35)"; ctx.lineWidth = 2; for (let i = 1; i < 5; i++) { ctx.beginPath(); ctx.arc(240, 128, i * 15, ang + i, ang + i + 1.6 + v / 60); ctx.stroke(); }
+    const ex = 240 + Math.cos(ang) * 44, ey = 128 + Math.sin(ang) * 44;
+    ctx.strokeStyle = lg(ex - 10, 0, ex + 10, 0, [[0, "#8e9296"], [.5, "#f4f5f6"], [1, "#8e9296"]]); ctx.lineWidth = 7; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex + 120, ey - 90); ctx.stroke(); ctx.lineCap = "butt";
+    ctx.fillStyle = "#c9ccd0"; ctx.beginPath(); ctx.ellipse(ex, ey, 11, 7, ang, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("parmağınla daire çiz · tur " + Math.min(3, Math.floor(v / 33.4)) + "/3", 240, 240);
+  }
+  function swirl(v, ang, mk) { bg();                                  // üstten süt sürahisi, süt girdabı
+    const ox = 240 + Math.cos(ang) * 10, oy = 126 + Math.sin(ang) * 6;
+    shadow(ox, oy + 8, 100, 30, .25);
+    ctx.fillStyle = lg(ox - 90, 0, ox + 90, 0, [[0, "#8e9296"], [.3, "#f2f4f6"], [.65, "#b4b8bd"], [1, "#7c8085"]]); ctx.beginPath(); ctx.arc(ox, oy, 88, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#aeb2b7"; ctx.beginPath(); ctx.moveTo(ox + 80, oy - 20); ctx.lineTo(ox + 112, oy); ctx.lineTo(ox + 80, oy + 20); ctx.fill();
+    const k = v / 100; ctx.fillStyle = rg(ox, oy, 5, 74, [[0, `rgb(${250 - k * 4},${244 - k * 6},${232 - k * 8})`], [1, k > .6 ? "#efe5d4" : "#f6f1e8"]]); ctx.beginPath(); ctx.arc(ox, oy, 74, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = `rgba(200,180,150,${.5 - k * .35})`; ctx.lineWidth = 3; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(ox, oy, 12 + i * 10, ang * 1.5 + i, ang * 1.5 + i + 2.2); ctx.stroke(); }
+    if (k < .7) { ctx.fillStyle = "rgba(255,255,255,.8)"; for (let i = 0; i < 30 * (1 - k); i++) { ctx.beginPath(); ctx.arc(ox + Math.cos(i * 2.1 + ang) * (20 + i * 1.6), oy + Math.sin(i * 2.1 + ang) * (20 + i * 1.6), 2 + (i % 3), 0, Math.PI * 2); ctx.fill(); } }
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("daire çizerek çevir · tur " + Math.min(3, Math.floor(v / 33.4)) + "/3 · köpük birleşiyor", 240, 240);
+  }
+  function pour(v, pouring, mk) { bg(); shadow(250, H - 64, 64, 10);  // yandan: sürahi fincana süt döker
+    const lvl = Math.min(100, v) / 100, top = 196 - lvl * 52;
+    ctx.fillStyle = lg(210, 0, 300, 0, [[0, "#d8d3cc"], [.35, "#fbfaf8"], [1, "#c9c3bb"]]); rr(212, 140, 80, 60, 12); ctx.fill();
+    ctx.strokeStyle = "#d8d3cc"; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(295, 168, 14, -1.2, 1.2); ctx.stroke();
+    ctx.save(); rr(216, 144, 72, 52, 10); ctx.clip(); ctx.fillStyle = lg(0, 144, 0, 196, [[0, "#6a3d1a"], [1, "#2e180a"]]); ctx.fillRect(212, 160, 80, 40);
+    ctx.fillStyle = lg(0, top, 0, 196, [[0, "#f7f0e4"], [1, "#d9b88e"]]); ctx.fillRect(212, Math.max(144, top), 80, 60 * lvl); ctx.restore();
+    ctx.save(); ctx.translate(165, 82); ctx.rotate(pouring ? .7 : .2);
+    ctx.fillStyle = lg(-40, 0, 40, 0, [[0, "#8e9296"], [.35, "#eef0f2"], [1, "#7c8085"]]); ctx.beginPath(); ctx.moveTo(-34, -40); ctx.lineTo(34, -40); ctx.lineTo(40, 40); ctx.lineTo(-40, 40); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#aeb2b7"; ctx.beginPath(); ctx.moveTo(34, -40); ctx.lineTo(56, -48); ctx.lineTo(38, -28); ctx.fill(); ctx.strokeStyle = "#7c8085"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(-44, 0, 18, 1.7, 4.6); ctx.stroke(); ctx.restore();
+    if (pouring && v < 100) { ctx.strokeStyle = "rgba(255,252,245,.95)"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(214, 64); ctx.quadraticCurveTo(240, 90, 250, top); ctx.stroke(); }
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("basılı tut · sütü dök · %" + Math.round(Math.min(100, v)), 240, 240);
+  }
   function cupTop(quality, milky, heart) { bg(); ctx.fillStyle = rg(236, 120, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 125, 88, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = milky ? rg(232, 118, 5, 74, [[0, "#f7f1e6"], [.7, "#e9dcc6"], [1, "#b8824a"]]) : rg(232, 118, 5, 74, [[0, "#d9a86a"], [.6, "#b77a3c"], [1, "#6a3d1a"]]);
     ctx.beginPath(); ctx.arc(240, 125, 74, 0, Math.PI * 2); ctx.fill();
@@ -169,5 +212,5 @@ window.CLOSEUP = (() => {
     if (heart) { heartShape(240, 122, 34, "#fffaf2"); heartShape(240, 122, 22, "rgba(233,214,190,.6)"); }
     ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; ctx.fillText("Kalite " + quality, 240, 235);
   }
-  return { init, setQuality, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, cupTop };
+  return { init, setQuality, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, shake, stir, swirl, pour, cupTop };
 })();
