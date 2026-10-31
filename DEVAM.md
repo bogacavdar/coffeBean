@@ -7,6 +7,9 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
+## Bekleyen paket (son yayın: v0.11)
+- (henüz yok)
+
 ## v0.10 – YAYINLANDI (31 Ekim 2026, kullanıcı "optimizasyondan sonra paketi çık" dedi)
 Doküman rev 33 (HTML yerelde güncel, pakette gönderilecek). Test yapılmadı (Kural 7), yalnız sözdizimi.
 - Oyuncu karakteri: tezgâhın arkasında sarı saçlı, atkuyruklu, önlüklü kız ("Sen"), sipariş varken hareket ediyor (`scene.js` `barista()`); yardımcı barista yanına (y=3.0) taşındı.
@@ -22,8 +25,16 @@ Doküman rev 33 (HTML yerelde güncel, pakette gönderilecek). Test yapılmadı 
 - Grafik (rev 37): WebGL ile ekran kartı algılama (yazılımsal render tanınır), 'Ekran kartıyla çiz' (canvas `desynchronized`, kapalıysa `willReadFrequently` → CPU), Yüksek/Orta/Düşük kalite (`SCENE.setQuality`: dpr sınırı, çözünürlük ölçeği, efekt seviyesi, Düşük'te 30 kare/sn). Ayar `cekirdek_gfx`'te saklanıyor.
 - Optimizasyon: menüde sahne bir kez çiziliyor (eskiden her karede); dükkan kapalıyken ya da kart/panel açıkken sahne 3 karede bir çiziliyor; ipucu metni ve saat yalnızca değişince DOM'a yazılıyor.
 
-## Bekleyen paket (son yayın: v0.10)
-- (henüz yok)
+## v0.11 – YAYINLANDI (31 Ekim 2026, kullanıcı "hepsini yap, paket çık" dedi)
+Doküman rev 39. Test yapılmadı (Kural 7).
+- Nejla Teyze → **Yıldız Teyze** (oyun, HTML, doküman §10). Açılış metni sadeleşti: "yıllardır işletiyorum, artık yoruldum, dükkan senin, gerisini oynadıkça öğrenirsin". Ezber/espresso kartı açılış penceresinden çıkarıldı, düğme "Devral". `tutorial.espresso` kaldırıldı.
+- İlk sipariş (öğretici): ibre her adımda tam mükemmel noktada kendiliğinden durup bekliyor (`o.frozen`), basınca ya da bırakınca adım mükemmel bitiyor.
+- Tamping: hız 160 → 65; halka hedefleri ×3 (`zones.stepMult.tamp`; mükemmel %6, güzel %15, iyi %30).
+- **Hata (kullanıcı bildirdi): banka.** "Borcu öde" düğmesi elindeki para kadar kısmi ödeme yapıyordu ve üstünde elindeki parayı yazıyordu (0₺'de "₺0", 250₺'de "₺250"). Bu yüzden borç artarken düğmedeki tutar değişmiyor gibi görünüyordu ve 250 ödeyince borç kapanmış sanılıyordu (275'in 25'i kalıyordu). Düzeltme (doküman rev 40): düğme artık "Borcu kapat (₺275)" yazıyor ve yalnız borcun tamamı ödenebiliyor; para yetmezse pasif kalıp "₺X daha gerekli" diyor. Kredi düğmeleri "₺250 al → ₺275 öde" yazıyor, faiz dahil kalan borç açıkça gösteriliyor. Kısa testle doğrulandı: 0₺'de 250 kredi → borç 275, düğme pasif "₺25 daha gerekli"; 400₺ ile kapatınca kasada 125₺ kaldı, borç 0.
+- Banka (doküman rev 41): **Miktarını öde** (elle tutar girilir; en fazla kasadaki para ve borç kadar) + **Borcu kapat** (tamamı). **Vade 7 gün** (`economy.loanDays`; borç sıfırdan açıldığında `S.debtDue` ayarlanıyor, ek kredi vadeyi uzatmıyor). HUD borç göstergesinde kalan gün yazıyor, son 2 günde kırmızı; ledger ve Banka'da da kalan gün var. Vadenin son günü bitince borç varsa **iflas**: oyun bitiyor, iflas penceresi (gün, satılan kahve, açılan tarif, dükkan) çıkıyor, yuva `bankrupt` olarak işaretleniyor (yüklenemez, silinebilir ya da üstüne yeni oyun açılabilir). Eski kayıtlarda borç varsa vade yüklenince başlıyor.
+- **Krediler ayrı ayrı** (doküman rev 42–43): `S.loans = [{id, amount, owe, rem, day, due}]`; `S.debt` toplamdan türetiliyor (`syncDebt`). Türler: ₺100 → ₺110, **5 gün**; ₺250 → ₺275, **8 gün**; kira kredisi (50'ye yuvarlanır) **6 gün**. Banka'da her kredi ayrı satırda: alınan, geri ödenecek, kalan, kalan gün; satır başına **Kapat** ve **Miktarını öde** (elle tutar). Günlük %20 kesinti vadesi en yakın krediden düşüyor. HUD toplam borç ve en yakın vadeyi gösteriyor, ledger her krediyi listeliyor. Herhangi bir kredi vadesinde ödenmemişse iflas. Eski tek borç tek krediye çevriliyor. (Önceki tek borçlu `debtDue` modeli bununla değişti.)
+- **Kira ödenemiyor ve kredi alınamıyorsa iflas:** gün sonunda kasa eksideyse ve gereken kira kredisi toplam borcu kredi limitinin üstüne çıkarıyorsa oyun iflasla bitiyor.
+- v0.11 büyük paket (doküman rev 44): gün sonu akışı `dayFlow` (supply → hub → price) + gazete; Tedarik (`renderSupply`) yalnız malzeme, kırmızı EKSİK kutuları, Kredi popup'ı (`openLoans`/`#ovLoan`); Dükkan hub'ı (`renderHub`, `#ovHub`): renkli/ikonlu sekmeler, sınıflı geliştirmeler, seviyeye göre gizleme, Ana hedef (`renderGoal`, `#ovGoal`). Aletler (`D.tools`): kettle/milkKit/boiler/cocoa, tarif `needs`; yeni adımlar water (basılı tut), pressure (kadran, `dial`), cocoa (gidip gelen serpici). Fiyat: `defaultPrice` = (maliyet × 2 + kira payı), `S.prices` oran (%5 adım, %50–200), Fiyatlar ekranı (`renderPrices`, `#ovPrice`) + oyun içi ikon. Borsa `S.market`, haftalık `updateMarket` + `showNews`. Müşteri: yalnız öndeki sorar (`c.say`), sipariş anında `rollReaction`; pahalı → çıkar (`stats.pricey`), ucuz → alır. Eski kayıtlara açık tariflerin aletleri hediye.
 
 ## v0.9 – YAYINLANDI (31 Ekim 2026, kullanıcı "yap ve yayınla" dedi)
 Doküman rev 32 (§4 renkli hedefler + adım tablosu yeniden yazıldı).

@@ -166,8 +166,17 @@ window.SCENE = (() => {
     ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(sx, sy - 58 * s, 9.5 * s, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = (c.type === "nejla" || c.type === "elder") ? "#d9d4cc" : c.type === "student" ? "#6b4a2a" : "#3a2a22"; ctx.beginPath(); ctx.arc(sx, sy - 61 * s, 9.5 * s, Math.PI, Math.PI * 2); ctx.fill();
     if (active) { ctx.strokeStyle = "#ffd89a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(sx, sy + 2, 19 * s, 9 * s, 0, 0, Math.PI * 2); ctx.stroke(); }
-    // baloncuk
-    if (!c.leaving || c.angry) {
+    // §7 konuşma baloncuğu: yalnızca öndeki müşteri sorar; fiyat tepkisi ("Çok pahalı!", "Ne kadar ucuz!")
+    const sayTxt = c.say && (!c.sayUntil || performance.now() < c.sayUntil) ? c.say : null;
+    if (sayTxt) {
+      ctx.font = `600 ${12 * s}px system-ui`; const tw = ctx.measureText(sayTxt).width, bw = tw + 22 * s + (c.patienceMax && !c.leaving ? 22 * s : 0), bh = 28 * s, by = sy - 96 * s;
+      const bad = /pahalı/i.test(sayTxt), good = /ucuz/i.test(sayTxt);
+      ctx.fillStyle = bad ? "#fbe3dc" : good ? "#e6f3dc" : "rgba(255,255,255,.97)"; ctx.shadowColor = "rgba(0,0,0,.25)"; ctx.shadowBlur = 6; rr(sx - bw / 2, by - bh / 2, bw, bh, 10 * s); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.beginPath(); ctx.moveTo(sx - 5 * s, by + bh / 2); ctx.lineTo(sx, by + bh / 2 + 8 * s); ctx.lineTo(sx + 5 * s, by + bh / 2); ctx.fill();
+      ctx.fillStyle = bad ? "#9c3a26" : good ? "#3f6b2c" : "#2b2117"; ctx.textAlign = "left"; ctx.fillText(sayTxt, sx - bw / 2 + 11 * s, by + 4 * s);
+      if (c.patienceMax && !c.leaving) { const p = c.patience / c.patienceMax, rx = sx + bw / 2 - 14 * s; ctx.lineWidth = 3.5 * s; ctx.strokeStyle = "rgba(0,0,0,.1)"; ctx.beginPath(); ctx.arc(rx, by, 7 * s, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = p < .3 ? "#b5533c" : p < .6 ? "#c9962b" : "#6f7d4a"; ctx.beginPath(); ctx.arc(rx, by, 7 * s, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); ctx.stroke(); }
+    } else if (!c.leaving || c.angry) {
       const by = sy - 96 * s, p = c.patienceMax ? c.patience / c.patienceMax : 1; const bw = 48 * s, bh = 34 * s;
       ctx.fillStyle = c.angry ? "#f3d9d4" : "rgba(255,255,255,.97)"; ctx.shadowColor = "rgba(0,0,0,.25)"; ctx.shadowBlur = 6; rr(sx - bw / 2, by - bh / 2, bw, bh, 9 * s); ctx.fill(); ctx.shadowBlur = 0;
       ctx.beginPath(); ctx.moveTo(sx - 5 * s, by + bh / 2); ctx.lineTo(sx, by + bh / 2 + 8 * s); ctx.lineTo(sx + 5 * s, by + bh / 2); ctx.fill();

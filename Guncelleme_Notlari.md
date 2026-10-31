@@ -1,5 +1,49 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.11 – 31 Ekim 2026
+
+### Gün sonu artık adım adım ekranlarla
+1. **Hesap**
+2. **Kahve Gazetesi** (yalnızca hafta sonunda; borsa haberleri)
+3. **Tedarik:** yalnızca çekirdek ve süt alınır. Eksik malzeme büyük kırmızı bir "EKSİK: … almalısın" uyarısıyla gösterilir. **🏦 Kredi al** düğmesi kredileri ayrı bir pencerede açar. **Devam** düğmesi eksik malzeme varken basılmaz.
+4. **Dükkan** (yeni yönetim ekranı):
+   - Sağ üstte **🎯 Ana hedef**: sıradaki dükkanın şartları, ilerleme ve **Seviye atla**.
+   - Renkli ve ikonlu sekmeler: **Geliştirmeler** (mavi), **Aletler & Makineler** (turuncu), **Krediler** (kırmızı), **Dekorasyon** (yeşil).
+   - Geliştirmeler dört gruba ayrıldı: Müşteri gelişi, Kolaylaştırıcılar ve göstergeler, Otomasyon, Kapasite ve personel.
+   - O dükkanda alınamayacak şeyler hiç görünmez.
+5. **Fiyatlar** ekranı, ardından **Günü başlat**.
+
+### Tarife özel aletler ve makineler
+Bazı tarifler, Aletler & Makineler sekmesinden alınan bir alet ya da makine olmadan yapılamaz ve menüye girmez. Her aletin kendine özgü bir mini oyunu var; bu adım dört espresso adımından sonra gelir.
+
+| Alet / makine | Fiyat | Gereken tarifler | Mini oyun |
+|---|---|---|---|
+| Su ısıtıcısı | 80₺ | Americano | **Su dök:** kettle'la kupaya basılı tutarak dök, hedefte bırak |
+| Süt köpürtme seti | 180₺ | Sütlü tüm tarifler | Süt köpürtme |
+| Büyük buhar kazanı (2★) | 600₺ | Latte, Cappuccino | **Basınç:** yuvarlak kadranda dönen ibreyi renkli yayda durdur |
+| Kakao serpici (2★) | 120₺ | Cappuccino | **Kakao serp:** sağa-sola giden serpiciyi fincanın ortasında durdur |
+
+- Aldıkların dükkan büyüyünce yeni dükkana taşınır.
+- Eski kayıtlarda zaten açtığın tariflerin aletleri hediye olarak verilir.
+
+### Fiyatlar ve borsa
+- **Varsayılan fiyat** her tarif için malzeme maliyetinden ve kiradan hesaplanır: (çekirdek + süt + fincan maliyeti) × 2 + fincan başına kira payı. Böylece her ürün kâr eder ve kira rahat ödenir.
+- Fiyatı %5'lik adımlarla %50 ile %200 arasında ayarlayabilir, tek tuşla varsayılana dönebilirsin. Oyun içindeki yeni **Fiyatlar** ikonuyla gün ortasında da değiştirebilirsin; değişiklik sıradaki ve sonradan gelen müşteriler için geçerli olur.
+- **Müşteri tepkisi:**
+  - Fiyat makul fiyatın %10 içindeyse kimse yorum yapmaz.
+  - %10–%50 arası pahalıysa "çok pahalı" deyip gidenler giderek artar; %50 ve üstünde herkes gider.
+  - Ucuz tarafta da "ucuz" diyenler giderek artar, ama onlar yine de satın alır.
+- **Kahve borsası:** her tarifin bir borsa endeksi var. Her hafta sonu endeksler biraz değişir ve **Kahve Gazetesi** en çok değişen 3 tarifi haber yapar. Müşteriler fiyatı makul bulup bulmamaya bu endekse göre karar verir.
+
+### Müşteriler
+- Yalnızca sıranın en önündeki müşteri konuşur ("Bir latte alabilir miyim?") ve yalnızca onun siparişi alınabilir.
+- Fiyata tepkisini sipariş alındığı anda verir: "Çok pahalı! Almıyorum." deyip çıkar ya da "Ne kadar ucuz!" deyip satın alır. Arkadakiler sıra kendilerine gelene kadar tepki vermez.
+- Gün sonu hesabında "pahalı bulup giden" müşteri sayısı yazar.
+
+### Süreç
+- Bu paket test edilmeden yayınlandı (Kural 7: testi kullanıcı yapar).
+
+
 ## v0.10 – 31 Ekim 2026
 
 ### Yeni

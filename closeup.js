@@ -122,6 +122,46 @@ window.CLOSEUP = (() => {
     ctx.fillStyle = "#2b2117"; ctx.font = "600 15px system-ui"; ctx.textAlign = "left"; ctx.fillText("%" + Math.round(Math.min(100, fill)), 360, 60);
     gauge(40, 228, 400, Math.min(100, fill) / 100, .65, .80, mark == null ? "doluluk: %65–80'de bırak" : "kesim: çizgi yeşil bantta iken dokun");
   }
+  // ---- §3 Su ısıtıcısı: kettle kupaya sıcak su döker (yandan görünüm)
+  function water(v, pouring) { bg(); shadow(250, H - 64, 70, 10);
+    const lvl = Math.min(100, v) / 100, top = 196 - lvl * 70;
+    ctx.fillStyle = lg(200, 0, 300, 0, [[0, "#d8d3cc"], [.35, "#fbfaf8"], [1, "#c9c3bb"]]); rr(205, 118, 90, 82, 10); ctx.fill();          // kupa
+    ctx.strokeStyle = "#d8d3cc"; ctx.lineWidth = 9; ctx.beginPath(); ctx.arc(298, 158, 18, -1.2, 1.2); ctx.stroke();
+    ctx.save(); rr(210, 122, 80, 74, 8); ctx.clip(); ctx.fillStyle = lg(0, top, 0, 196, [[0, "#8a5a36"], [1, "#3a200e"]]); ctx.fillRect(205, top, 90, 200); ctx.restore();   // americano
+    if (v > 100) { ctx.fillStyle = "rgba(120,80,50,.6)"; ctx.fillRect(205, 190, 90, 12); }
+    ctx.save(); ctx.translate(150, 70); ctx.rotate(pouring ? .55 : .15);                                                               // kettle
+    ctx.fillStyle = lg(-50, 0, 50, 0, [[0, "#8e9296"], [.3, "#eef0f2"], [.6, "#b4b8bd"], [1, "#7c8085"]]); rr(-45, -30, 90, 70, 18); ctx.fill();
+    ctx.fillStyle = "#2b2117"; rr(-30, -46, 60, 12, 6); ctx.fill(); ctx.strokeStyle = "#2b2117"; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(-50, 5, 20, 1.6, 4.6); ctx.stroke();
+    ctx.fillStyle = "#aeb2b7"; ctx.beginPath(); ctx.moveTo(42, -5); ctx.lineTo(80, -22); ctx.lineTo(82, -14); ctx.lineTo(44, 12); ctx.fill(); ctx.restore();   // ağız
+    if (pouring) { ctx.strokeStyle = "rgba(200,225,240,.85)"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(214, 70); ctx.quadraticCurveTo(236, 90, 244, top); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.35)"; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.ellipse(250 + i * 8, top - 14 - i * 9, 9 + i * 3, 5 + i, 0, 0, Math.PI * 2); ctx.fill(); } }
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 14px system-ui"; ctx.textAlign = "left"; ctx.fillText("su seviyesi %" + Math.round(Math.min(100, v)), 320, 120);
+  }
+  // ---- §3 Buhar kazanı: yuvarlak basınç kadranı, renkli yaylar, dönen ibre
+  function pressure(v, z) { bg(); shadow(240, H - 64, 120, 12);
+    steel(110, 40, 260, 150, 20);                                                                                                       // kazan gövdesi
+    const cx = 240, cy = 150, R0 = 88, A = u => Math.PI + Math.max(0, Math.min(100, u)) / 100 * Math.PI;
+    ctx.fillStyle = rg(cx, cy, 10, R0 + 8, [[0, "#fdfcf9"], [1, "#e4ded3"]]); ctx.beginPath(); ctx.arc(cx, cy, R0 + 8, Math.PI, 0); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#8d8f93"; ctx.lineWidth = 3; ctx.stroke();
+    if (z) [[z.k, "#e9c46a"], [z.g, "#9cc77a"], [z.p, "#3f7d34"]].forEach(([h, col]) => { ctx.strokeStyle = col; ctx.lineWidth = 16; ctx.beginPath(); ctx.arc(cx, cy, R0 - 12, A(z.t - h), A(z.t + h)); ctx.stroke(); });
+    ctx.strokeStyle = "#2b2117"; ctx.lineWidth = 1.5; for (let i = 0; i <= 10; i++) { const a = A(i * 10); ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * (R0 - 2), cy + Math.sin(a) * (R0 - 2)); ctx.lineTo(cx + Math.cos(a) * (R0 - 26 + (i % 5 ? 10 : 0)), cy + Math.sin(a) * (R0 - 26 + (i % 5 ? 10 : 0))); ctx.stroke(); }
+    const a = A(v); ctx.strokeStyle = "#111"; ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * (R0 - 8), cy + Math.sin(a) * (R0 - 8)); ctx.stroke(); ctx.lineCap = "butt";
+    ctx.fillStyle = "#2b2117"; ctx.beginPath(); ctx.arc(cx, cy, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.font = "600 12px system-ui"; ctx.textAlign = "center"; ctx.fillText("BAR", cx, cy - 26); ctx.fillText("0", cx - R0 + 14, cy + 16); ctx.fillText("2", cx + R0 - 14, cy + 16);
+    ctx.fillStyle = "#b5533c"; ctx.beginPath(); ctx.arc(330, 70, 13, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.fillText("vida", 330, 98);
+    ctx.fillText("ibre koyu yeşil yaydayken vidayı kapat", cx, 235);
+  }
+  // ---- §3 Kakao serpici: üstten köpüklü fincan, serpici sağa-sola gider
+  function cocoa(v, done) { bg();
+    ctx.fillStyle = rg(236, 128, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 130, 86, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = rg(232, 126, 5, 72, [[0, "#fbf6ee"], [.75, "#efe3cf"], [1, "#c99b66"]]); ctx.beginPath(); ctx.arc(240, 130, 72, 0, Math.PI * 2); ctx.fill();   // köpük
+    const x = 90 + Math.max(0, Math.min(100, v)) * 3;
+    if (done) { ctx.fillStyle = "rgba(92,52,24,.75)"; for (let i = 0; i < 160; i++) { const a = i * 2.4, r = Math.sqrt(i) * 3.6; const px = x + Math.cos(a) * r, py = 130 + Math.sin(a) * r * .9; if ((px - 240) ** 2 + (py - 130) ** 2 < 72 * 72) { ctx.beginPath(); ctx.arc(px, py, 1.4, 0, Math.PI * 2); ctx.fill(); } } }
+    ctx.fillStyle = lg(x - 26, 0, x + 26, 0, [[0, "#8e9296"], [.4, "#eef0f2"], [1, "#7c8085"]]); rr(x - 26, 6, 52, 40, 10); ctx.fill();      // serpici
+    ctx.fillStyle = "#5a3418"; for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.arc(x - 15 + i * 5, 44, 1.5, 0, Math.PI * 2); ctx.fill(); }
+    ctx.strokeStyle = "rgba(43,33,23,.35)"; ctx.setLineDash([4, 5]); ctx.beginPath(); ctx.moveTo(x, 48); ctx.lineTo(x, 210); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.textAlign = "center"; ctx.fillText("serpici fincanın ortasındayken SERP", 240, 235);
+  }
   function cupTop(quality, milky, heart) { bg(); ctx.fillStyle = rg(236, 120, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 125, 88, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = milky ? rg(232, 118, 5, 74, [[0, "#f7f1e6"], [.7, "#e9dcc6"], [1, "#b8824a"]]) : rg(232, 118, 5, 74, [[0, "#d9a86a"], [.6, "#b77a3c"], [1, "#6a3d1a"]]);
     ctx.beginPath(); ctx.arc(240, 125, 74, 0, Math.PI * 2); ctx.fill();
@@ -129,5 +169,5 @@ window.CLOSEUP = (() => {
     if (heart) { heartShape(240, 122, 34, "#fffaf2"); heartShape(240, 122, 22, "rgba(233,214,190,.6)"); }
     ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; ctx.fillText("Kalite " + quality, 240, 235);
   }
-  return { init, setQuality, grind, dose, tamp, extract, milk, art, cupTop };
+  return { init, setQuality, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, cupTop };
 })();
