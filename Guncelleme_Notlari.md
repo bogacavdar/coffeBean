@@ -1,5 +1,9 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.30 – (yayın bekliyor)
+- **Kahve sınıfları:** Espresso bazlı, Sütlü espresso, Filtre ve demleme, Cezve ve geleneksel, Soğuk kahveler, Kahvesiz. Sipariş kartında tarifin üstünde sınıfı yazıyor.
+- Siparişi hazırlarken önce tür seçiliyor, sonra o türün tarifleri alfabetik sırayla geliyor (çekirdek açıksa sıra: çekirdek → tür → tarif → boy → süt).
+
 ## v0.29 – 1 Kasım 2026
 - Barlı tüm adımlarda (öğütme, dozlama, ekstraksiyon, süt köpürtme, sıcak su, latte art) yakın plan çiziminde de küçük bir hedef göstergesi var: alttaki büyük çubuğun aynı sarı / açık yeşil / koyu yeşil bölgeleri ve ibre. Ekstraksiyondaki gösterge artık sabit ±2 g yerine gerçek renkli bölgeleri gösteriyor.
 

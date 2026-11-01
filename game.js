@@ -109,6 +109,17 @@ const nearestLoan = () => (S.loans || []).slice().sort((a, b) => a.due - b.due)[
 const seasonNo = () => Math.floor(((S.day - 1) % 112) / 28);                      // v0.24: 0 Sonbahar · 1 Kış · 2 İlkbahar · 3 Yaz
 const inSeason = id => !D.drinks[id].season || D.drinks[id].season.includes(seasonNo());
 const tl = x => { const n = +x; return Number.isFinite(n) ? n.toLocaleString("tr-TR", { maximumFractionDigits: 1 }) : x; };   // v0.28: ₺ tutarlarında binlik ayracı (₺13.500)
+// v0.30 kahve sınıfı: tarifin adımlarından türetilir (data'da "cat" verilirse o geçerli)
+function drinkCat(id) { const d = D.drinks[id], st = d.steps;
+  if (d.cat) return d.cat;
+  if (st.some(s => ["tkdose", "mndose", "tkfoam", "mirraboil"].includes(s))) return "cezve";
+  if ((d.sizes || []).some(z => /^i[SML]$/.test(z)) || st.includes("ice")) return "cold";
+  if (d.noBean) return "nocoffee";
+  if (st.includes("fdose") || !st.includes("extract")) return "brew";
+  if (st.some(s => ["milk", "pour", "coldmilk"].includes(s))) return "milky";
+  return "espresso"; }
+const catOf = id => D.categories.find(c => c.id === drinkCat(id)) || D.categories[0];
+const trSort = ids => ids.slice().sort((a, b) => D.drinks[a].name.localeCompare(D.drinks[b].name, "tr"));
 const queueOf = () => day ? day.customers.filter(c => !c.ordered && !c.leaving) : [];
 function clockStr(frac) { const hour = 8 + clamp(frac, 0, 1) * 12; const h = Math.floor(hour), m = Math.floor((hour - h) * 60); return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0"); }
 
@@ -375,22 +386,26 @@ function prepareOrder(o, drink, size, bean, milk, sugar) {
   save(); renderOrders();
 }
 function renderSelect(o, tabs) {                                                  // §6/§7 sıra: çekirdek → tarif → boy → süt
-  const menu = S.unlocked.filter(hasTools), sel = o.sel, sizes = sel.drink ? (D.drinks[sel.drink].sizes || ["single"]) : [];
+  const menu = trSort(S.unlocked.filter(hasTools)), sel = o.sel, sizes = sel.drink ? (D.drinks[sel.drink].sizes || ["single"]) : [];
+  const cats = D.categories.filter(c => menu.some(id => drinkCat(id) === c.id)); if (sel.drink && !sel.cat) sel.cat = drinkCat(sel.drink);
+  const inCat = sel.cat ? menu.filter(id => drinkCat(id) === sel.cat) : [];
   const showBean = multiBeans(), showMilk = sel.drink && isMilky(sel.drink) && multiMilks(), showSugar = sel.drink && D.drinks[sel.drink].sugar;
   const ready = sel.bean && sel.drink && sel.size && sizes.includes(sel.size) && (!showMilk || sel.milk) && (!showSugar || sel.sugar);
   const box = (title, inner) => `<div class="box" style="text-align:left"><h4>${title}</h4><div class="row" style="justify-content:flex-start;margin-top:4px">${inner}</div></div>`;
   $("#sheetBody").innerHTML = `${tabs}<h3>Siparişi hazırla</h3>
-    <p class="muted" style="margin:2px 0 6px">Siparişi sağ üstteki karttan oku. ${showBean ? "Önce çekirdeği, sonra tarifi, boyu" : "Önce tarifi, sonra boyu"}${showMilk ? " ve sütü" : ""} seç. Yanlış seçersen müşteri almaz.</p>
+    <p class="muted" style="margin:2px 0 6px">Siparişi sağ üstteki karttan oku. ${showBean ? "Önce çekirdeği, sonra türü, tarifi, boyu" : "Önce türü, sonra tarifi, boyu"}${showMilk ? " ve sütü" : ""} seç. Yanlış seçersen müşteri almaz.</p>
     ${showBean ? box("1. Çekirdek", openBeans().map(id => { const kg = beanKg(id); return `<button data-sb="${id}" class="${sel.bean === id ? "pri" : ""}" ${kg > 0 ? "" : "disabled"}>${D.beans[id].name}<br><span style="font-size:11px">${kg.toFixed(2)} kg</span></button>`; }).join("")) : ""}
-    ${box((showBean ? "2. " : "") + "Tarif", menu.map(id => `<button data-sd="${id}" class="${sel.drink === id ? "pri" : ""}">${D.drinks[id].name}</button>`).join(""))}
-    ${box((showBean ? "3. " : "") + "Boy / bardak", (sizes.length ? "" : '<span class="muted">Önce tarifi seç</span>') + sizes.map(z => { const sz = SZ(z), n = S.cups[sz.cup] || 0;
+    ${box((showBean ? "2. " : "1. ") + "Tür", cats.map(c => `<button data-sc="${c.id}" class="${sel.cat === c.id ? "pri" : ""}">${c.icon} ${c.name}</button>`).join(""))}
+    ${box((showBean ? "3. " : "2. ") + "Tarif", sel.cat ? inCat.map(id => `<button data-sd="${id}" class="${sel.drink === id ? "pri" : ""}">${D.drinks[id].name}</button>`).join("") : '<span class="muted">Önce türü seç</span>')}
+    ${box((showBean ? "4. " : "3. ") + "Boy / bardak", (sizes.length ? "" : '<span class="muted">Önce tarifi seç</span>') + sizes.map(z => { const sz = SZ(z), n = S.cups[sz.cup] || 0;
       return `<button data-sz="${z}" class="${sel.size === z ? "pri" : ""}" ${n > 0 ? "" : "disabled"}>${sz.label}<br><span style="font-size:11px">${D.cups[sz.cup].name} · ${n} adet</span></button>`; }).join(""))}
-    ${showMilk ? box((showBean ? "4. " : "") + "Süt", openMilks().map(k => { const l = milkL(k); return `<button data-sm="${k}" class="${sel.milk === k ? "pri" : ""}" ${l > 0 ? "" : "disabled"}>${D.milks[k].name}<br><span style="font-size:11px">${l.toFixed(1)} L</span></button>`; }).join("")) : ""}
+    ${showMilk ? box((showBean ? "5. " : "4. ") + "Süt", openMilks().map(k => { const l = milkL(k); return `<button data-sm="${k}" class="${sel.milk === k ? "pri" : ""}" ${l > 0 ? "" : "disabled"}>${D.milks[k].name}<br><span style="font-size:11px">${l.toFixed(1)} L</span></button>`; }).join("")) : ""}
     ${showSugar ? box("Şeker", Object.entries(D.sugarLevels).map(([k, z]) => `<button data-sg="${k}" class="${sel.sugar === k ? "pri" : ""}" ${(S.extras.sugar || 0) >= z.n ? "" : "disabled"}>${z.label}<br><span style="font-size:11px">${z.n} şeker</span></button>`).join("")) : ""}
     <button class="hold big pri" id="selGo" ${ready ? "" : "disabled"}>Hazırlamaya başla</button>`;
   $("#sheet").classList.add("on");
   $("#sheetBody").querySelectorAll("[data-sg]").forEach(b => b.onclick = () => { sel.sugar = b.dataset.sg; AUDIO.sfx("click"); renderBench(); });
   $("#sheetBody").querySelectorAll("[data-sb]").forEach(b => b.onclick = () => { sel.bean = b.dataset.sb; AUDIO.sfx("click"); renderBench(); });
+  $("#sheetBody").querySelectorAll("[data-sc]").forEach(b => b.onclick = () => { if (sel.cat !== b.dataset.sc) { sel.cat = b.dataset.sc; sel.drink = null; sel.size = null; } AUDIO.sfx("click"); renderBench(); });
   $("#sheetBody").querySelectorAll("[data-sd]").forEach(b => b.onclick = () => { sel.drink = b.dataset.sd; if (!(D.drinks[sel.drink].sizes || ["single"]).includes(sel.size)) sel.size = null; AUDIO.sfx("click"); renderBench(); });
   $("#sheetBody").querySelectorAll("[data-sz]").forEach(b => b.onclick = () => { sel.size = b.dataset.sz; AUDIO.sfx("click"); renderBench(); });
   $("#sheetBody").querySelectorAll("[data-sm]").forEach(b => b.onclick = () => { sel.milk = b.dataset.sm; AUDIO.sfx("click"); renderBench(); });
@@ -403,7 +418,7 @@ function renderOrders() {
   if (!list.length) { el.style.display = "none"; return; }
   el.style.display = "block";
   el.innerHTML = `<div class="ohead">Siparişler</div>` + list.map((o, i) => `<div class="ord${o.mismatch ? " bad" : ""}"><div class="oname">${o.cust.name}</div>
-    <div class="odrink"><b>${D.drinks[o.cust.drink].name}</b><span class="osize">${SZ(o.cust.size).label}</span></div>
+    <div class="ocat">${catOf(o.cust.drink).icon} ${catOf(o.cust.drink).name}</div><div class="odrink"><b>${D.drinks[o.cust.drink].name}</b><span class="osize">${SZ(o.cust.size).label}</span></div>
     ${(multiBeans() && !D.drinks[o.cust.drink].noBean) || (o.cust.milk && multiMilks()) ? `<div class="otags">${multiBeans() && !D.drinks[o.cust.drink].noBean ? `<span class="otag bean">☕ ${D.beans[o.cust.bean || "brazil"].name}</span>` : ""}${o.cust.milk && multiMilks() ? `<span class="otag milk">🥛 ${D.milks[o.cust.milk].short}</span>` : ""}</div>` : ""}
     ${o.cust.sugar ? `<div class="otags"><span class="otag">🍬 ${D.sugarLevels[o.cust.sugar].label}</span></div>` : ""}
     ${o.selecting ? '<div class="ostate">seçimleri yap</div>' : o.mismatch ? '<div class="ostate">⚠ yanlış seçim</div>' : ""}
@@ -486,7 +501,7 @@ function renderReview(o, tabs) {
   $("#rvServe").onclick = () => { o.reviewing = false; serve(o); };
   const rd = $("#rvRedo"); if (rd) rd.onclick = () => {                         // §4 yeniden yap: bu fincanın malzemesi tekrar harcanır
     useBean(cc.bean, cc.kg); if (cc.milk) useMilk(cc.milkType, cc.milk);
-    o.reviewing = false; o.selecting = true; o.sel = { bean: multiBeans() ? null : "brazil", drink: null, size: null, milk: null, sugar: null }; o.mismatch = false; o.phase = "ready"; o.v = 0;   // §7 yeniden: tarif/boy tekrar seçilir
+    o.reviewing = false; o.selecting = true; o.sel = { bean: multiBeans() ? null : "brazil", cat: null, drink: null, size: null, milk: null, sugar: null }; o.mismatch = false; o.phase = "ready"; o.v = 0;   // §7 yeniden: tarif/boy tekrar seçilir
     AUDIO.sfx("click"); save(); renderHUD(); renderBench(); };
 }
 function serve(o) {

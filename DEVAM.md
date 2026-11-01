@@ -8,7 +8,7 @@ Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılı
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
 ## Bekleyen paket (son yayın: v0.29)
-(boş)
+- **Kahve sınıfları (kullanıcı isteği):** `D.categories` (6 sınıf, ad + simge), `drinkCat(id)` adımlardan türetir (`d.cat` ile elle verilebilir), `catOf`, `trSort` (tr alfabetik). `renderSelect`: "Tür" kutusu (`data-sc`, `sel.cat`), tarif listesi seçilen türe göre ve alfabetik; tür değişince tarif/boy sıfırlanır. Sipariş kartında `.ocat` satırı. Dağılım: espresso 12, sütlü 23, filtre/demleme 14, cezve 11, soğuk 19, kahvesiz 3. Doküman §0'a eklendi.
 
 ## v0.29 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
 - **Tuval içi hedef göstergesi (kullanıcı isteği):** ekstraksiyondaki küçük göstergeye benzer `CLOSEUP.zmeter(v, Z, {label,x,y,w})` eklendi; büyük çubuğun aynı renkli bölgelerini (sarı/açık yeşil/koyu yeşil, `o.z`) ve ibreyi gösterir. Öğütme ("hedef öğütüm"), dozlama ("hedef 18 g"), ekstraksiyon (sabit ±2 g bandı yerine gerçek bölgeler), süt ("hedef 60–65 °C", solda), sıcak su ("hedef seviye"), latte art ("doluluk %65–80" / "kesim: tam orta") adımlarında. Kural 9 gereği bölgeler ibre hızıyla orantılı `o.z`'den gelir. Göstergeli (dial/ring) adımlarda bölgeler zaten çizimin üstünde.

@@ -524,6 +524,15 @@ window.DATA = {
   },
 
   // §10 – Yıldız Teyze metinleri (kısa): açılış dükkanın devrini, kahvelerin espressodan yapıldığını ve tarif defterini anlatır
+  // v0.30 kahve sınıfları: sipariş kartında yazar, hazırlarken önce sınıf seçilir (tarif içinde "cat" ile elle de verilebilir)
+  categories: [
+    { id: "espresso", name: "Espresso bazlı",       icon: "☕" },
+    { id: "milky",    name: "Sütlü espresso",       icon: "🥛" },
+    { id: "brew",     name: "Filtre ve demleme",    icon: "🫖" },
+    { id: "cezve",    name: "Cezve ve geleneksel",  icon: "🔥" },
+    { id: "cold",     name: "Soğuk kahveler",       icon: "🧊" },
+    { id: "nocoffee", name: "Kahvesiz",             icon: "🍫" }
+  ],
   seasons: ["Sonbahar", "Kış", "İlkbahar", "Yaz"],   // v0.24 mevsimlik tarifler: 28 günlük mevsimler, oyun sonbaharda başlar
   tutorial: {
     intro: "Hoş geldin evladım. Ben Yıldız Teyze. Bu dükkanı yıllardır işletiyorum ama artık yoruldum; bundan sonra dükkan senin. Ben sana espressoyu öğreterek başlayayım; gerisini zamanla sen halledersin. Tarif defterim de köşede duruyor.",
