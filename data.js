@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.21",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.22",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -158,11 +158,11 @@ window.DATA = {
 
   // §7 – Prototip müşteri tipleri (5). İsim yazılmaz, yalnızca tip (statü) görünür. patience saniye.
   customers: {
-    business: { name: "İş adamı",        patience: 18, wants: ["espresso","americano","lungo"],             priceSens: 0.3, qualitySens: 0.7, tip: 2.0 },
-    student:  { name: "Öğrenci",         patience: 55, wants: ["latte","cappuccino","macchiato","americano"], priceSens: 1.0, qualitySens: 0.6, tip: 0.4, discount: 0.8 },
-    elder:    { name: "Yaşlı teyze",     patience: 70, wants: ["macchiato","cortado","latte","espresso"],    priceSens: 0.6, qualitySens: 0.7, tip: 1.0 },
-    geek:     { name: "Kahve meraklısı", patience: 40, wants: ["espresso","ristretto","cortado","lungo"],    priceSens: 0.2, qualitySens: 1.0, tip: 1.6 },
-    regular:  { name: "Düzenli müşteri", patience: 50, wants: null,                                         priceSens: 0.5, qualitySens: 0.8, tip: 1.2 }
+    business: { name: "İş adamı",        patience: 18, extras: { sweetener: 6, sugar: 0.4, napkin: 1.3, stirrer: 0.7, straw: 0.6 }, priceSens: 0.3, qualitySens: 0.7, tip: 2.0 },
+    student:  { name: "Öğrenci",         patience: 55, extras: { sugar: 2.2, stirrer: 1.8, straw: 3, napkin: 1.2, sweetener: 0.4 }, priceSens: 1.0, qualitySens: 0.6, tip: 0.4, discount: 0.8 },
+    elder:    { name: "Yaşlı teyze",     patience: 70, extras: { sweetener: 9, sugar: 0.5, napkin: 1.5, stirrer: 1.6, straw: 0.4 }, priceSens: 0.6, qualitySens: 0.7, tip: 1.0 },
+    geek:     { name: "Kahve meraklısı", patience: 40, extras: { sugar: 0.1, sweetener: 0.1, stirrer: 0.2, napkin: 0.8 }, priceSens: 0.2, qualitySens: 1.0, tip: 1.6 },
+    regular:  { name: "Düzenli müşteri", patience: 50, extras: {}, priceSens: 0.5, qualitySens: 0.8, tip: 1.2 }
   },
 
   // §6 – Çekirdekler (MVP: 2). qualityMod kaliteyi etkiler; tolMod espresso aralığını.

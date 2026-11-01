@@ -186,7 +186,7 @@ function checkUnlocks() {
   const fresh = Object.keys(D.drinks).filter(canUnlock);
   if (!fresh.length) return checkBeanMilkUnlocks();
   const cupsBefore = new Set(cupsKnown());
-  fresh.forEach(id => { S.unlocked.push(id); S.perfect[id] = S.perfect[id] || 0; S.log.push("Gün " + S.day + ": " + D.drinks[id].name + " açıldı"); });
+  fresh.forEach(id => { S.unlocked.push(id); (S.unlockDay = S.unlockDay || {})[id] = S.day; S.perfect[id] = S.perfect[id] || 0; S.log.push("Gün " + S.day + ": " + D.drinks[id].name + " açıldı"); });
   const giftCups = cupsKnown().filter(k => !cupsBefore.has(k));                  // §7 yeni bardak türü Tedarik listesine eklenir (hediye yok)
   const milkNew = fresh.some(id => D.drinks[id].steps.includes("milk")) && !S.taught.includes("milk");
   if (milkNew) S.taught.push("milk");
@@ -297,10 +297,10 @@ function spawnCustomer() {
   // §7 prototip müşteri tipleri: isim yok, yalnızca tip etiketi; tahammül ve bahşiş tipe göre değişir
   const type = pick(Object.keys(D.customers));
   const ct = D.customers[type];
-  const menu = S.unlocked.filter(hasTools);                       // §3 aleti olmayan tarif menüde yok
-  let wants = ct.wants ? ct.wants.filter(w => menu.includes(w)) : menu;
-  if (wants.length === 0) wants = ["espresso"];
-  const drink = pick(wants);
+  // §7 herkes her açık kahveyi isteyebilir: aleti olan ve özel malzemesi stokta olan; yeni açılan 3 gün daha sık istenir
+  const menu = S.unlocked.filter(id => hasTools(id) && (D.drinks[id].uses || []).every(([k]) => specStock(k) > 0));
+  const fresh = menu.filter(id => S.day - ((S.unlockDay || {})[id] ?? -99) < 3);
+  const drink = menu.length ? pick(fresh.length && Math.random() < 0.35 ? fresh : menu) : "espresso";
   if (ct.priceSens >= 1 && priceRatio(drink) > 1.2 && Math.random() < 0.6) { day.stats.left++; return; }   // §8 fiyata duyarlı tip gelmez
   const pat = Math.round(ct.patience * decorMult("patience") * DF().patience);    // §12 zorluk: sabır                // §8 pikap: sabır ×1,15
   const size = pick(D.drinks[drink].sizes || ["single"]);                          // §7 müşteri boyu da söyler
@@ -499,7 +499,9 @@ function serve(o) {
   let price = orderPrice(o); if (ct.discount) price = Math.round(price * ct.discount);
   const sm = streakMult();                                                          // §7 mükemmel seri çarpanı
   // §7 küçük malzemeler: müşteri gizli oranla kullanır; yoksa tepki verir, bahşiş azalır
-  const missing = []; Object.entries(D.extras).forEach(([k, e]) => { if (e.takeaway && !/^cup/.test(SZ(o.size).cup)) return; if (k === "sugar" && D.drinks[o.drink].sugar) return; if (Math.random() >= e.use) return;
+  const missing = []; Object.entries(D.extras).forEach(([k, e]) => { if (e.takeaway && !/^cup/.test(SZ(o.size).cup)) return; if (k === "sugar" && D.drinks[o.drink].sugar) return;
+    const iced = /^ice/.test(SZ(o.size).cup), mult = ((D.customers[o.cust.type] || {}).extras || {})[k] ?? 1;   // §7 tipe göre küçük malzeme alışkanlığı; buzluda pipet
+    if (Math.random() >= (k === "straw" && iced ? 0.9 : Math.min(0.95, e.use * mult))) return;
     if ((S.extras[k] || 0) > 0) S.extras[k]--; else missing.push(k); });
   let tip = 0; if (quality >= 80) tip = Math.round(price * 0.25 * ((quality - 70) / 30) * speedMult * ct.tip * rank().tipMult * sm * decorMult("tip"));
   tip = Math.round(tip * D.extraTip[Math.min(2, missing.length)]);
@@ -1103,7 +1105,7 @@ const CHEATS = [
   ["☕ Siparişi kendisi yap", cheatAutoOrder], ["🚶 Müşteri getir", () => { if (!day) return toast("Önce günü başlat"); day.tutorialActive = false; spawnCustomer(); layout(); }],
   ["🌙 Günü bitir", cheatEndDay], ["🏠 Kira gününe atla", () => { if (day) return toast("Gün içinde değil, gün aralarında kullan"); S.day = Math.ceil(S.day / 7) * 7; }],
   ["📦 Stokları doldur", () => { openBeans().forEach(id => { S.beans[id] = { kg: beanKg(id) + 5, boughtDay: S.day }; }); S.milk = (S.milk || 0) + 10; S.milkAlt = S.milkAlt || {}; openMilks().forEach(k => { if (k !== "cow") S.milkAlt[k] = (S.milkAlt[k] || 0) + 10; }); S.milkDay = S.day; Object.keys(D.cups).forEach(k => S.cups[k] = (S.cups[k] || 0) + 50); Object.keys(D.extras).forEach(k => S.extras[k] = (S.extras[k] || 0) + 100); }],
-  ["☕ Sıradaki tarifi aç", () => { const id = nextRecipe(); if (!id) return toast("Tüm tarifler zaten açık"); S.unlocked.push(id); S.perfect[id] = S.perfect[id] || 0; AUDIO.sfx("unlock"); toast("Yeni tarif açıldı: " + D.drinks[id].name); }],
+  ["☕ Sıradaki tarifi aç", () => { const id = nextRecipe(); if (!id) return toast("Tüm tarifler zaten açık"); S.unlocked.push(id); (S.unlockDay = S.unlockDay || {})[id] = S.day; S.perfect[id] = S.perfect[id] || 0; AUDIO.sfx("unlock"); toast("Yeni tarif açıldı: " + D.drinks[id].name); }],
   ["📖 Tüm tarifler + aletler", () => { S.unlocked = Object.keys(D.drinks); Object.keys(D.tools).forEach(k => S.tools[k] = true); }],
   ["🏪 Dükkan seviyesi atla", () => { if (S.shopLevel < D.shopLevels.length - 1) S.shopLevel++; else toast("En üst seviye"); }]
 ];

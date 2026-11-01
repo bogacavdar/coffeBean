@@ -7,8 +7,13 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.21)
+## Bekleyen paket (son yayın: v0.22)
 (boş)
+
+## v0.22 – YAYINLANDI (1 Kasım 2026, kullanıcı "yap ve paket çık" dedi)
+Doküman rev 142. Test yapılmadı (Kural 7).
+- **Herkes her açık kahveyi ister:** `D.customers[*].wants` kalktı; menü = açık + aleti var + özel malzemesi stokta (`specStock>0`). Yeni açılan kahve 3 gün %35 olasılıkla seçilir (`S.unlockDay[id]`, `checkUnlocks` ve hile "sıradaki tarif" yazar).
+- **Tipe göre küçük malzeme:** `D.customers[*].extras` çarpanları (yaşlı tatlandırıcı ×9 / şeker ×0,5; öğrenci şeker ×2,2, çubuk, pipet; iş adamı tatlandırıcı ×6; meraklı neredeyse hiç); buzlu bardakta pipet %90. Sabır/bahşiş zaten tipe göre.
 
 ## v0.21 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi; 34 kahve tek pakette)
 Doküman rev 141. Test yapılmadı (Kural 7); tüm yeni küçük resimler ve tam donanımlı 5★ sahne hata vermeden çiziliyor (otomatik çizim).

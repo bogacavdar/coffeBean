@@ -1,5 +1,23 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.22 – 1 Kasım 2026
+
+### Müşteriler her açık kahveyi istiyor
+- Müşteri tipleri artık belli kahvelerle sınırlı değil: açılmış, aleti alınmış ve özel malzemesi stokta olan her kahveyi herkes isteyebiliyor. Açılmamış ya da malzemesi bitmiş kahve istenmiyor.
+- Yeni açılan bir kahve ilk 3 gün daha sık isteniyor (müşterilerin yaklaşık üçte biri).
+
+### Tipe göre küçük malzeme alışkanlığı
+| Müşteri | Alışkanlık |
+|---|---|
+| Yaşlı teyze | Tatlandırıcıyı en çok o kullanıyor, şekeri az; peçete ve çubuk bol |
+| Öğrenci | Şekeri en çok o kullanıyor; çubuk ve pipeti seviyor |
+| İş adamı | Şeker yerine tatlandırıcı, peçete alıyor |
+| Kahve meraklısı | Sade içiyor; şeker, tatlandırıcı, çubuk neredeyse hiç |
+| Düzenli müşteri | Ortalama |
+
+- Buzlu kahvelerde neredeyse herkes pipet istiyor.
+- Sabır ve bahşiş zaten tipe göre değişiyordu.
+
 ## v0.21 – 1 Kasım 2026
 
 ### Dünya kahveleri (34 yeni tarif)
