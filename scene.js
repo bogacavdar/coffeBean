@@ -100,7 +100,7 @@ window.SCENE = (() => {
     prism(0, 5.2, .45, 2.4, 4, "#7a5536", "#5c3f28", "#6b4a30", 76);
     for (let i = 0; i < 4; i++) { prism(.05, 5.35 + i * .55, .35, .4, 26, i % 2 ? "#c9a46a" : "#b89055", "#8f6e3f", i % 2 ? "#a98a52" : "#9a7746", 80);
       wallText("L", 5.55 + i * .55, 92, "☕", 7, "rgba(60,35,15,.7)", null, "400"); }
-    backCounter(st); brewBar(st);
+    backCounter(st); brewBar(st); wallShelf(st);
     barista(.42, 1.75, st.baristaBusy);
     if (st.assistant) staff(.42, 3.0, st.asstBusy);
     // ön tezgâh (dükkanla uzar)
@@ -143,6 +143,34 @@ window.SCENE = (() => {
     if (show("v60")) { cyl(3.22, .45, .08, 10, "#d4e3ea", 34, "#5a3418"); const [vx, vy] = iso(3.22, .45, 46), w = 10 * TW / 40; ctx.fillStyle = "#f4f1ea"; ctx.beginPath(); ctx.moveTo(vx - w, vy - 9 * TW / 40); ctx.lineTo(vx + w, vy - 9 * TW / 40); ctx.lineTo(vx + 3, vy + 2); ctx.lineTo(vx - 3, vy + 2); ctx.closePath(); ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,.2)"; ctx.stroke(); }
     if (show("tkMachine")) { prism(2.9, .65, .22, .22, 18, "#b5533c", "#7d3424", "#94402d", 34); const [lx, ly] = iso(3.12, .76, 46); ctx.fillStyle = "#ffd23a"; ctx.beginPath(); ctx.arc(lx, ly, 1.8, 0, Math.PI * 2); ctx.fill(); }
     if (show("filterMachine")) { prism(3.16, .66, .2, .22, 24, "#2b2b30", "#121214", "#3a3a40", 34); cyl(3.27, .77, .06, 8, "#c9dde6", 34, "#5a3418"); }
+  }
+  // ---- §3 sol duvar rafı (menü tahtasının üstü): şuruplar, krema sifonu, çırpıcı, shaker, moka pot, AeroPress, Chemex, phin
+  function wallShelf(st, only) {
+    const f = Object.assign({}, st.equipment || {}, st.tools || {}), show = k => only ? only === k : !!f[k], keys = ["syrupPump", "creamSiphon", "whisk", "shaker", "mokaPot", "aeropress", "chemex", "phin"];
+    if (!only && !keys.some(k => f[k])) return; const Z = 156;
+    if (!only) prism(0, 1.25, .36, 3.2, 4, "#7a5536", "#55391f", "#664629", Z - 4);
+    if (show("syrupPump")) ["#e9d29a", "#c9772b", "#b8642e", "#4a2a14", "#f3e3c3"].forEach((c, i) => { const [tx, ty] = cyl(.18, 1.4 + i * .17, .06, 16, c, Z, "#2b2b30"); ctx.fillStyle = "#2b2b30"; ctx.fillRect(tx - 1, ty - 7 * TW / 40, 2.2, 7 * TW / 40); });
+    if (show("creamSiphon")) { const [tx, ty] = cyl(.18, 2.35, .06, 20, "#c9ccd0", Z, "#2b2b30"); ctx.fillStyle = "#2b2b30"; ctx.fillRect(tx, ty - 5 * TW / 40, 8 * TW / 40, 2.4); }
+    if (show("whisk")) { cyl(.18, 2.6, .09, 6, "#f6f1e8", Z, "#e9e1d4"); const [wx, wy] = iso(.18, 2.6, Z + 6); ctx.strokeStyle = "#c9ccd0"; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.ellipse(wx, wy - 8 * TW / 40, 4 * TW / 40, 8 * TW / 40, .3, 0, Math.PI * 2); ctx.stroke(); }
+    if (show("shaker")) cyl(.18, 2.85, .06, 18, "#d6d9dd", Z, "#9ea2a7");
+    if (show("mokaPot")) { cyl(.18, 3.1, .06, 9, "#b8bcc1", Z); cyl(.18, 3.1, .055, 9, "#c9ccd0", Z + 9, "#2b2b30"); }
+    if (show("aeropress")) cyl(.18, 3.35, .045, 18, "#5a5a60", Z, "#2b2b30");
+    if (show("chemex")) { cyl(.18, 3.62, .07, 9, "#dfeef3", Z, "#e8dcc8"); cyl(.18, 3.62, .05, 9, "#c9a46a", Z + 9, "#f4f1ea"); }
+    if (show("phin")) cyl(.18, 3.9, .05, 7, "#c9ccd0", Z, "#9ea2a7");
+  }
+  // ---- §3 soğuk bar (tezgâhın ucu): dondurma dolabı, buz makinesi, blender, cold brew kavanozu, sifon, nitro musluğu
+  function coldStation(st, CL, only) {
+    const f = Object.assign({}, st.equipment || {}, st.tools || {}), show = k => only ? only === k : !!f[k], keys = ["iceCreamFridge", "iceMachine", "blender", "coldBrewJar", "siphon", "nitroTap"];
+    if (!only && !keys.some(k => f[k])) return; const y0 = 1 + CL + .05;
+    if (!only) { shadowE(1.65, y0 + .4, TW * 1.1, TW * .4); prism(1.0, y0, 1.3, .75, 36, "#3a2a1f", "#5b4231", "#4a3327"); }
+    if (show("iceCreamFridge")) { prism(1.05, y0 + .05, .55, .65, 38, "#e9ecee", "#c9cdd1", "#dfe2e5", only ? 0 : 0); poly([iso(1.05, y0 + .7, 39), iso(1.6, y0 + .7, 39), iso(1.6, y0 + .7, 30), iso(1.05, y0 + .7, 30)], "rgba(170,215,235,.7)");
+      ["#f6ecd2", "#7a4a28", "#e9a0b4"].forEach((c, i) => cyl(1.15 + i * .15, y0 + .35, .06, 3, c, 38)); }
+    if (show("iceMachine")) { prism(1.7, y0 + .08, .5, .6, only ? 40 : 36, "#c9ccd0", "#8d9196", "#aeb2b7", only ? 0 : 0); const [lx, ly] = iso(2.2, y0 + .38, 26); ctx.fillStyle = "#6fc3ff"; ctx.beginPath(); ctx.arc(lx, ly, 2, 0, Math.PI * 2); ctx.fill(); }
+    const top = only ? 0 : 36;
+    if (show("blender")) { prism(1.12, y0 + .1, .2, .2, 8, "#2b2b30", "#121214", "#1d1d21", top); cyl(1.22, y0 + .2, .08, 18, "#dfeef3", top + 8, "#2b2b30"); }
+    if (show("coldBrewJar")) cyl(1.5, y0 + .25, .1, 18, "#cfe2e8", top, "#3a2010");
+    if (show("siphon")) { cyl(1.8, y0 + .25, .08, 8, "#dfeef3", top, "#a0c8dc"); cyl(1.8, y0 + .25, .05, 14, "#dfeef3", top + 10, "#5a3418"); }
+    if (show("nitroTap")) { prism(2.05, y0 + .15, .12, .12, 26, "#2b2b30", "#121214", "#1d1d21", top); const [tx, ty] = iso(2.11, y0 + .15, top + 24); ctx.fillStyle = "#c9a14f"; ctx.fillRect(tx - 2, ty - 10 * TW / 40, 4, 10 * TW / 40); }
   }
   // ---- ön tezgâh: makineler, öğütücü, teraziler, bardak yığınları, pasta vitrini, kasa
   function machine(x, y, f = {}) {
@@ -273,6 +301,10 @@ window.SCENE = (() => {
       for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2, px = cx + Math.cos(a) * 22 * s, py = cy + 6 * s + Math.sin(a) * 8 * s; ctx.fillStyle = "rgba(220,240,255,.9)"; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 2 * s, py + 8 * s); ctx.lineTo(px - 2 * s, py + 8 * s); ctx.fill(); ctx.fillStyle = "#fff6d8"; ctx.beginPath(); ctx.arc(px, py - 2 * s, 1.6 * s, 0, Math.PI * 2); ctx.fill(); } },
     brass: () => { wallRect("R", 3.2, 5.8, 146, 168, "#8a6a2c"); wallRect("R", 3.26, 5.74, 148, 166, "#d9b36a"); wallText("R", 4.5, 157, "CoffeBean", 12, "#4a3410", null, "700 italic"); }
   };
+  DECOR.d5roaster = () => { const x = 6.9, y = .15; shadowE(x + .45, y + .45, TW * .8, TW * .35); prism(x, y, .9, .7, 30, "#2b2b30", "#121214", "#1d1d21");   // kahve kavurma makinesi
+    cyl(x + .45, y + .35, .26, 16, "#c9772b", 30, "#a8642a"); cyl(x + .45, y + .35, .1, 22, "#b8bcc1", 46, "#9ea2a7"); cyl(x + .8, y + .15, .04, 70, "#6f7378", 30, "#555"); const [gx, gy] = iso(x + .9, y + .4, 22); ctx.fillStyle = "#ff9f3a"; ctx.beginPath(); ctx.arc(gx, gy, 2, 0, Math.PI * 2); ctx.fill(); };
+  Object.assign(DECOR, { d4sofa: DECOR.sofa, d4shelf: DECOR.bookshelf, d4ficus: () => bigPlant(4.9, 7.2, 1.5), d4clock: DECOR.clock, d4neon: DECOR.neon, d4gallery: DECOR.photos,
+    d5chand: DECOR.chandelier, d5piano: DECOR.piano, d5aqua: DECOR.aquarium, d5brass: DECOR.brass, d5art: DECOR.artwall });
   const DECOR_DEFAULT_F2 = ["lamp", "bookshelf", "aquarium"];
 
   function table(x, y, kind) {
@@ -308,7 +340,7 @@ window.SCENE = (() => {
     if (level >= 3) { const x = 6.6, y = 7.0; shadowE(x + 1, y + .35, TW * 1.6, TW * .5); prism(x + .1, y + .2, .1, .3, 28, "#2b2117", "#1a130e", "#221a14"); prism(x + 1.8, y + .2, .1, .3, 28, "#2b2117", "#1a130e", "#221a14");   // uzun ortak masa
       prism(x, y, 2.0, .7, 3, "#8d6440", "#5c3f28", "#6f4d31", 28); for (let i = 0; i < 4; i++) cyl(x + .3 + i * .5, y + 1.0, .14, 4, "#5c3f28", 18, "#7a5536"); }
     // temel eşyalar: çöp kutusu, askılık, raflar
-    cyl(1.6, 1 + CL + .45, .16, 22, "#3a3a3f", 0, "#2b2b30");
+    coldStation(st, CL); cyl(.6, 1 + CL + .5, .16, 22, "#3a3a3f", 0, "#2b2b30");
     { const [ax, ay] = iso(10.2, .5, 0), [bx, by] = iso(10.2, .5, 120); ctx.strokeStyle = "#2b2117"; ctx.lineWidth = 3 * TW / 40; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); shadowE(10.2, .5, TW * .3, TW * .12);
       ctx.fillStyle = "#3b6ea8"; rr(bx - 7 * TW / 40, by + 6, 10 * TW / 40, 30 * TW / 40, 4); ctx.fill(); ctx.fillStyle = "#c9772b"; rr(bx + 1, by + 4, 8 * TW / 40, 22 * TW / 40, 4); ctx.fill(); }
     if (level >= 2) { prism(9.0, 0, 2.0, .35, 3, "#7a5536", "#55391f", "#664629", 92); for (let i = 0; i < 6; i++) cyl(9.2 + i * .3, .17, .08, 12, ["#c9a46a", "#b5533c", "#e9e4dc"][i % 3], 95, "#5c3f28"); }
@@ -398,6 +430,11 @@ window.SCENE = (() => {
     "eq:pourPitcher": [.2, 4.98, 42, () => backCounter({}, "pourPitcher")], "eq:autoMilk": [.21, 3.73, 46, () => backCounter({}, "autoMilk")],
     "tool:cezve": [2.75, .45, 40, () => brewBar({}, "cezve")], "tool:frenchPress": [2.98, .42, 48, () => brewBar({}, "frenchPress")], "tool:v60": [3.22, .45, 44, () => brewBar({}, "v60")],
     "eq:tkMachine": [3.01, .76, 44, () => brewBar({}, "tkMachine")], "eq:filterMachine": [3.26, .77, 48, () => brewBar({}, "filterMachine")],
+    "tool:syrupPump": [.18, 1.75, 168, () => wallShelf({}, "syrupPump")], "tool:creamSiphon": [.18, 2.35, 166, () => wallShelf({}, "creamSiphon")], "tool:whisk": [.18, 2.6, 162, () => wallShelf({}, "whisk")],
+    "tool:shaker": [.18, 2.85, 165, () => wallShelf({}, "shaker")], "tool:mokaPot": [.18, 3.1, 165, () => wallShelf({}, "mokaPot")], "tool:aeropress": [.18, 3.35, 165, () => wallShelf({}, "aeropress")],
+    "tool:chemex": [.18, 3.62, 164, () => wallShelf({}, "chemex")], "tool:phin": [.18, 3.9, 160, () => wallShelf({}, "phin")],
+    "tool:iceCreamFridge": [1.33, 8.4, 20, () => coldStation({}, 7, "iceCreamFridge")], "tool:iceMachine": [1.95, 8.43, 20, () => coldStation({}, 7, "iceMachine")], "tool:blender": [1.22, 8.3, 16, () => coldStation({}, 7, "blender")],
+    "tool:coldBrewJar": [1.5, 8.35, 10, () => coldStation({}, 7, "coldBrewJar")], "tool:siphon": [1.8, 8.35, 14, () => coldStation({}, 7, "siphon")], "tool:nitroTap": [2.11, 8.26, 16, () => coldStation({}, 7, "nitroTap")],
     "tool:kettle": [.2, 3.95, 42, () => backCounter({}, "kettle")], "tool:milkKit": [.2, 4.32, 42, () => backCounter({}, "milkKit")],
     "tool:boiler": [.2, 5.75, 52, () => backCounter({}, "boiler")], "tool:cocoa": [.2, 5.3, 40, () => backCounter({}, "cocoa")],
     "tr:cust1": [9.6, .5, 26, () => trafficDeco({}, "c1")], "tr:cust2": [1.4, 0, 97, () => trafficDeco({}, "c2")], "tr:cust3": [10, 0, 85, () => trafficDeco({}, "c3")],
@@ -412,12 +449,18 @@ window.SCENE = (() => {
     const a1 = iso(4, 4, 30), a2 = iso(4.3, 4, 30), a3 = iso(4.3, 4.3, 30), a4 = iso(4, 4.3, 30), tp = iso(4.15, 4.15, 38); poly([a4, a3, tp], "#ecebe6"); poly([a3, a2, tp], "#d8d4cc"); }];
   ["sleeve", "napkin", "sugar", "stirrer", "sweetener", "straw"].forEach(k => { const pos = { sleeve: [1.18, .4, 44], napkin: [1.53, .41, 46], sugar: [1.82, .4, 45], stirrer: [2.05, .4, 46], sweetener: [2.31, .3, 42], straw: [1.6, .65, 48] }[k];
     TH_ITEMS["ex:" + k] = [pos[0], pos[1], pos[2], () => { EXN = {}; exItem(k, true); }]; });
+  Object.entries({ d4sofa: "sofa", d4shelf: "bookshelf", d4ficus: "plant", d4clock: "clock", d4neon: "neon", d4gallery: "photos", d5chand: "chandelier", d5piano: "piano", d5aqua: "aquarium", d5brass: "brass", d5art: "artwall" })
+    .forEach(([k, b]) => { const t = TH_ITEMS["decor:" + b]; if (t) TH_ITEMS["decor:" + k] = [t[0], t[1], t[2], DECOR[k]]; });
+  TH_ITEMS["decor:d5roaster"] = [7.35, .5, 40, DECOR.d5roaster];
+  ["vanilla", "caramel", "saltcar", "choco", "condensed", "cream", "icecream", "lemon", "tonic", "menengic", "sugarx", "coldbrew"].forEach((k, i) => { TH_ITEMS["sp:" + k] = [4, 4, 14, () => { const c = (window.DATA.specials[k] || {}).color || "#c9772b"; shadowE(4, 4, TW * .25, TW * .12);
+    if (k === "lemon") { cyl(4, 4, .12, 6, "#f2d64b", 0, "#f8e98a"); return; } if (k === "icecream") { cyl(4, 4, .14, 14, "#e9ecee", 0, c); return; } if (k === "cream") { cyl(4, 4, .07, 22, "#c9ccd0", 0, "#2b2b30"); return; }
+    cyl(4, 4, .09, 22, c, 0, "#2b2b30"); cyl(4, 4, .03, 8, "#2b2b30", 22, "#2b2b30"); }]; });
   const thCache = {};
   function thumb(key) {
     if (thCache[key]) return thCache[key]; const it = TH_ITEMS[key]; if (!it) return null;
     const c = document.createElement("canvas"); c.width = 168; c.height = 128;
     const save = { ctx, TW, TH, OX, OY, Q }; ctx = c.getContext("2d"); Q = QUALITY.high;
-    const SC = [[/cup:/, 130], [/ex:/, 120], [/sup:milk/, 95], [/tool:|thermo|pourP|precScale|scaleTamp|autoMilk|autoTamp/, 88], [/grind|scaleGrind|fridge/, 62], [/staff/, 64], [/freq1/, 26], [/neon|brass|stools|sofa|piano|artwall|photos|cust2|cust3|freq2/, 36], [/dualGroup/, 34], [/superAuto|pid|steam/, 46], [/plant|olive|bookshelf|aquarium|lamp|chandelier|record|ivy|mat|clock|poster|cust1|freq3|sup:bean/, 48]];
+    const SC = [[/cup:/, 130], [/ex:/, 120], [/sp:/, 110], [/tool:(syrupPump|creamSiphon|whisk|shaker|mokaPot|aeropress|chemex|phin)/, 80], [/tool:(iceCreamFridge|iceMachine|blender|coldBrewJar|siphon|nitroTap)/, 56], [/sup:milk/, 95], [/tool:|thermo|pourP|precScale|scaleTamp|autoMilk|autoTamp/, 88], [/grind|scaleGrind|fridge/, 62], [/staff/, 64], [/freq1/, 26], [/neon|brass|stools|sofa|piano|artwall|photos|cust2|cust3|freq2/, 36], [/dualGroup/, 34], [/superAuto|pid|steam/, 46], [/plant|olive|bookshelf|aquarium|lamp|chandelier|record|ivy|mat|clock|poster|cust1|freq3|sup:bean/, 48]];
     TW = (SC.find(([r]) => r.test(key)) || [0, 46])[1]; TH = TW / 2; OX = 0; OY = 0;
     const [cx, cy] = iso(it[0], it[1], it[2]); OX = 84 - cx; OY = 66 - cy;
     const g = ctx.createLinearGradient(0, 0, 0, 128); g.addColorStop(0, "#f3ece1"); g.addColorStop(1, "#d8cbb8"); ctx.fillStyle = g; ctx.fillRect(0, 0, 168, 128);

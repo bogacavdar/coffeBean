@@ -281,6 +281,82 @@ window.CLOSEUP = (() => {
     ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center";
     ctx.fillText({ dose: "orta-ince çekim · kadran koyu yeşilde bırak", bloom: "az suyla ıslat, kahve kabarsın (bloom) · %" + Math.round(Math.min(100, v)), pour: "merkezden dışa daire çizerek dök · tur " + Math.min(3, Math.floor(v / 33.4)) + "/3" }[stage], 240, 240);
   }
+  // ---- §3 dünya kahveleri: tek fonksiyonda gerçekçi yakın planlar (kind'a göre)
+  function glassCup(x, y, w, h, fill, layers, ice) {                            // şeffaf bardak + katmanlar + buz
+    ctx.fillStyle = "rgba(220,235,240,.35)"; ctx.beginPath(); ctx.moveTo(x - w / 2, y - h); ctx.lineTo(x + w / 2, y - h); ctx.lineTo(x + w / 2 - 8, y); ctx.lineTo(x - w / 2 + 8, y); ctx.closePath(); ctx.fill();
+    let yy = y; (layers || []).forEach(([col, f]) => { const hh = h * f; ctx.fillStyle = col; ctx.fillRect(x - w / 2 + 9, yy - hh, w - 18, hh); yy -= hh; });
+    for (let i = 0; i < (ice || 0); i++) { ctx.fillStyle = "rgba(240,250,255,.75)"; rr(x - w / 2 + 12 + (i * 23) % (w - 40), y - 20 - Math.floor(i * 23 / (w - 40)) * 18 - (i % 2) * 6, 18, 16, 3); ctx.fill(); ctx.strokeStyle = "rgba(160,200,215,.8)"; ctx.stroke(); }
+    ctx.strokeStyle = "rgba(150,180,190,.9)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - w / 2, y - h); ctx.lineTo(x - w / 2 + 8, y); ctx.lineTo(x + w / 2 - 8, y); ctx.lineTo(x + w / 2, y - h); ctx.stroke();
+  }
+  function label(t) { ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(t, 240, 240); }
+  function timerDial(cx, cy, R, v, Z, total) { ctx.fillStyle = "#fdfcf9"; ctx.beginPath(); ctx.arc(cx, cy, R + 8, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#8d8f93"; ctx.lineWidth = 3; ctx.stroke();
+    arcZones(cx, cy, R - 6, 12, -Math.PI / 2, Math.PI * 1.5, Z); const a = -Math.PI / 2 + Math.min(100, v) / 100 * Math.PI * 2;
+    ctx.strokeStyle = "#111"; ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * (R - 10), cy + Math.sin(a) * (R - 10)); ctx.stroke(); ctx.lineCap = "butt";
+    const sec = Math.round(v / 100 * total); ctx.fillStyle = "#2b2117"; ctx.font = "700 14px monospace"; ctx.textAlign = "center"; ctx.fillText(Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"), cx, cy + R + 24); }
+  function kit(kind, v, p = {}) { bg(); shadow(240, H - 64, 80, 10); const Z = p.Z, col = p.color || "#c9772b";
+    if (kind === "pump") { glassCup(170, 200, 90, 110, null, [[col, Math.min(1, (p.n || 0) / Math.max(1, p.N)) * .25]]);
+      ctx.fillStyle = lg(270, 0, 330, 0, [[0, "#6a4a2a"], [.5, "#b07a48"], [1, "#6a4a2a"]]); rr(270, 90, 60, 110, 10); ctx.fill(); ctx.fillStyle = col; rr(278, 120, 44, 60, 6); ctx.fill();
+      const press = p.flash ? 10 : 0; ctx.fillStyle = "#2b2b30"; ctx.fillRect(296, 50 + press, 8, 42); rr(276, 44 + press, 48, 12, 5); ctx.fill(); ctx.fillRect(240, 68 + press, 60, 6);
+      ctx.fillStyle = "#2b2117"; ctx.font = "800 26px system-ui"; ctx.textAlign = "center"; ctx.fillText((p.n || 0) + " / " + p.N, 410, 130); return label("POMPALA'ya " + p.N + " kez bas · " + (p.name || "şurup")); }
+    if (kind === "drizzle" || kind === "cream") { ctx.fillStyle = rg(236, 128, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 128, 88, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = kind === "cream" ? "#e8d6bd" : "#f2e6d4"; ctx.beginPath(); ctx.arc(240, 128, 74, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = kind === "cream" ? "#fffaf0" : col; ctx.lineWidth = kind === "cream" ? 14 : 4; ctx.lineCap = "round"; ctx.beginPath(); const turns = v / 100 * 4 * Math.PI;
+      for (let a = 0; a <= turns; a += .1) { const r = kind === "cream" ? 60 - a * 4 : 64 - (a % (Math.PI * 2)) * 2 - Math.floor(a / Math.PI / 2) * 14; const x = 240 + Math.cos(a) * Math.max(4, r), y = 128 + Math.sin(a) * Math.max(4, r); a ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); ctx.lineCap = "butt";
+      const ex = 240 + Math.cos(p.ang || 0) * 50, ey = 128 + Math.sin(p.ang || 0) * 50; ctx.fillStyle = kind === "cream" ? "#c9ccd0" : col; rr(ex - 12, ey - 70, 24, 60, 8); ctx.fill();
+      return label(kind === "cream" ? "sifonla daire çizerek krema sık" : "üstüne daire çizerek sos gezdir"); }
+    if (kind === "scoop" || kind === "pourshot") { ctx.fillStyle = "rgba(220,235,240,.5)"; ctx.beginPath(); ctx.ellipse(240, 160, 100, 30, 0, 0, Math.PI); ctx.fill(); ctx.strokeStyle = "rgba(150,180,190,.9)"; ctx.lineWidth = 2; ctx.stroke();
+      const balls = kind === "scoop" ? Math.min(p.N || 1, Math.floor(v / 100 * (p.N || 1) + .02)) : (p.N || 1); for (let i = 0; i < balls; i++) { ctx.fillStyle = rg(220 + i * 40, 140, 5, 34, [[0, "#fffbf0"], [1, "#e9dcbc"]]); ctx.beginPath(); ctx.arc(220 + i * 40 - (balls - 1) * 20, 142, 32, 0, Math.PI * 2); ctx.fill(); }
+      if (kind === "scoop") { ctx.save(); ctx.translate(330, 80); ctx.rotate(.6 - v / 200); ctx.fillStyle = "#c9ccd0"; rr(-5, -60, 10, 70, 4); ctx.fill(); ctx.beginPath(); ctx.arc(0, 18, 18, 0, Math.PI * 2); ctx.fill(); ctx.restore(); return label("kepçeyi basılı tut · dondurma topu"); }
+      ctx.fillStyle = "rgba(74,40,18,.85)"; ctx.beginPath(); ctx.ellipse(240, 140, 60 * Math.min(1, v / 100), 18 * Math.min(1, v / 100), 0, 0, Math.PI * 2); ctx.fill();
+      ctx.save(); ctx.translate(320, 60); ctx.rotate(.7); ctx.fillStyle = "#fbfaf8"; rr(-22, -18, 44, 36, 8); ctx.fill(); ctx.restore(); if (v < 100) { ctx.strokeStyle = "rgba(74,40,18,.95)"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(300, 74); ctx.quadraticCurveTo(270, 100, 250, 120); ctx.stroke(); }
+      return label("sıcak espressoyu dondurmanın üstüne dök · %" + Math.round(v)); }
+    if (kind === "garnish") { ctx.fillStyle = rg(236, 128, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 128, 70, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#3b1f0e"; ctx.beginPath(); ctx.arc(240, 128, 56, 0, Math.PI * 2); ctx.fill();
+      if (v >= 100) { ctx.fillStyle = "#f2d64b"; ctx.beginPath(); ctx.ellipse(300, 120, 26, 10, -.6, 0, Math.PI * 2); ctx.fill(); } else { ctx.fillStyle = "#f2d64b"; ctx.beginPath(); ctx.ellipse(380, 80, 26, 10, -.6, 0, Math.PI * 2); ctx.fill(); }
+      return label("LİMON'a dokun · kabuğu kenara sür"); }
+    if (["ice", "coldwater", "coldmilk", "tonic", "coldpour", "spoontop"].includes(kind)) { const f = Math.min(1, v / 100), ice = p.ice || (kind === "ice" ? Math.round(f * 6) : 6);
+      const L = kind === "coldmilk" ? [["#f4efe6", f * .55]] : kind === "coldwater" ? [["rgba(190,220,235,.6)", f * .5]] : kind === "tonic" ? [["rgba(225,245,250,.8)", f * .55]] : kind === "coldpour" ? [["#3a2010", f * .7]] : kind === "spoontop" ? [["#f4efe6", .55], ["#c08a4a", f * .2]] : [];
+      glassCup(240, 205, 120, 150, null, L, ice);
+      if (kind === "tonic" || kind === "coldpour" || kind === "coldmilk" || kind === "coldwater") { if (v < 100 && p.run) { ctx.strokeStyle = kind === "coldpour" ? "rgba(58,32,16,.9)" : "rgba(230,240,245,.9)"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(300, 30); ctx.quadraticCurveTo(270, 60, 255, 120); ctx.stroke(); } }
+      return label({ ice: "BUZ'a bas · bardağa buz koy (" + Math.round(f * (p.N || 3)) + "/" + (p.N || 3) + ")", coldwater: "basılı tut · soğuk su dök", coldmilk: "basılı tut · soğuk süt dök", tonic: "basılı tut · toniği yavaşça dök", coldpour: "basılı tut · cold brew dök", spoontop: "basılı tut · köpüğü kaşıkla koy" }[kind]); }
+    if (kind === "whisk") { ctx.fillStyle = rg(240, 125, 10, 96, [[0, "#f6f1e8"], [1, "#c9c3bb"]]); ctx.beginPath(); ctx.arc(240, 125, 96, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = `rgb(${Math.round(90 + v * 1.3)},${Math.round(50 + v * .9)},${Math.round(20 + v * .5)})`; ctx.beginPath(); ctx.arc(240, 125, 70, 0, Math.PI * 2); ctx.fill();
+      const ex = 240 + Math.cos(p.ang || 0) * 40, ey = 125 + Math.sin(p.ang || 0) * 40; ctx.strokeStyle = "#c9ccd0"; ctx.lineWidth = 2; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.ellipse(ex, ey, 10 + i * 2, 16, i * .3, 0, Math.PI * 2); ctx.stroke(); }
+      return label("kasede daire çizerek çırp · köpük açılıyor · tur " + Math.min(p.N || 5, Math.floor(v / 100 * (p.N || 5))) + "/" + (p.N || 5)); }
+    if (kind === "blend") { ctx.fillStyle = "rgba(220,235,240,.45)"; ctx.beginPath(); ctx.moveTo(180, 40); ctx.lineTo(300, 40); ctx.lineTo(285, 180); ctx.lineTo(195, 180); ctx.closePath(); ctx.fill();
+      const t = Math.min(1, v / 100), shake = p.run ? Math.sin(Date.now() / 30) * 2 : 0; ctx.fillStyle = `rgb(${Math.round(150 + t * 60)},${Math.round(110 + t * 50)},${Math.round(80 + t * 40)})`; ctx.fillRect(196 + shake, 90, 88, 88);
+      if (t < .7) for (let i = 0; i < 10 * (1 - t); i++) { ctx.fillStyle = "rgba(240,250,255,.85)"; rr(200 + (i * 17) % 70 + shake, 100 + (i * 13) % 60, 14, 12, 2); ctx.fill(); }
+      ctx.fillStyle = "#2b2b30"; rr(175, 180, 130, 34, 8); ctx.fill(); vZones(330, 40, 200, 12, Z); ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.strokeRect(330, 40, 12, 160);
+      const yy = 200 - Math.min(100, v) / 100 * 160; ctx.fillStyle = "#111"; ctx.beginPath(); ctx.moveTo(324, yy); ctx.lineTo(330, yy - 5); ctx.lineTo(330, yy + 5); ctx.fill();
+      return label(p.run ? "blender çalışıyor · doku koyu yeşildeyken DURDUR" : "blenderi ÇALIŞTIR"); }
+    if (kind === "shakeit") { const x = 120 + (p.x == null ? 50 : p.x) / 100 * 240; ctx.save(); ctx.translate(x, 120); ctx.rotate((x - 240) / 400);
+      ctx.fillStyle = lg(-30, 0, 30, 0, [[0, "#8e9296"], [.4, "#f2f4f6"], [1, "#7c8085"]]); rr(-30, -70, 60, 140, 14); ctx.fill(); ctx.fillStyle = "#6f7378"; rr(-24, -88, 48, 22, 8); ctx.fill(); ctx.restore();
+      ctx.fillStyle = "#c08a4a"; ctx.fillRect(70, 210, 340 * Math.min(1, v / 100), 8); return label("shaker'ı sağa-sola kaydırarak sertçe çalkala"); }
+    if (kind === "mokafill" || kind === "mokaheat") { const x = 220; ctx.fillStyle = lg(x - 50, 0, x + 50, 0, [[0, "#8e9296"], [.35, "#eef0f2"], [1, "#7c8085"]]);
+      ctx.beginPath(); ctx.moveTo(x - 40, 200); ctx.lineTo(x + 40, 200); ctx.lineTo(x + 30, 140); ctx.lineTo(x - 30, 140); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.moveTo(x - 30, 130); ctx.lineTo(x + 30, 130); ctx.lineTo(x + 42, 60); ctx.lineTo(x - 42, 60); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#2b2b30"; ctx.beginPath(); ctx.moveTo(x + 40, 70); ctx.quadraticCurveTo(x + 80, 80, x + 44, 120); ctx.lineWidth = 8; ctx.strokeStyle = "#2b2b30"; ctx.stroke();
+      if (kind === "mokafill") { ctx.fillStyle = "rgba(160,200,230,.85)"; const h = Math.min(100, v) / 100 * 56; ctx.fillRect(x - 36, 198 - h, 72, h); vZones(x + 60, 142, 198, 10, Z); ctx.fillStyle = "#b5533c"; ctx.beginPath(); ctx.arc(x + 34, 160, 4, 0, Math.PI * 2); ctx.fill(); return label("alt hazneye vanaya kadar su · koyu yeşilde bırak"); }
+      ctx.fillStyle = "#2b2b30"; rr(140, 202, 160, 12, 4); ctx.fill(); if (p.run) for (let i = 0; i < 7; i++) { ctx.fillStyle = `rgba(80,140,255,${.5 + .3 * Math.sin(Date.now() / 90 + i)})`; ctx.beginPath(); ctx.ellipse(186 + i * 11, 200, 3, 6, 0, 0, Math.PI * 2); ctx.fill(); }
+      const k = Math.min(100, v); if (k > 40) { ctx.fillStyle = "#4a2a14"; ctx.beginPath(); ctx.ellipse(x, 66, 30, 6 + (k - 40) * .08, 0, 0, Math.PI * 2); ctx.fill(); } if (k > 90) { ctx.fillStyle = "rgba(74,40,18,.8)"; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(x - 20 + i * 8, 54 - (i % 3) * 6, 3, 0, Math.PI * 2); ctx.fill(); } }
+      vZones(330, 40, 200, 12, Z); ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.strokeRect(330, 40, 12, 160); const yy = 200 - k / 100 * 160; ctx.fillStyle = "#111"; ctx.beginPath(); ctx.moveTo(324, yy); ctx.lineTo(330, yy - 5); ctx.lineTo(330, yy + 5); ctx.fill();
+      return label(p.run ? "kahve yükseliyor… fokurdama başlayınca, püskürmeden OCAKTAN AL" : "moka potu OCAĞA KOY"); }
+    if (kind === "apsteep" || kind === "phin") { if (kind === "phin") { glassCup(200, 205, 90, 100, null, [[p.color || "#f3e3c3", .2], ["#3a2010", Math.min(1, v / 100) * .5]]); ctx.fillStyle = "#b4b8bd"; rr(160, 70, 80, 36, 6); ctx.fill(); ctx.fillRect(150, 104, 100, 6);
+        if (p.run) for (let i = 0; i < 3; i++) { ctx.fillStyle = "#3a2010"; ctx.beginPath(); ctx.arc(200, 118 + ((Date.now() / 8 + i * 25) % 70), 2.5, 0, Math.PI * 2); ctx.fill(); } }
+      else { ctx.fillStyle = "rgba(220,235,240,.5)"; rr(170, 50, 60, 140, 6); ctx.fill(); ctx.fillStyle = "#5a3418"; ctx.fillRect(172, 110, 56, 78); ctx.fillStyle = "#2b2b30"; rr(160, 186, 80, 14, 4); ctx.fill(); }
+      timerDial(360, 110, 52, v, Z, kind === "phin" ? 360 : 180); return label(kind === "phin" ? "damla damla · damlama bitince (4:00) DURDUR" : "1,5 dakika demle · saat koyu yeşildeyken DURDUR"); }
+    if (kind === "appress" || kind === "siphondrop") { if (kind === "appress") { ctx.fillStyle = "rgba(220,235,240,.5)"; rr(200, 60, 80, 120, 6); ctx.fill(); ctx.fillStyle = "#5a3418"; const t = Math.min(1, v / 100); ctx.fillRect(202, 60 + t * 100, 76, 120 - t * 100);
+        ctx.fillStyle = "#2b2b30"; rr(196, 30 + t * 100, 88, 30, 6); ctx.fill(); glassCup(240, 230, 100, 50, null, [["#5a3418", t * .7]]); return label("pistonu yavaşça bastır · %" + Math.round(v)); }
+      ctx.fillStyle = "rgba(220,235,240,.5)"; ctx.beginPath(); ctx.arc(240, 170, 40, 0, Math.PI * 2); ctx.fill(); rr(220, 40, 40, 90, 10); ctx.fill(); const t = Math.min(1, v / 100);
+      ctx.fillStyle = "#4a2a14"; ctx.fillRect(222, 50 + t * 78, 36, 78 - t * 78); ctx.beginPath(); ctx.arc(240, 170, 38 * t, 0, Math.PI * 2); ctx.fill(); return label("ateş kesildi · kahve süzülerek iniyor · %" + Math.round(v)); }
+    if (kind === "siphonheat") { ctx.fillStyle = "rgba(220,235,240,.5)"; ctx.beginPath(); ctx.arc(220, 170, 40, 0, Math.PI * 2); ctx.fill(); rr(200, 40, 40, 90, 10); ctx.fill(); const t = Math.min(100, v) / 100;
+      ctx.fillStyle = "rgba(160,200,230,.9)"; ctx.beginPath(); ctx.arc(220, 170, 38 * (1 - t), 0, Math.PI * 2); ctx.fill(); ctx.fillRect(202, 128 - t * 78, 36, t * 78);
+      if (p.run) { ctx.fillStyle = "rgba(80,140,255,.7)"; ctx.beginPath(); ctx.moveTo(210, 228); ctx.lineTo(220, 205); ctx.lineTo(230, 228); ctx.fill(); }
+      vZones(300, 40, 200, 12, Z); ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.strokeRect(300, 40, 12, 160); const yy = 200 - t * 160; ctx.fillStyle = "#111"; ctx.beginPath(); ctx.moveTo(294, yy); ctx.lineTo(300, yy - 5); ctx.lineTo(300, yy + 5); ctx.fill();
+      return label(p.run ? "su üst hazneye çıkıyor · koyu yeşilde ATEŞİ KES" : "ATEŞİ AÇ"); }
+    if (kind === "nitrotap") { ctx.fillStyle = "#2b2b30"; rr(200, 20, 80, 40, 8); ctx.fill(); ctx.fillStyle = "#c9a14f"; rr(232, 0, 16, 30, 4); ctx.fill(); const t = Math.min(100, v) / 100;
+      glassCup(240, 210, 110, 140, null, [["#2a1408", t * .7], ["#d9b88e", t > .3 ? .12 : 0]]); if (p.run) { ctx.strokeStyle = "rgba(42,20,8,.9)"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(240, 60); ctx.lineTo(240, 210 - t * 140 * .82); ctx.stroke(); }
+      vZones(320, 70, 210, 12, Z); ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.strokeRect(320, 70, 12, 140); return label("musluğu basılı tut · köpük çizgisi koyu yeşildeyken bırak"); }
+    label(kind);
+  }
   function cupTop(quality, milky, heart) { bg(); ctx.fillStyle = rg(236, 120, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 125, 88, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = milky ? rg(232, 118, 5, 74, [[0, "#f7f1e6"], [.7, "#e9dcc6"], [1, "#b8824a"]]) : rg(232, 118, 5, 74, [[0, "#d9a86a"], [.6, "#b77a3c"], [1, "#6a3d1a"]]);
     ctx.beginPath(); ctx.arc(240, 125, 74, 0, Math.PI * 2); ctx.fill();
@@ -288,5 +364,5 @@ window.CLOSEUP = (() => {
     if (heart) { heartShape(240, 122, 34, "#fffaf2"); heartShape(240, 122, 22, "rgba(233,214,190,.6)"); }
     ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; ctx.fillText("Kalite " + quality, 240, 235);
   }
-  return { init, setQuality, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, shake, stir, swirl, pour, tkdose, cezveStir, cezveFoam, press, v60, cupTop };
+  return { init, setQuality, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, shake, stir, swirl, pour, tkdose, cezveStir, cezveFoam, press, v60, kit, cupTop };
 })();

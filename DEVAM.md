@@ -7,8 +7,21 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.20)
+## Bekleyen paket (son yayın: v0.21)
 (boş)
+
+## v0.21 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi; 34 kahve tek pakette)
+Doküman rev 141. Test yapılmadı (Kural 7); tüm yeni küçük resimler ve tam donanımlı 5★ sahne hata vermeden çiziliyor (otomatik çizim).
+- **Telefon düzeni:** yatay telefon için `@media (orientation:landscape) and (max-height:520px)` (HUD sarar, xp hapları gizli; Çıkış küçük hap; sipariş kartı 250 px, hazırlarken `#sheet` sağdan ona yer bırakır; küçük menü). Dikeyde Çıkış küçük hap, hazırlarken kart alta şerit (yalnız sıra; `body:has(#sheet.on)`), `#tut` en fazla 20vh kayar. Medya blokları `</style>` öncesine taşındı (önceden sonraki temel kurallar eziyordu). `modal()` metni `.mtext` (kayar), düğmeler `.mrow` (altta sabit).
+- **Yanıp sönme:** `leave()` sıradaki müşteri gidince artık `renderBench`/`stopLoops` çağırmıyor, `day.active` aynı siparişte kalıyor; yalnız iptal olan sipariş ekranı yeniler.
+- **Dünya kahveleri (34 yeni tarif):** long black 36 … nitro cold brew 420 (`unlockCups`, `shop` 1–5★); tam liste dokümanda §6. Yeni adımlar `closeup.kit(kind)` (pump, drizzle, cream, scoop, pourshot, garnish, ice/coldwater/coldmilk/tonic/coldpour/spoontop, whisk, blend, shakeit, mokafill/mokaheat, apsteep/phin, appress/siphondrop, siphonheat, nitrotap) ve `taps` act. Özel malzemeler `D.specials` → `S.syr[k]`, `specNeeds/useSpecials/specialOpen`, `PUMPS`; eksikse "… bile yok!". Tedarik'te "Şuruplar, soslar ve özel malzemeler" + cold brew demleme (0,2 kg Brezilya → 10 bardak). Yeni aletler (14), bardaklar (`tkCup`, `iceS/M/L`, `affoBowl`), boylar (`iS/iM/iL`, `affo1/2`).
+- **Dükkan 4★ / 5★:** "Şehir kahvecisi", "Kahve evi & kavurmahane"; 4★/5★ dekor (12). Sahnede `wallShelf` (sol duvar rafı, z 156) ve `coldStation` (tezgâh ucu, y 1+CL+,05, x 1,0–2,3); çöp kutusu x ,6'ya; `DECOR.d5roaster` (6,9 / ,15) + d4/d5 takma adları; `TH_ITEMS` yeni aletler, dekor ve `sp:` malzemeler.
+- **Ad düzeltmesi:** kahve adları "Pres kahve" (French press demlikle) ve "Filtre kahve" (V60 ile); alet adları aynı.
+- **Hazırlama ekranından çıkış:** `#sheet` arka planına dokununca ekran kapanır, sipariş kaldığı yerde bekler (`o.hidden`; oynanan adım duraklar, o adım yeniden başlar); müşteriye dokununca (`#scene` hitTest) devam. Öğreticide kapanmaz.
+- **Yıldız Teyze sonrası:** veda penceresinde Devam'a kadar `tutorialActive` açık (saat/müşteri durur).
+- **Öğretici 4. adım:** erken DURDUR → çekme baştan (`phase ready`, v 0), `D.tutorial.extractEarly`.
+- **Yıldız Teyze baştan tezgâhta:** ilk gün `queueSlot(0)`'da doğar, balonu "Hazırsan başlayabiliriz evladım, bana dokun."; sipariş cümlesi yok.
+- **Yıldız Teyze açılışı açık uçlu:** "Ben sana espressoyu öğreterek başlayayım; gerisini zamanla sen halledersin. Tarif defterim de köşede duruyor." (diğer kahvelerden bahsetmiyor).
 
 ## v0.20 – YAYINLANDI (1 Kasım 2026, kullanıcı "hepsini ekle paket çık" dedi)
 Doküman rev 127. Test yapılmadı (Kural 7); yeni oyun açılışı ve Tedarik ekranı hata vermeden açılıyor (otomatik tıklama).

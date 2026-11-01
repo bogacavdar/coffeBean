@@ -1,5 +1,42 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.21 – 1 Kasım 2026
+
+### Dünya kahveleri (34 yeni tarif)
+Sattığın kahve sayısına göre sırayla açılıyor; bazıları dükkanın belli bir yıldıza gelmesini de istiyor. Her biri gerçek yapılışıyla hazırlanıyor.
+
+| Dükkan | Kahveler (açıldığı satış sayısı) |
+|---|---|
+| 1★ | Long black 36, Espresso con panna 40, Caffè Romano 42 |
+| 2★ | Flat white 50, Piccolo 54, Café au lait 62, Vanilyalı latte 66, Red eye 70, Mocha 74, Sütlü Türk kahvesi 78, Caramel macchiato 84, Menengiç 90, Tuzlu karamel latte 96, Dibek 100, Affogato 110 |
+| 3★ | Buzlu americano 120, Buzlu latte 130, Moka pot 140, AeroPress 150, Café Cubano 160, Bombón 170, Marocchino 180, Wiener Melange 190, Dalgona 200, Espresso tonic 215 |
+| 4★ | Frappuccino 240, Mocha frappé 255, Yunan frappé 270, Cold brew 290, Vietnam kahvesi 310, Buzlu mocha 330, Chemex 350 |
+| 5★ | Sifon kahvesi 380, Nitro cold brew 420 |
+
+- **Yeni hareketler:** şurup pompalama, sos gezdirme, krem şanti sıkma, dondurma topu, buz koyma, çırpma, blender, shaker, moka potu doldurup ısıtma, AeroPress pistonu, phin damlatma, sifonu ısıtıp çekme, nitro musluğu.
+- **Özel malzemeler (Tedarik):** vanilya, karamel, tuzlu karamel, çikolata sosu, yoğunlaştırılmış süt, krema, dondurma, limon, tonik, menengiç ezmesi, ekstra şeker. Cold brew Tedarik'te demleniyor: 0,2 kg Brezilya çekirdekten 10 bardak. Gereken malzeme yoksa müşteri "… bile yok!" deyip gidiyor.
+- **Yeni aletler:** şurup pompası, krema sifonu, dondurma dolabı, buz makinesi, moka pot, AeroPress, çırpıcı, blender, shaker, cold brew kavanozu, phin, Chemex, sifon, nitro musluğu. Sol duvardaki rafta ve tezgâhın ucundaki soğuk barda görünüyorlar; çöp kutusu soğuk barın yanına taşındı.
+- **Yeni bardaklar:** Türk kahvesi fincanı, buzlu bardaklar (K/O/B), affogato kâsesi.
+
+### Dükkan 4★ ve 5★
+- **4★ Şehir kahvecisi** (₺12.000, itibar 450) ve **5★ Kahve evi & kavurmahane** (₺30.000, itibar 800).
+- 12 yeni dekor: chester takımı, kitaplık, dev ficus, antika saat, neon logo, fotoğraf galerisi; kahve kavurma makinesi, kristal avize, kuyruklu piyano, akvaryum duvarı, pirinç tabela, sanat galerisi.
+
+### Telefon düzeltmeleri
+- Yatay telefonda bilgi şeridi küçük ve iki satırı geçmiyor; gün, saat, kira ekran dışına taşmıyor.
+- Çıkış düğmesi telefonda küçük bir hap.
+- Hazırlama ekranı açıkken sipariş kartı üstünü kapatmıyor: yatayda sağda duruyor, dikeyde alta ince şerit olup yalnız sırada bekleyenleri gösteriyor.
+- Yıldız Teyze'nin uzun metinlerinde düğmeler hep görünür; öğretici balonu kendi içinde kayıyor.
+- Sıradaki bir müşteri vazgeçip gidince hazırladığın siparişin ekranı artık yanıp sönmüyor, oynadığın adım sıfırlanmıyor.
+- Yatay telefonda ana menü ekrana sığıyor.
+
+### Yıldız Teyze ve öğretici
+- Yıldız Teyze ilk gün tezgâhın önünde bekliyor; ona dokununca öğretmeye başlıyor. Diğer kahvelerden bahsetmiyor.
+- Öğreticinin 4. adımında erken durdurursan çekme baştan başlıyor, Yıldız Teyze beklemen gerektiğini söylüyor.
+- Yıldız Teyze'den sonra Devam'a basana kadar saat ve müşteriler duruyor.
+- Hazırlama ekranının dışına dokununca ekran kapanıyor; müşteriye dokununca kaldığın adımdan devam ediyor.
+- Kahve adları düzeltildi: "Pres kahve" ve "Filtre kahve" (French press ve V60 alet adları).
+
 ## v0.20 – 1 Kasım 2026
 
 ### Çekirdek çeşitleri
