@@ -1,6 +1,8 @@
 # CoffeBean – Güncelleme Notları
 
-## v0.28 – (yayın bekliyor)
+## v0.28 – 1 Kasım 2026 (acil)
+- **Gün sonunda donma düzeltildi:** Kahve Gazetesi ya da başka bir gün sonu penceresi dışına dokununca (veya Esc › Vazgeç ile) kapanırsa ekranda hiçbir şey kalmıyor, "Günü başlat" çalışmıyordu. Artık gün sonu akışı kaldığı ekrandan kendiliğinden yeniden açılıyor; gün sonundayken "Günü başlat" görünmüyor.
+- **Para gösterimi:** Dükkan (geliştirmeler, aletler, krediler, dekor), Fiyatlar, Krediler ve Ana hedef ekranlarında da Tedarik'teki gibi yeşil kağıt paralı büyük kasa kutusu var. Tüm ₺ tutarlarında binlik ayracı (₺13.500).
 - Kahve Gazetesi artık yalnızca menüde olan (açılmış ve aleti alınmış) kahvelerin fiyat haberlerini yazıyor.
 
 ## v0.27 – 1 Kasım 2026

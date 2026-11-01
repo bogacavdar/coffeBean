@@ -7,7 +7,12 @@ Son güncelleme: 2026-11-01
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.27)
+## Bekleyen paket (son yayın: v0.28)
+(boş)
+
+## v0.28 – YAYINLANDI (1 Kasım 2026, kullanıcı "acilen çöz" dedi)
+- **Gün sonu donması:** `#ovModal` (gazete) dışına dokunma ya da Esc › Vazgeç ile kapanınca `endCtx` dolu ama hiçbir ekran yok → donmuş görünüm; "Günü başlat" da yanlış çalışıyordu. `resumeEndFlow()` akışı `dayFlow`/`endCtx`'e göre yeniden açar (hub, fiyat, tedarik, gazete ya da hesap); 700 ms'lik emniyet `setInterval`'i ekran kalmadıysa çağırır; `#openDay` `endCtx`/`mandatoryRestock` varken gizli, tıklanırsa akışı açar. Kullanıcı bildirdiği için yeniden üretilip doğrulandı (Kural 7 istisnası).
+- **Para kutusu:** yeşil kağıt paralı kasa kutusu (`cashBox()`) Tedarik'in yanı sıra Dükkan, Fiyatlar, Krediler ve Ana hedef ekranlarında da. Tüm ₺ tutarları `tl()` ile binlik ayraçlı (tr-TR).
 - **Gazete yalnız menüdeki kahveleri yazıyor:** `updateMarket()` haber listesini açık ve aleti alınmış tariflerle sınırlıyor (endeksler arka planda tüm tarifler için değişmeye devam ediyor). Kullanıcı isteği.
 
 ## v0.27 – YAYINLANDI (1 Kasım 2026; kullanıcı kararı: buzdolabı 1★'da satın alınabilsin, hemen yayınla)
