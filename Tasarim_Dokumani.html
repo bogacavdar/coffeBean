@@ -8,6 +8,26 @@ figure{margin:1em 0;padding:10px 14px;background:var(--tint);border-left:3px sol
 [data-atom=mention]{display:none}input[type=checkbox]{accent-color:var(--accent)}</style></head><body>
 <<h1 id="kahve-dükkanı-oyunu-tasarım-dokümanı">Kahve Dükkanı Oyunu – Tasarım Dokümanı</h1>
 <p><time data-atom="date" datetime="2026-10-31">2026-10-31</time> · <span data-atom="mention" data-principal="u_2fKPdpAEupRbmMlCzB99Pg">@u_2fKPdpAEupRbmMlCzB99Pg</span></p>
+<h2 id="0-guncel-degerler">0. Güncel geçerli değerler (v0.24)</h2>
+<p><b>Bu bölüm belgenin geri kalanından önce gelir.</b> Aşağıdaki bölümlerdeki eski tablolarla çelişen her konuda burası geçerlidir; ayrıntılı ve güncel tüm sayılar <code>data.js</code>'tedir (barista incelemesi, 1 Kasım 2026).</p>
+<table><thead><tr><th>Konu</th><th>Geçerli değer</th></tr></thead><tbody>
+<tr><td>Para ölçeği</td><td>Gerçek TL (2026 İstanbul). data.js'teki tablolar eski ölçekte yazılı, yükleme anında ×9 çarpılıp yuvarlanır. Espresso ~₺90–100; başlangıç ₺2.700 (Kolay ₺3.600, Zor ₺2.250).</td></tr>
+<tr><td>Kira (haftalık)</td><td>1★ ₺1.350 · 2★ ₺3.150 · 3★ ₺6.300 · 4★ ₺10.800 · 5★ ₺18.000</td></tr>
+<tr><td>Dükkan şartları</td><td>2★ ₺13.500 + 100 itibar · 3★ ₺45.000 + 250 itibar · 4★ ₺108.000 + 450 · 5★ ₺270.000 + 800 (eleştirmen henüz yok)</td></tr>
+<tr><td>Gün</td><td>150 sn (08:00–20:00); müşteri sayısı 6 / 9 / 13 / 16 / 20, geliş aralığı 21,5 / 16 / 11 / 9 / 7,5 sn</td></tr>
+<tr><td>Müşteri sabrı</td><td>İş adamı 27 · Öğrenci 82 · Yaşlı teyze 105 · Kahve meraklısı 60 · Düzenli 75 sn</td></tr>
+<tr><td>Kahve kalitesi</td><td>Adımların ortalaması (en düşük adım sınırı yok). Çekirdek tazeliği kaliteye eklenmez.</td></tr>
+<tr><td>Espresso dozu</td><td>Tek 9 g → ~18 g · Double 18 g → ~36 g (1:2). Sütlü içeceklerin tüm boyları double shot.</td></tr>
+<tr><td>Ekstraksiyon</td><td>Terazili: ~6 sn ön ıslatma, hedef verim ve 25–30 sn; mükemmel ±1,5 sn, güzel ±3, iyi ±5. Ristretto ~20 sn / 1:1,5, lungo ~37 sn / 1:3.</td></tr>
+<tr><td>Süt</td><td>Tarif başına kendi miktarı (macchiato 30 ml … latte 200 ml). Buzdolabı her dükkanda var, süt 3 gün dayanır. "Büyük buhar kazanı" ve basınç adımı yok.</td></tr>
+<tr><td>Tarif sayısı</td><td>82 (45 + v0.24'te 37 yeni). Açılış: satılan kahve sayısı + dükkan yıldızı + gerekli alet.</td></tr>
+<tr><td>Mevsimler</td><td>Oyun sonbaharda başlar, her mevsim 28 gün. Balkabaklı latte (sonbahar), zencefilli kurabiye latte ve naneli mocha (kış) yalnız kendi mevsiminde istenir.</td></tr>
+<tr><td>Şeker</td><td>Tek stok: küçük malzemelerdeki şeker (Türk kahvesi şekeri ve tariflerin şekeri dahil).</td></tr>
+<tr><td>Cold brew</td><td>Tedarik'te demlemeye konur, ertesi sabah hazır; servis başına ayrıca çekirdek harcanmaz.</td></tr>
+<tr><td>Kahvesiz tarifler</td><td>Menengiç, kenger, sıcak çikolata, chai, salep; dalgona ve Yunan frappé hazır kahveyle.</td></tr>
+<tr><td>Alkol</td><td>Yok. Alkollü klasikler yalnız alkolsüz şuruplu halleriyle (ör. Irish kremalı kahve).</td></tr>
+<tr><td>Tarif adı</td><td>"Frappuccino" marka adı kullanılmaz; tarifin adı "Karamel frappé".</td></tr>
+</tbody></table>
 <h2 id="1-oyunun-özeti">1. Oyunun Özeti</h2>
 <p>Oyuncu, tek bir espresso makinesiyle açtığı küçük bir kahve dükkanını, dünyanın dört bir yanından çekirdek alan ve latte art yapan bir uzmanlık kahvecisine dönüştürür. Her yeni içecek gerçek bir barista tekniğiyle öğrenilir; oyunu bitiren kişi gerçek hayatta da bir kahve menüsünü anlayacak kadar şey öğrenmiş olur.</p>
 <table><thead><tr><th>Alan</th><th>Karar</th></tr></thead><tbody><tr><td>Çalışma adı</td><td>Çekirdek (geçici; alternatifler: Bean &amp; Brew, Üçüncü Dalga)</td></tr><tr><td>Tür</td><td>Dükkan yönetimi + zamanlama tabanlı kahve hazırlama simülasyonu</td></tr><tr><td>Platform</td><td>Tarayıcı (HTML5), masaüstü ve mobil dokunmatik; ileride mobil paketleme</td></tr><tr><td>Oynanış süresi</td><td>Tek oturum 10–20 dk; kampanya 8–12 saat</td></tr><tr><td>Hedef kitle</td><td>14+, kahve meraklıları ve rahat (cozy) simülasyon oyuncuları</td></tr><tr><td>Tek cümle</td><td>Espresso çekmeyi öğren, dükkanı büyüt, dünyayı fincanda tat</td></tr><tr><td>Ton</td><td>Sıcak, sakin, öğretici; ceza değil ustalaşma hissi</td></tr></tbody></table>

@@ -1,14 +1,37 @@
 # DEVAM.md – İlerleme ve Devam Notları
 
-Son güncelleme: 2026-10-31
+Son güncelleme: 2026-11-01
 
 ## Öncelik hatırlatması
 "Acilen" / "kritik" denilen her istek, bu dosyadaki her şeyin önüne geçer (bkz. KURALLAR.md, Kural 3).
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.22)
+## Bekleyen paket (son yayın: v0.24)
 (boş)
+
+## Sonraki sürüm için öneriler (barista raporlarından kalan)
+- Sipariş değiştiricileri: ekstra shot, kakaosuz/kakaolu, şekersiz şurup, kuru/ıslak cappuccino, "burada mı paket mi" + porselen fincan ve bulaşık.
+- Eleştirmen, turist ve sosyal medya fenomeni müşteri tipleri (turist cümleleri `orderLines.tourist`'te hazır, kullanılmıyor).
+- Yeni aletler (kum ocağı, dallah, olla, bez filtre, Hint filtresi, Kalita, Kyoto kulesi, el köpürtücü) dükkan sahnesindeki raflarda henüz çizilmiyor (`scene.js` `wallShelf`/`coldStation` anahtarları + `TH_ITEMS` küçük resimleri).
+- Sabah kalibrasyonu (dial-in) ve gün sonu temizlik (backflush) mekaniği.
+- Tasarım dokümanının eski bölümleri (§2, §8, §9 tabloları) v0.24 değerlerine göre sadeleştirilmeli; şimdilik en üstteki "0. Güncel geçerli değerler" bölümü geçerli.
+
+## v0.24 – YAYINLANDI (1 Kasım 2026, kullanıcı "sağlam bir paket çık" dedi; barista raporlarına göre gerçekçilik paketi)
+Barista raporları: "CoffeBean v0.22 – Barista Gözüyle İnceleme" ve "Hile Modu Kahve Testi" (Claude Docs). Kullanıcı kararları: gerçek TL (×9), gün 150 sn + sabır ×1,5, verim terazili ekstraksiyon, alkollü klasikler yalnız alkolsüz şuruplu.
+- **Ekonomi:** `data.js` sonundaki ölçek bloğu fiyat/kira/kredi/dekor/alet/görev ödüllerini ×9 çarpıp okunaklı yuvarlar (`D.econScale`); `begin()` eski kayıtları bir kez çevirir (`S.econ`). Fiyat düğmeleri ±₺5 (`D.pricing.stepTL`). Kira kredisi yuvarlaması `D.economy.rentLoanStep`. Gün kapanışında `L.spend` ("Alımlar") ve "Günün neti"; `buy()` `S.spend`'i sayar.
+- **Tempo:** `DAY_SECONDS = 150`; müşteri sabrı ×1,5; `shopLevels[].interval` ×150/90.
+- **Espresso:** boy dozları tek 9 g / double 18 g / S-M-L 18 g (`sizes[].bean/dose`); öğretici double. Ekstraksiyon bölgeleri `uiZone`'da saniye cinsinden (±1,5 / ±3 / ±5 sn, ristretto ×0,75); `CLOSEUP.extract(..., { tWin })` hedef gram + ön ıslatma. Lungo blond ve ristretto hız profili kalktı. PID adı "Sıcaklık kontrolcüsü".
+- **Süt:** `drinks[].milkL` + `milkUse(id,size)`; `beanUse(id,size)` + `noBean`; `milk: "hot"`. `boiler` aleti ve latte/cappuccino `pressure` adımı kalktı; latte/cappuccino/flat white/piccolo `shop` şartı kalktı. `stepsFor`: art varsa `pour` yerine geçer. Buzdolabı baştan (`newState` + göç).
+- **Tarif düzeltmeleri:** americano/long black kettle'sız; buzlu americano sırası; Türk ailesine `tkserve`; menengiç/kenger `mndose` + kahvesiz; dalgona/Yunan frappé `instant`; cold brew `S.cbBrewing` (gece demlenir, `startDay`'de hazır); melange kremasız; tek şeker stoku (`specStock("sugar")` → `S.extras.sugar`, `specName`); kakao serpici 1★, shaker 3★.
+- **37 yeni tarif** (`data.js`, "v0.24 yeni tarifler" bloğu), mevsimler (`D.seasons`, `seasonNo()`, `inSeason()`, `drinks[].season`), kafeinsiz çekirdek, 12 yeni özel malzeme, 8 yeni alet; yeni MG adımları `mndose, mirraboil, tkserve, coldfoam, colddrip, tumbler, cloth, steepcup, dust`.
+- **Görseller (`closeup.js`):** `v60(..., type)` 9 demlik; `press(..., "aeropress")`; cezve `opt {liquid, powder, vessel}`; `water/pour/milk` seçenekleri; kit düzeltmeleri + 7 yeni tür; tüm çizim dışa aktarımları save/try/restore ile sarılı (çizim hatası oyunu durduramaz). Klasik V60 dozunda tartı kadranı ekrana alındı.
+- **Hile:** "🧾 Tarif seçip müşteri getir", "⏸ Saati durdur / başlat" (`window.CB_FREEZE`).
+- Doküman: `Tasarim_Dokumani.html` başına "0. Güncel geçerli değerler (v0.24)". Kural eşleşme notu: yeni tariflerin tamamı §0 + Güncelleme notlarında; ayrıntı data.js.
+- Not: Bu paket kullanıcı isteğiyle grafik ve bütünlük kontrolü için otomatik çizim çağrısı ve yükleme denemesiyle kontrol edildi (Kural 7 istisnası: kullanıcı test turu istemişti).
+
+## v0.23 – YAYINLANDI (1 Kasım 2026; hile modu testinde bulunan buglar)
+- Oyun donması (hareket adımından sonra ibreli adım kurulmadan çiziliyordu; `finishStep` `o.tgt/o.z` sıfırlar, `stepTick` erken döner, `tick` try/catch), "Stokları doldur" özel malzemeleri dolduruyor, gün tekrarı kapandı (`S.endPending`), pencereler açıkken zaman duruyor (`dayPaused()`), öğretici müşteri küçük malzeme harcamıyor, Çıkış düğmesi çakışması, çelişen sipariş cümleleri, americano kartı, Tedarik'te biten küçük malzeme uyarısı.
 
 ## v0.22 – YAYINLANDI (1 Kasım 2026, kullanıcı "yap ve paket çık" dedi)
 Doküman rev 142. Test yapılmadı (Kural 7).

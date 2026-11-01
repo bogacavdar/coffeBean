@@ -1,5 +1,92 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.24 – 1 Kasım 2026
+
+Barista incelemesi ve hile modu tarif testindeki bulgularla gerçekçilik paketi.
+
+### Ekonomi gerçek TL'ye çekildi
+- Tüm fiyatlar 2026 İstanbul ölçeğinde (×9): espresso ~₺90–100, 1★ kira ₺1.350/hafta, başlangıç parası ₺2.700 (Kolay ₺3.600, Zor ₺2.250). Denge oranları aynı.
+- Eski kayıtlar açılınca para, borç, krediler ve fiyatların otomatik çevrilir.
+- Fiyatlar ekranında düğmeler ±₺5.
+- Gün kapanışında yeni satırlar: "Alımlar (önceki kapanıştan beri)" ve "Günün neti".
+
+### Tempo
+- Bir gün 150 saniye (önce 90); günlük müşteri sayısı aynı, geliş aralığı uzadı.
+- Müşteri sabırları ×1,5 (iş adamı 27 sn, öğrenci 82 sn, yaşlı teyze 105 sn).
+
+### Espresso artık gerçeğe uygun
+- Tek shot 9 g → ~18 g; double 18 g → ~36 g. Sütlü içeceklerin tüm boyları double shot (18 g); büyük boy daha çok süt alıyor.
+- Yıldız Teyze ilk espressoyu double (doppio) olarak öğretiyor.
+- Ekstraksiyon terazili: ilk ~6 sn ön ıslatma, sonra verim gram gram artar; hedef gram ve 25–30 sn penceresi ekranda. Mükemmel ±1,5 sn, güzel ±3, iyi ±5 (eski ±0,027 sn kalktı). Ristretto penceresi biraz daha dar.
+- Lungodaki gerçekte olmayan "Akışı yumuşat" düğmesi kalktı.
+- "Basınç göstergesi (PID)" adı "Sıcaklık kontrolcüsü (PID)" oldu.
+
+### Süt
+- Latte ve cappuccino için "Büyük buhar kazanı" ve "VİDAYI KAPAT" adımı kalktı: buhar çubuğu her sütlüyü köpürtür. Latte, cappuccino, flat white, piccolo artık 2★ dükkan beklemiyor.
+- Her tarif kendi süt miktarını harcıyor: macchiato 30 ml, cortado 60 ml, flat white 120 ml, latte 200 ml…
+- Café au lait ve café con leche'de köpüksüz sıcak süt.
+- Latte art, mikroköpüklü tariflerde (flat white, magic, Gibraltar dahil) 3★ dükkanda dökümün kendisi oluyor.
+- Süt buzdolabı her dükkanda baştan var; süt 3 gün dayanıyor.
+
+### Tarif düzeltmeleri
+- Americano ve long black makinenin sıcak su musluğundan; kettle gerekmez. Americano karıştırılmaz.
+- Buzlu americano: buz → soğuk su → espresso en üste.
+- Türk kahvesi ailesi: yeni "Servis" adımı (fincan, bir bardak su, lokum).
+- Menengiç kahvesiz: ezme ölçülür, çekirdek harcanmaz. Sütlü Türk kahvesi ve menengiç sütle pişer.
+- Dalgona ve Yunan frappé hazır kahveyle; cold brew ve nitro servis başına çekirdek harcamıyor.
+- Cold brew gece boyunca demleniyor: Tedarik'te demlemeye konan cold brew ertesi sabah hazır.
+- Wiener Melange krem şantisiz (krem şantili olanı yeni Einspänner).
+- Tek şeker stoku: "Toz şeker" kalktı; tariflerin şekeri küçük malzemelerdeki şekerden harcanır.
+- Kakao serpici 1★.
+- Shaker 3★ (freddo için).
+
+### 37 yeni tarif
+| Dükkan | Tarifler |
+|---|---|
+| 1★ | Sıcak çikolata, Latte macchiato, Café con leche, Gibraltar |
+| 2★ | Magic, Galão, Breve, Chai latte, Salep, Balkabaklı baharatlı latte (sonbahar), Zencefilli kurabiye latte (kış), Damla sakızlı Türk kahvesi, Naneli mocha (kış), Dirty chai, Kenger kahvesi, Osmanlı kahvesi |
+| 3★ | Mırra, Kumda Türk kahvesi, Buzlu İspanyol latte, Einspänner, Cortadito, Bicerin, Freddo espresso, Freddo cappuccino, Caffè shakerato, Mazagran, Kopi tubruk, Japon usulü buzlu filtre |
+| 4★ | Irish kremalı kahve (alkolsüz), Cafezinho, Café de olla, Arap kahvesi (qahwa), Güney Hint filtre kahvesi, Soğuk köpüklü cold brew, Yumurtalı Vietnam kahvesi, Kyoto soğuk damla, Kalita Wave |
+
+- **Mevsimler:** Oyun sonbaharda başlar, her mevsim 28 gün; HUD'da mevsim adı yazar. Mevsimlik tarifler yalnız kendi mevsiminde istenir.
+- **Kafeinsiz Kolombiya** çekirdeği (2★, 50 satış).
+- **Yeni malzemeler:** hazır kahve, damla sakızı, kenger ezmesi, salep tozu, chai/balkabağı/zencefil/nane/Irish cream şurupları, tarçın, kakule, yumurta.
+- **Yeni aletler:** el köpürtücü, kum ocağı, dallah, toprak olla, bez filtre, Hint filtresi + dabara, Kalita Wave, Kyoto damla kulesi.
+- **Yeni hareketler:** ezme ölç, mırra kaynatma, servis, soğuk köpük, damla kulesi vanası, dabara-tumbler, bezden süzme, bardağa kaynar su, tarçın serpme.
+
+### Görseller
+- Chemex, Kalita, AeroPress, moka pot, sifon, phin, Hint filtresi ve bez filtre kendi demlikleriyle çiziliyor (önce hepsi V60 hunisiydi).
+- Nitro musluğu bira musluğu gibi, şelale köpüklü uzun bardak.
+- Long black ve caramel macchiato'da bardak başta boş.
+- Limon, krema ve sos buzlu içeceklerde buzlu bardakta.
+- Dalgona, cubano ve yumurtalı kahvede kendi kaseleri.
+- Menengiç, kenger, sütlü ve baharatlı cezve kahvelerinin renkleri farklı.
+
+### Diğer
+- Yeni oyunda küçük malzemeden bir miktar stok var (60 peçete, 60 şeker…).
+- Müşteri yorumu "Hayatımın espressosu!" → "Hayatımın kahvesi!".
+- Hile modu: "🧾 Tarif seçip müşteri getir" ve "⏸ Saati durdur / başlat".
+
+## v0.23 – 1 Kasım 2026
+
+### Hata düzeltmeleri
+- **Oyun donması düzeltildi:** Pompa gibi bir hareket adımından hemen sonra süt ısıtma (ör. Caramel macchiato) ya da dozlama (ör. Vietnam kahvesi) gelince oyun donuyordu. Yeni adım kurulmadan çizilmiyor; tek bir çizim hatası artık oyun döngüsünü durduramıyor.
+- **Gün tekrarı kapatıldı:** Gün sonu ekranlarında (Kira / Hesap / Tedarik) ana menüye çıkıp Devam'a basınca aynı gün yeniden oynanabiliyordu. Gün sonu artık kayda yazılıyor; Devam edince kaldığın gün sonu ekranından sürüyorsun.
+- Kira ekranı ile gün kapanışı aynı "Kiraya X gün kaldı" sayısını gösteriyor.
+- **Pencere açıkken zaman duruyor:** "Yeni tarif", "Yeni çekirdek/süt" gibi bilgi pencereleri ile gün içinde açılan Tedarik, Defter, Fiyatlar ve Ayarlar açıkken saat işlemiyor, müşterilerin sabrı azalmıyor. Hazırlama ekranında zaman akmaya devam ediyor.
+- Yıldız Teyze (ilk sipariş) küçük malzeme kullanmıyor; "Peçete bile yok!" demiyor.
+- Çıkış düğmesi artık Tedarik'in ✕ düğmesini ve Dükkan'daki 🎯 Ana hedef düğmesini örtmüyor: bir panel açıkken küçülüp en üste geçiyor.
+- Tedarik'te "Malzemeler tamam ✓" yanında, biten küçük malzemeler (peçete, şeker…) sarı bir notla listeleniyor. Zorunlu değiller, günü engellemiyorlar.
+
+### Metinler
+- Herkesin kullandığı sipariş cümlelerinden bozuk Türkçe turist cümleleri ("Sende var …?", "Ben istemek bir …") çıkarıldı.
+- Yaşlı teyzenin "şekersiz" cümlesi şekerli Türk kahvesi siparişiyle çelişmesin diye "Kızım, bir … olsun." oldu.
+- Kahve meraklısının "ekstraksiyonu 28 saniye olsun" cümlesi yalnızca espresso bazlı kahvelerde söyleniyor.
+- Americano tarif kartı düzeltildi: "Espresso üstüne sıcak su (yaklaşık 1:3–1:5). Kremayı korumak istersen önce su, sonra espresso: o da long black."
+
+### Hile modu
+- "📦 Stokları doldur" artık şurup, sos, krema, dondurma, tonik, cold brew gibi özel malzemeleri de dolduruyor (her birinden 2 paket).
+
 ## v0.22 – 1 Kasım 2026
 
 ### Müşteriler her açık kahveyi istiyor

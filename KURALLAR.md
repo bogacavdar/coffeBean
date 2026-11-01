@@ -19,9 +19,10 @@ Bu dosya projenin değişmez çalışma kurallarını tutar. Her oturumun başı
 - Bu durumda yanıt en kısa yoldan verilir: tek satır bilgi + teslimat. Uzun gerekçe yazılmaz.
 - Acil istek bittikten sonra yarım kalan işe kaldığı yerden dönülür ve DEVAM.md güncellenir.
 
-## Kural 4 – Zip'in yanında her zaman açılabilir bir hali verilir (paket çıkıldığında)
-- Oyunun her teslimatında zip dosyasının yanında, kurulum gerektirmeden **tıklayınca açılan ve oynanan** bir hali de verilir: yayınlanmış oyun bağlantısı (artifact) güncellenir ve kartı gösterilir.
-- Bağlantı mümkün değilse tek dosyalık (tüm JS gömülü) `index.html` gönderilir.
+## Kural 4 – Oyun her zaman GitHub Pages adresinden oynanabilir olmalı (paket çıkıldığında)
+- Oyunun tek resmi oynanabilir adresi: **https://bogacavdar.github.io/coffebean/** (GitHub Pages, `main` dalına her gönderimde `.github/workflows/pages.yml` ile yayınlanır).
+- Her paket çıkışında değişiklikler `main`'e gönderilir ve yayın bitene kadar beklenir; adreste **yeni sürüm numarası görünmeden** paket "hazır" denmez.
+- Claude artifact / claude.ai bağlantısı oyunun oynanabilir hali olarak kullanılmaz ve verilmez.
 - Sadece zip göndermek eksik teslimattır.
 
 ## Kural 5 – Paket yalnızca kullanıcı "paket çık" deyince çıkılır
@@ -33,18 +34,21 @@ Bu dosya projenin değişmez çalışma kurallarını tutar. Her oturumun başı
 ## Kural 6 – Her paketin içeriği
 Her paket çıkışında kullanıcıya şunların hepsi birlikte iletilir:
 1. Oyunun **zip** dosyası,
-2. Oyunun **erişilebilir (açılabilir) bağlantısı** (yayın güncellenir),
+2. Oyunun **GitHub Pages bağlantısı** (https://bogacavdar.github.io/coffebean/; `main`'e gönderilip yayının bittiği ve sürümün göründüğü doğrulanır),
 3. Tasarım belgesinin **HTML** hali (`Tasarim_Dokumani.html`),
 4. Kısa **güncelleme notları** (`Guncelleme_Notlari.md`: sürüm, tarih, bu pakette ne değişti).
 
 Her pakette sürüm numarası 3 yerde güncellenir (önbellek sorunu olmasın diye): `index.html`'deki `window.CB_VERSION`, betiklerin `?v=` değerleri ve `data.js`'teki `version`.
-Ayrıca GitHub reposuna gönderilir.
+GitHub reposuna gönderim paketin zorunlu parçasıdır (Kural 4); gönderilmeyen paket çıkmış sayılmaz.
 
 ## Kural 7 – Testi kullanıcı yapar
 - Normal geliştirme sürecinde test için kaynak ayrılmaz: Claude geliştirir, testleri kullanıcı yapar.
 - Playwright/otomatik test, ekran görüntüsüyle kontrol vb. YAPILMAZ; yalnızca sözdizimi kontrolü (dosya açılıyor mu) gibi sıfıra yakın maliyetli kontroller yapılabilir.
 - İstisna: kullanıcı "şu süreci test et" derse ya da "şurada bir hata var" diye bir hata bildirirse, hatayı bulmak/doğrulamak için gerektiği kadar test yapılır.
 - Teslim mesajlarında "test ettim" denmez; neyin değiştiği ve kullanıcının neyi denemesi gerektiği yazılır.
+
+## Kural 8 – Uzun işlerde ilerleme bildirimi
+- Uzun, çok adımlı işlerde (geliştirme paketi, test turu, rapor) ilerleme yaklaşık %20, %40, %60 ve %80'e ulaştığında kullanıcıya kısa bir durum mesajı gönderilir: yüzde, ne bitti, sırada ne var (1–2 cümle). Alt ajanlar (ör. grafik ajanı) da aynı şekilde ilerleme bildirir ve bu kullanıcıya aktarılır.
 
 ## Genel çalışma düzeni
 - Her oturum: `KURALLAR.md` → `DEVAM.md` → iş.

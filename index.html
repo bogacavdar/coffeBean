@@ -107,6 +107,9 @@
   /* tam ekran kartlar */
   .overlay{position:fixed;inset:0;background:rgba(28,23,19,.72);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
   .overlay.on{display:flex}
+  /* v0.23: açık panel varken Çıkış düğmesi küçülüp en üste geçer, kartlar onun altında başlar (✕ ve Ana hedef örtülmez) */
+  .overlay{padding-top:58px}.overlay .card{max-height:calc(100vh - 72px)}
+  body:has(.overlay.on) #exitBtn{top:8px;width:auto}
   .card{background:var(--kagit);border-radius:18px;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .card h2{margin:0 0 6px;font-size:22px;display:flex;align-items:center;gap:8px}
   .card h2 .x{margin-left:auto;font-size:14px}
@@ -324,11 +327,11 @@
   </svg>
 </section>
 <div class="toast" id="toast"></div>
-<script>window.CB_VERSION = "0.22";</script>
-<script src="data.js?v=0.22"></script>
-<script src="audio.js?v=0.22"></script>
-<script src="scene.js?v=0.22"></script>
-<script src="closeup.js?v=0.22"></script>
-<script src="game.js?v=0.22"></script>
+<script>window.CB_VERSION = "0.24";</script>
+<script src="data.js?v=0.24"></script>
+<script src="audio.js?v=0.24"></script>
+<script src="scene.js?v=0.24"></script>
+<script src="closeup.js?v=0.24"></script>
+<script src="game.js?v=0.24"></script>
 </body>
 </html>
