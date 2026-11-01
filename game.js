@@ -1024,7 +1024,7 @@ function renderPrices() {                                                       
 function updateMarket() {
   S.market = S.market || {}; const M = D.market, ch = [];
   Object.keys(D.drinks).forEach(id => { const old = marketIdx(id), nw = clamp(old * (1 + (Math.random() * 2 - 1) * M.weeklyMax), M.min, M.max); S.market[id] = Math.round(nw * 100) / 100; ch.push([id, S.market[id] / old - 1]); });
-  return ch.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, M.news);
+  return ch.filter(([id]) => S.unlocked.includes(id) && hasTools(id)).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, M.news);   // gazetede yalnız menüdeki (açık + aleti olan) kahveler
 }
 function showNews(week, ch, next, back) {
   modal(`<div class="news"><div class="nhead">KAHVE GAZETESİ<span>${week}. Hafta · Borsa</span></div>` + ch.map(([id, c]) => `<p><b>${D.drinks[id].name} fiyatları %${Math.abs(Math.round(c * 100))} ${c >= 0 ? "arttı ▲" : "düştü ▼"}</b><br><span class="muted">Müşteriler artık ${D.drinks[id].name.toLowerCase()} için ${c >= 0 ? "biraz daha yüksek" : "biraz daha düşük"} fiyatı makul buluyor (endeks ×${marketIdx(id).toFixed(2)}).</span></p>`).join("") + `</div>`,

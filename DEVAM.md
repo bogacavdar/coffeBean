@@ -8,7 +8,7 @@ Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılı
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
 ## Bekleyen paket (son yayın: v0.27)
-(boş)
+- **Gazete yalnız menüdeki kahveleri yazıyor:** `updateMarket()` haber listesini açık ve aleti alınmış tariflerle sınırlıyor (endeksler arka planda tüm tarifler için değişmeye devam ediyor). Kullanıcı isteği.
 
 ## v0.27 – YAYINLANDI (1 Kasım 2026; kullanıcı kararı: buzdolabı 1★'da satın alınabilsin, hemen yayınla)
 - `newState` artık `equipment: {}`; `begin()`'deki zorla `fridge = true` kalktı. Tek seferlik göç (`S.fridgeFix`): 1★ ve `S.fridgePaid` yoksa `equipment.fridge` silinir (v0.24–0.26'nın bedava verdiği). Satın almada `S.fridgePaid = true`. `D.equipment.fridge` stars 1, ₺3.600.

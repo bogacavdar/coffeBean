@@ -1,5 +1,8 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.28 – (yayın bekliyor)
+- Kahve Gazetesi artık yalnızca menüde olan (açılmış ve aleti alınmış) kahvelerin fiyat haberlerini yazıyor.
+
 ## v0.27 – 1 Kasım 2026
 - **Süt buzdolabı yine satın alınıyor:** v0.24'ten beri buzdolabı alınmadan "alındı" görünüyordu. Artık baştan yok; 1★ dükkandan itibaren Dükkan › Kapasite ve personel bölümünden ₺3.600'e alınır.
 - **Süt dayanıklılığı:** buzdolabı yoksa süt 2 gün, buzdolabıyla 6 gün dayanır (önce: buzdolabısız 1 gün, buzdolabıyla 3 gün). Yeni süt alınca stokun günü yenilenir.
