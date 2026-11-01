@@ -1,5 +1,47 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.15 – 1 Kasım 2026
+
+### Zorluk seçimi
+- **Zorluk seçimi:** Yeni oyunda yuva seçtikten sonra zorluk seçiliyor; seçim kayıt yuvasında görünüyor.
+
+| | Kolay | Normal | Zor |
+|---|---|---|---|
+| Müşteri sabrı | ×1,3 | ×1 | ×0,75 |
+| Mini oyun renkli bölgeleri | %10 geniş | aynı | %15 dar |
+| Tedarik fiyatları | %20 ucuz (daha çok kâr) | aynı | %20 pahalı (az kâr) |
+| Başlangıç parası | ₺400 | ₺300 | ₺250 |
+
+### Kira ekranı
+- Gün sonunda ilk ekran olarak geliyor: "Kiraya X gün kaldı" ya da "Kira bugün!".
+- Kirayı erken ödeyebilir, kredi çekebilirsin. Kira günü değilse "Sonra ödeyeceğim" ile geçiliyor; kira günü ödemeden geçilemiyor.
+- Kira artık kendiliğinden kesilmiyor.
+
+### Gün sonu ekranlarında geri
+- Hesap, Gazete, Tedarik, Dükkan ve Fiyatlar ekranlarında **← Geri** düğmesi var.
+- Geri gidip gelmek günü iki kez ilerletmiyor; yaptığın alımlar ve ödemeler korunuyor.
+
+### İlk gün
+- Günü başlat düğmesi ilk gün yok. Yıldız Teyze'nin açılışında **Devral**'a basınca gün kendiliğinden başlıyor.
+
+### Ristretto ve lungo farklılaştı
+- **Öğütme:** ristrettoda hedef daha ince, lungoda daha kaba.
+- **Ristretto:** çekmede ibre 1,5 kat hızlı, renkli bölgeler daha dar.
+- **Lungo:** çekmenin ortasında ikinci hedef çıkıyor; ibre oradayken "💧 Akışı yumuşat"a basılıyor. Çekme puanı iki aşamanın ortalaması.
+
+### Fiyatları elle ayarla
+- Fiyat lira olarak −₺1 / +₺1 düğmeleriyle ya da kutuya yazarak ayarlanıyor.
+- Yüzde, varsayılan fiyat ve beklenen müşteri tepkisi artık gösterilmiyor. Pahalı mı ucuz mu, müşteri tepkilerinden anlaşılıyor.
+
+### Küçük malzemeler ve self servis standı
+- Tedarik'te altı küçük malzeme satılıyor: bardak tutacağı, peçete, şeker, karıştırma çubuğu, tatlandırıcı, pipet.
+- Müşteriler bunları gizli oranlarla kullanıyor. Eksikse "… bile yok!" deyip az bahşiş bırakıyorlar.
+- Dükkanda self servis standı var; standdaki malzemelerin doluluğu stoğa göre değişiyor.
+
+### Dekorasyon ve satın alma
+- Dekorasyon listesi ucuzdan pahalıya sıralı.
+- Bir şey satın alınca panel kısa süre kapanıyor ve yeni ürün dükkanda "✨ Yeni!" efektiyle görünüyor.
+
 ## v0.14 – 31 Ekim 2026
 
 ### Sabır ve sipariş kartı

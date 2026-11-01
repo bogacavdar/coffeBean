@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.14",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.15",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -8,9 +8,9 @@ window.DATA = {
       card: "18 g kahve → 36 g espresso (1:2), 25–30 sn. Ekşi tat = çok hızlı aktı, öğütümü incelt. Acı tat = çok yavaş aktı, öğütümü kabalaştır." },
     americano:  { name: "Americano", sizes: ["S","M","L"],    level: 2, req: "espresso",  unlockCups: 4,  price: 11, cost: 2, needs: ["kettle"], steps: ["grind","dose","tamp","extract","water","stir"],
       card: "Espresso + sıcak su (1:3). Su üstüne espresso eklenirse krema korunur." },
-    lungo:      { name: "Lungo", sizes: ["single","double"],        level: 2, req: "espresso",  unlockCups: 8,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 3,
+    lungo:      { name: "Lungo", sizes: ["single","double"],        level: 2, req: "espresso",  unlockCups: 8,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 3, profile: { grind: -12, blond: true },   // §4 lungo: kaba öğütüm + iki aşamalı çekme
       card: "Uzun espresso: 18 g → ~54 g (1:3), 35–40 sn. Daha hafif, daha acımsı." },
-    ristretto:  { name: "Ristretto", sizes: ["single","double"],    level: 2, req: "espresso",  unlockCups: 14,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 1.5,
+    ristretto:  { name: "Ristretto", sizes: ["single","double"],    level: 2, req: "espresso",  unlockCups: 14,  price: 10, cost: 2, steps: ["grind","dose","tamp","extract"], ratio: 1.5, profile: { grind: 12, extractSpeed: 1.5, extractZone: 0.6 },   // §4 ristretto: ince öğütüm, hızlı ve dar çekme
       card: "Kısa espresso: 18 g → ~27 g (1:1,5), 18–22 sn. Daha yoğun, daha tatlı." },
     macchiato:  { name: "Macchiato", sizes: ["single","double"],    level: 3, req: "espresso",  unlockCups: 22, price: 13, cost: 3, needs: ["milkKit"], steps: ["grind","dose","tamp","extract","milk","pour"], milk: "dollop",
       card: "Espresso üzerine bir kaşık süt köpüğü. 'Lekelenmiş' demektir." },
@@ -109,6 +109,22 @@ window.DATA = {
     cupL: { name: "Büyük bardak",           pack: 10, price: 18 }
   },
   cupMin: 3, startCups: { espS: 20, espD: 10 },
+  // §7 küçük malzemeler (sarf): gizli kullanım oranı (use), takeaway: yalnız karton bardakta
+  extras: {
+    sleeve:    { name: "Bardak tutacağı",   pack: 50,  price: 15, use: 0.90, takeaway: true, miss: "Bardak tutacağı bile yok, elim yandı!" },
+    napkin:    { name: "Peçete",            pack: 100, price: 8,  use: 0.60, miss: "Peçete bile yok!" },
+    sugar:     { name: "Şeker",             pack: 100, price: 10, use: 0.35, miss: "Şeker bile yok mu?" },
+    stirrer:   { name: "Karıştırma çubuğu", pack: 100, price: 6,  use: 0.30, miss: "Karıştıracak çubuk bile yok!" },
+    sweetener: { name: "Tatlandırıcı",      pack: 50,  price: 12, use: 0.05, miss: "Tatlandırıcı bile yok!" },
+    straw:     { name: "Pipet",             pack: 50,  price: 5,  use: 0.05, miss: "Pipet bile yok!" }
+  },
+  extrasStart: 20, extrasLow: 10, extraTip: [1, 0.3, 0],
+  // §12 zorluk: Normal = belgedeki değerler
+  difficulty: {
+    easy:   { label: "Kolay",  desc: "Müşteriler daha sabırlı, renkli bölgeler %10 geniş, tedarik %20 ucuz (daha çok kâr), ₺400 ile başla.", patience: 1.3,  zone: 1.10, cost: 0.80, startMoney: 400 },
+    normal: { label: "Normal", desc: "Oyunun dengelendiği zorluk.", patience: 1,    zone: 1,    cost: 1,    startMoney: 300 },
+    hard:   { label: "Zor",    desc: "Müşteriler sabırsız, renkli bölgeler %15 dar, tedarik %20 pahalı (az kâr), ₺250 ile başla.", patience: 0.75, zone: 0.85, cost: 1.20, startMoney: 250 }
+  },
   noCupLines: ["Nasıl {s} bardağınız yok?!", "{S} bardak mı bitmiş? Olacak iş değil!", "Bardak yoksa ben de yokum!", "Bu dükkanda {s} bardak bile yok mu?"],
   wrongLines: ["Ben bunu istemedim!", "Bu benim siparişim değil!", "Yanlış kahve verdin, almıyorum.", "Ben {d} istemiştim!"],
   // §7 – Sipariş cümleleri ({d} = içecek adı); genel + tipe özel, rastgele seçilir

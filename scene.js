@@ -172,6 +172,20 @@ window.SCENE = (() => {
   function register(x, y) { prism(x, y, .45, .4, 10, "#2b2b30", "#121214", "#3a3a40", 40); prism(x + .05, y + .05, .3, .3, 9, "#3a3a40", "#1d1d21", "#2c2c31", 50);
     const [sx, sy] = iso(x + .35, y + .2, 56); ctx.fillStyle = "#9cf0a8"; rr(sx - 3, sy - 3, 6 * TW / 40, 4 * TW / 40, 1); ctx.fill(); }
 
+  // ---- §7 self servis standı: küçük malzemeler (doluluk stoka göre)
+  const EXF = k => (EXN[k] == null ? 1 : Math.min(1, EXN[k] / 30)); let EXN = {};
+  function exItem(k, only) { const f = only ? 1 : EXF(k), x0 = 1.0, y0 = .2;
+    if (k === "sleeve") { const n = Math.ceil(f * 6); for (let j = 0; j < n; j++) cyl(x0 + .18, y0 + .2, .08, 2, j % 2 ? "#a8642a" : "#c9772b", 38 + j * 2, "#8f5420"); }
+    if (k === "napkin") { prism(x0 + .4, y0 + .08, .26, .26, 14, "#c9ccd0", "#7d8187", "#9ea2a7", 38); if (f > 0) prism(x0 + .43, y0 + .11, .2, .2, 2 + f * 3, "#ffffff", "#e6e1d8", "#f1ece4", 52); }
+    if (k === "sugar") { const [tx, ty, rx, ry] = cyl(x0 + .82, y0 + .2, .1, 14, "#dfeef3", 38, "#c9a14f"); if (f > 0) { ctx.fillStyle = "rgba(255,255,255,.95)"; const [bx, by] = iso(x0 + .82, y0 + .2, 38); ctx.fillRect(bx - rx * .8, by - (14 * f) * TW / 40, rx * 1.6, (14 * f) * TW / 40 - 1); } }
+    if (k === "stirrer") { const [tx, ty, rx] = cyl(x0 + 1.05, y0 + .2, .06, 9, "#5c3f28", 38, "#3f2a1a"); ctx.strokeStyle = "#e9d7b4"; ctx.lineWidth = 1.2; const n = Math.ceil(f * 7); for (let j = 0; j < n; j++) { ctx.beginPath(); ctx.moveTo(tx - rx * .6 + j * rx * .2, ty); ctx.lineTo(tx - rx * .9 + j * rx * .3, ty - 12 * TW / 40); ctx.stroke(); } }
+    if (k === "sweetener") { prism(x0 + 1.2, y0 + .1, .22, .2, 7, "#5f8a4b", "#3e6630", "#4f7a3a", 38); const n = Math.ceil(f * 5); for (let j = 0; j < n; j++) prism(x0 + 1.22 + j * .035, y0 + .13, .03, .14, 4, "#b9e0a8", "#8fc27a", "#a5d190", 45); }
+    if (k === "straw") { const [tx, ty, rx] = cyl(x0 + .6, y0 + .45, .05, 10, "#dfeef3", 38, "#bcd6de"); const n = Math.ceil(f * 6), cols = ["#b5533c", "#fff", "#3b6ea8"]; for (let j = 0; j < n; j++) { ctx.strokeStyle = cols[j % 3]; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(tx - rx * .5 + j * rx * .2, ty + 2); ctx.lineTo(tx - rx * .7 + j * rx * .3, ty - 16 * TW / 40); ctx.stroke(); } }
+  }
+  function extrasStand(ex) { EXN = ex || {}; shadowE(1.65, .45, TW * 1.1, TW * .4); prism(.98, .15, 1.45, .6, 38, "#7a5536", "#55391f", "#664629");
+    poly([iso(.98, .75, 6), iso(2.43, .75, 6), iso(2.43, .75, 32), iso(.98, .75, 32)], "#6b4a30"); wallText("R", 1.7, 132, "SELF SERVİS", 5, "#5b3a22");
+    ["sleeve", "napkin", "straw", "sugar", "stirrer", "sweetener"].forEach(k => { if (EXN[k] == null || EXN[k] > 0) exItem(k); }); }
+
   // ---- §8 müşteri gelişi geliştirmeleri (görünür)
   function trafficDeco(T, only) {
     const c = only ? (only[0] === "c" ? +only.slice(-1) : 0) : (T.cust || 0), q = only ? (only[0] === "f" ? +only.slice(-1) : 0) : (T.freq || 0), has = (k, n) => only ? only === k + n : (k === "c" ? c : q) >= n;
@@ -280,6 +294,7 @@ window.SCENE = (() => {
       ctx.fillStyle = "#3b6ea8"; rr(bx - 7 * TW / 40, by + 6, 10 * TW / 40, 30 * TW / 40, 4); ctx.fill(); ctx.fillStyle = "#c9772b"; rr(bx + 1, by + 4, 8 * TW / 40, 22 * TW / 40, 4); ctx.fill(); }
     if (level >= 2) { prism(9.0, 0, 2.0, .35, 3, "#7a5536", "#55391f", "#664629", 92); for (let i = 0; i < 6; i++) cyl(9.2 + i * .3, .17, .08, 12, ["#c9a46a", "#b5533c", "#e9e4dc"][i % 3], 95, "#5c3f28"); }
     plant(.5, 7.6); if (level >= 2) plant(9.2, 7.0); if (level >= 3) { plant(9.6, 1.4); plant(3.7, 7.9); }
+    extrasStand(st.extras);
     trafficDeco(st.traffic || {});
     Object.keys(DECOR).forEach(k => { if (dec[k]) DECOR[k](); });
     // sarkıt lambalar (dükkanla çoğalır)
@@ -374,12 +389,14 @@ window.SCENE = (() => {
   TH_ITEMS["sup:bean"] = [.25, 5.55, 93, () => { prism(.05, 5.35, .35, .4, 26, "#c9a46a", "#8f6e3f", "#a98a52", 80); wallText("L", 5.55, 92, "☕", 7, "rgba(60,35,15,.7)", null, "400"); }];
   TH_ITEMS["sup:milk"] = [4.15, 4.15, 16, () => { shadowE(4.15, 4.15, TW * .4, TW * .2); prism(4, 4, .3, .3, 30, "#fdfcf9", "#e0dcd4", "#ecebe6"); prism(4, 4, .3, .3, 7, "#3b6ea8", "#2c5585", "#34619a", 12);
     const a1 = iso(4, 4, 30), a2 = iso(4.3, 4, 30), a3 = iso(4.3, 4.3, 30), a4 = iso(4, 4.3, 30), tp = iso(4.15, 4.15, 38); poly([a4, a3, tp], "#ecebe6"); poly([a3, a2, tp], "#d8d4cc"); }];
+  ["sleeve", "napkin", "sugar", "stirrer", "sweetener", "straw"].forEach(k => { const pos = { sleeve: [1.18, .4, 44], napkin: [1.53, .41, 46], sugar: [1.82, .4, 45], stirrer: [2.05, .4, 46], sweetener: [2.31, .3, 42], straw: [1.6, .65, 48] }[k];
+    TH_ITEMS["ex:" + k] = [pos[0], pos[1], pos[2], () => { EXN = {}; exItem(k, true); }]; });
   const thCache = {};
   function thumb(key) {
     if (thCache[key]) return thCache[key]; const it = TH_ITEMS[key]; if (!it) return null;
     const c = document.createElement("canvas"); c.width = 168; c.height = 128;
     const save = { ctx, TW, TH, OX, OY, Q }; ctx = c.getContext("2d"); Q = QUALITY.high;
-    const SC = [[/cup:/, 130], [/sup:milk/, 95], [/tool:|thermo|pourP|precScale|scaleTamp|autoMilk|autoTamp/, 88], [/grind|scaleGrind|fridge/, 62], [/staff/, 64], [/freq1/, 26], [/neon|brass|stools|sofa|piano|artwall|photos|cust2|cust3|freq2/, 36], [/dualGroup/, 34], [/superAuto|pid|steam/, 46], [/plant|olive|bookshelf|aquarium|lamp|chandelier|record|ivy|mat|clock|poster|cust1|freq3|sup:bean/, 48]];
+    const SC = [[/cup:/, 130], [/ex:/, 120], [/sup:milk/, 95], [/tool:|thermo|pourP|precScale|scaleTamp|autoMilk|autoTamp/, 88], [/grind|scaleGrind|fridge/, 62], [/staff/, 64], [/freq1/, 26], [/neon|brass|stools|sofa|piano|artwall|photos|cust2|cust3|freq2/, 36], [/dualGroup/, 34], [/superAuto|pid|steam/, 46], [/plant|olive|bookshelf|aquarium|lamp|chandelier|record|ivy|mat|clock|poster|cust1|freq3|sup:bean/, 48]];
     TW = (SC.find(([r]) => r.test(key)) || [0, 46])[1]; TH = TW / 2; OX = 0; OY = 0;
     const [cx, cy] = iso(it[0], it[1], it[2]); OX = 84 - cx; OY = 66 - cy;
     const g = ctx.createLinearGradient(0, 0, 0, 128); g.addColorStop(0, "#f3ece1"); g.addColorStop(1, "#d8cbb8"); ctx.fillStyle = g; ctx.fillRect(0, 0, 168, 128);
@@ -464,5 +481,6 @@ window.SCENE = (() => {
     if (L.warm) { ctx.fillStyle = `rgba(255,150,60,${L.warm * .12})`; ctx.fillRect(0, 0, W, H); }
   }
   function hitTest(px, py) { const h = hits.find(h => px >= h.x && px <= h.x + h.w && py >= h.y && py <= h.y + h.h); return h ? h.id : null; }
-  return { init, setQuality, draw, hitTest, addFx, queueSlot, thumb, DOOR };
+  const itemPos = k => { const it = TH_ITEMS[k] || (k === "tr:cust0" ? null : TH_ITEMS[k.replace(/\d$/, m => Math.min(3, +m))]); return it ? [it[0], it[1]] : null; };
+  return { init, setQuality, draw, hitTest, addFx, queueSlot, thumb, itemPos, DOOR };
 })();

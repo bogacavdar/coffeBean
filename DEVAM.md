@@ -7,8 +7,20 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.14)
+## Bekleyen paket (son yayın: v0.15)
 (boş)
+
+## v0.15 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
+Doküman rev 76. Test yapılmadı (Kural 7).
+- **Zorluk:** `D.difficulty` (easy/normal/hard: patience, zone, cost, startMoney), `S.diff`, `DF()`, `SP(x)` tedarik fiyatı; `chooseDifficulty` yuva seçiminden sonra; `zoneSet` ve `spawnCustomer` çarpanları; varsayılan satış fiyatı (`unitCost`) taban maliyetle.
+- **İlk gün otomatik:** `begin()` Yıldız Teyze açılışında Devral → `startDay()` (açılış görülmüşse 0,4 sn sonra); `#openDay` ilk gün gizli.
+- **Gün sonu geri:** `endCtx` (dayNum, st, L, repDelta, advanced); Hesap/Gazete/Tedarik/Dükkan/Fiyatlar'da ← Geri (`backToRent`, `backToLedger`, `backFromSupply`); `openRestock` günü yalnız bir kez ilerletir.
+- **Self servis standı:** `scene.js` `extrasStand(st.extras)` (x .98–2.43, y .15–.75; doluluk stok/30), `exItem`; küçük resimler `ex:<k>`; Tedarik'te resimli.
+- **Küçük malzemeler:** `D.extras` (sleeve %90 yalnız karton bardak, napkin %60, sugar %35, stirrer %30, sweetener %5, straw %5; oranlar gizli), `S.extras` (başlangıç 20). `serve` her malzemeyi oranla kullanır; yoksa `miss` cümlesi + bahşiş ×`extraTip` (1 / 0,3 / 0). Tedarik'te "Küçük malzemeler" kutusu (az kaldı < 10), gün sonu hesabında sayısı.
+- **Fiyat elle (lira):** `S.priceTL[id]` (yoksa varsayılan × eski `S.prices` oranı); Fiyatlar ekranında yalnız maliyet + −₺1 / kutu / +₺1 (en az 1, en fazla varsayılan×2). Yüzde, varsayılan, borsa ve beklenen tepki gösterilmiyor (`reactionText` silindi); tepkiler yalnız dükkanda.
+- **Satın alınca dükkanda gör:** `showPurchase(key, name)` paneli ~1,9 sn kapatır, sahneyi canlı çizer, `SCENE.itemPos(key)` üstünde "✨ Yeni!"; dekor listesi fiyata göre artan.
+- **Kira ekranı (gün sonu ilk ekran):** `showRent(dayNum, L, next)` → sonra `showLedger`. Kira artık otomatik kesilmiyor; `S.rentPaidWeek` (= `weekNo`) ile haftalık ödeme. Kirayı öde / 🏦 Kredi çek (`openLoans`) / Sonra ödeyeceğim (kira günü yok). Kira günü para + alınabilecek en büyük kredi yetmezse `bankrupt`. HUD "Kira ödendi ✓".
+- **Espresso/ristretto/lungo zorluk profilleri:** `D.drinks[*].profile` (`grind` hedef kayması ±12, `extractSpeed`, `extractZone`, `blond`). Ristretto çekmede ibre ×1,5 ve bölgeler ×0,6. Lungo çekmede ikinci hedef (`o.blond`, hedefin %62'si) + "💧 Akışı yumuşat" düğmesi (`#zB2`); kaçırırsa 0, çekme puanı iki aşamanın ortalaması.
 
 ## v0.14 – YAYINLANDI (31 Ekim 2026, kullanıcı "yayınla" dedi)
 Doküman rev 67. Test yapılmadı (Kural 7).
