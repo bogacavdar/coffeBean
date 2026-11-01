@@ -100,7 +100,7 @@ window.SCENE = (() => {
     prism(0, 5.2, .45, 2.4, 4, "#7a5536", "#5c3f28", "#6b4a30", 76);
     for (let i = 0; i < 4; i++) { prism(.05, 5.35 + i * .55, .35, .4, 26, i % 2 ? "#c9a46a" : "#b89055", "#8f6e3f", i % 2 ? "#a98a52" : "#9a7746", 80);
       wallText("L", 5.55 + i * .55, 92, "☕", 7, "rgba(60,35,15,.7)", null, "400"); }
-    backCounter(st);
+    backCounter(st); brewBar(st);
     barista(.42, 1.75, st.baristaBusy);
     if (st.assistant) staff(.42, 3.0, st.asstBusy);
     // ön tezgâh (dükkanla uzar)
@@ -131,6 +131,18 @@ window.SCENE = (() => {
     if (show("boiler")) { const [tx, ty] = cyl(.2, 5.75, .17, 34, "#b8bcc1", 34, "#9ea2a7"); const [gx, gy] = iso(.37, 5.75, 58);
       ctx.fillStyle = "#fdfcf9"; ctx.beginPath(); ctx.arc(gx, gy, 5 * TW / 40, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#b5533c"; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + 3 * TW / 40, gy - 3 * TW / 40); ctx.stroke(); }
     if (show("autoMilk")) { prism(.06, 3.62, .3, .22, 22, "#2b2b30", "#121214", "#3a3a40", 34); const [sx, sy] = iso(.36, 3.73, 50); ctx.fillStyle = "#7fd3ff"; rr(sx - 3, sy - 3, 6 * TW / 40, 4 * TW / 40, 1); ctx.fill(); }
+  }
+  // ---- §3 demleme tezgâhı (sağ duvar dibi, vitrinin solunda): cezve, French press, V60, Türk kahvesi ve filtre kahve makineleri
+  function brewBar(st, only) {
+    const f = Object.assign({}, st.equipment || {}, st.tools || {}), show = k => only ? only === k : !!f[k];
+    if (!only && !["cezve", "frenchPress", "v60", "tkMachine", "filterMachine"].some(k => f[k])) return;
+    if (!only) { shadowE(3.0, .7, TW * .7, TW * .3); prism(2.54, .22, .85, .7, 34, "#3a2a1f", "#5b4231", "#4a3327"); }
+    if (show("cezve")) { const [tx, ty, rx] = cyl(2.72, .42, .09, 10, "#d58a4a", 34, "#3a200e"); ctx.strokeStyle = "#5a3418"; ctx.lineWidth = 2.5 * TW / 40; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(tx + rx, ty + 4); ctx.lineTo(tx + rx + 14 * TW / 40, ty - 4); ctx.stroke(); ctx.lineCap = "butt";
+      prism(2.6, .62, .25, .25, 3, "#2b2b30", "#121214", "#1d1d21", 34); }                                          // küçük ocak
+    if (show("frenchPress")) { const [tx, ty, rx] = cyl(2.98, .42, .08, 22, "#c9dde6", 34, "#5a3418"); ctx.fillStyle = "#2b2b30"; ctx.fillRect(tx - rx, ty - 3, rx * 2, 4); ctx.fillStyle = "#c9ccd0"; ctx.fillRect(tx - 1, ty - 12 * TW / 40, 2.4, 10 * TW / 40); ctx.fillStyle = "#2b2b30"; ctx.beginPath(); ctx.arc(tx, ty - 13 * TW / 40, 2.6 * TW / 40, 0, Math.PI * 2); ctx.fill(); }
+    if (show("v60")) { cyl(3.22, .45, .08, 10, "#d4e3ea", 34, "#5a3418"); const [vx, vy] = iso(3.22, .45, 46), w = 10 * TW / 40; ctx.fillStyle = "#f4f1ea"; ctx.beginPath(); ctx.moveTo(vx - w, vy - 9 * TW / 40); ctx.lineTo(vx + w, vy - 9 * TW / 40); ctx.lineTo(vx + 3, vy + 2); ctx.lineTo(vx - 3, vy + 2); ctx.closePath(); ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,.2)"; ctx.stroke(); }
+    if (show("tkMachine")) { prism(2.9, .65, .22, .22, 18, "#b5533c", "#7d3424", "#94402d", 34); const [lx, ly] = iso(3.12, .76, 46); ctx.fillStyle = "#ffd23a"; ctx.beginPath(); ctx.arc(lx, ly, 1.8, 0, Math.PI * 2); ctx.fill(); }
+    if (show("filterMachine")) { prism(3.16, .66, .2, .22, 24, "#2b2b30", "#121214", "#3a3a40", 34); cyl(3.27, .77, .06, 8, "#c9dde6", 34, "#5a3418"); }
   }
   // ---- ön tezgâh: makineler, öğütücü, teraziler, bardak yığınları, pasta vitrini, kasa
   function machine(x, y, f = {}) {
@@ -231,7 +243,7 @@ window.SCENE = (() => {
     poster: () => { frame("L", 5.5, 6.6, 112, 162, "#e9c46a"); wallText("L", 6.05, 150, "COFFEE", 7, "#5b3a22"); wallText("L", 6.05, 128, "☕", 16, "#5b3a22", null, "400"); wallText("L", 6.05, 117, "1952", 5, "#5b3a22"); },
     mat: () => { poly([iso(7.7, .12), iso(8.7, .12), iso(8.7, .72), iso(7.7, .72)], "#8a4a2f"); poly([iso(7.78, .18), iso(8.62, .18), iso(8.62, .66), iso(7.78, .66)], "#a85b3a");
       const [mx, my] = iso(8.2, .42); ctx.save(); ctx.translate(mx, my); ctx.transform(1, .5, -1, .5, 0, 0); ctx.fillStyle = "#f3dfb8"; ctx.font = `700 ${5 * TW / 40}px system-ui`; ctx.textAlign = "center"; ctx.fillText("HOŞ GELDİN", 0, 2); ctx.restore(); },
-    stools: () => { prism(2.7, .05, 3.6, .3, 4, "#7a5536", "#55391f", "#664629", 44); for (let i = 0; i < 3; i++) { const x = 3.1 + i * 1.2; shadowE(x + .15, .75, TW * .3, TW * .14); cyl(x + .15, .75, .03, 28, "#3a3a3f"); cyl(x + .15, .75, .14, 4, "#5c3f28", 28, "#7a5536"); } },
+    stools: () => { prism(3.7, .05, 2.6, .3, 4, "#7a5536", "#55391f", "#664629", 44); for (let i = 0; i < 3; i++) { const x = 3.95 + i * .85; shadowE(x + .15, .75, TW * .3, TW * .14); cyl(x + .15, .75, .03, 28, "#3a3a3f"); cyl(x + .15, .75, .14, 4, "#5c3f28", 28, "#7a5536"); } },
     sofa: () => { const x = 4.2, y = 7.0; shadowE(x + .85, y + .4, TW * 1.3, TW * .5); prism(x, y, 1.7, .7, 16, "#6b2f22", "#4a1f16", "#5a271c"); prism(x, y + .5, 1.7, .25, 34, "#7a3628", "#4a1f16", "#5a271c");
       prism(x - .12, y, .2, .75, 26, "#7a3628", "#4a1f16", "#5a271c"); prism(x + 1.62, y, .2, .75, 26, "#7a3628", "#4a1f16", "#5a271c");
       ctx.fillStyle = "rgba(255,230,200,.35)"; for (let i = 0; i < 6; i++) { const [bx, by] = iso(x + .2 + i * .27, y + .52, 26); ctx.beginPath(); ctx.arc(bx, by, 1.2, 0, Math.PI * 2); ctx.fill(); } },
@@ -384,11 +396,13 @@ window.SCENE = (() => {
     "eq:dualGroup": [1.6, 2.65, 56, () => { machine(1.05, 1.25, {}); machine(1.05, 2.75, {}); }], "eq:superAuto": [1.6, 1.85, 64, () => superAuto(1.1, 1.25)],
     "eq:fridge": [.23, 6.17, 50, () => backCounter({ equipment: {} }, "fridge")], "eq:thermoPitcher": [.2, 4.65, 42, () => backCounter({}, "thermoPitcher")],
     "eq:pourPitcher": [.2, 4.98, 42, () => backCounter({}, "pourPitcher")], "eq:autoMilk": [.21, 3.73, 46, () => backCounter({}, "autoMilk")],
+    "tool:cezve": [2.75, .45, 40, () => brewBar({}, "cezve")], "tool:frenchPress": [2.98, .42, 48, () => brewBar({}, "frenchPress")], "tool:v60": [3.22, .45, 44, () => brewBar({}, "v60")],
+    "eq:tkMachine": [3.01, .76, 44, () => brewBar({}, "tkMachine")], "eq:filterMachine": [3.26, .77, 48, () => brewBar({}, "filterMachine")],
     "tool:kettle": [.2, 3.95, 42, () => backCounter({}, "kettle")], "tool:milkKit": [.2, 4.32, 42, () => backCounter({}, "milkKit")],
     "tool:boiler": [.2, 5.75, 52, () => backCounter({}, "boiler")], "tool:cocoa": [.2, 5.3, 40, () => backCounter({}, "cocoa")],
     "tr:cust1": [9.6, .5, 26, () => trafficDeco({}, "c1")], "tr:cust2": [1.4, 0, 97, () => trafficDeco({}, "c2")], "tr:cust3": [10, 0, 85, () => trafficDeco({}, "c3")],
     "tr:freq1": [4.5, 0, 120, () => trafficDeco({}, "f1")], "tr:freq2": [7.15, 0, 137, () => trafficDeco({}, "f2")], "tr:freq3": [8.2, 0, 126, () => trafficDeco({}, "f3")],
-    "decor:plant": [5.25, 7.55, 40], "decor:lamp": [.55, 6.85, 62], "decor:record": [7.35, .45, 22], "decor:poster": [0, 6.05, 137], "decor:mat": [8.2, .42, 0], "decor:stools": [4.5, .4, 26],
+    "decor:plant": [5.25, 7.55, 40], "decor:lamp": [.55, 6.85, 62], "decor:record": [7.35, .45, 22], "decor:poster": [0, 6.05, 137], "decor:mat": [8.2, .42, 0], "decor:stools": [5.0, .4, 26],
     "decor:sofa": [5.05, 7.35, 18], "decor:bookshelf": [.26, 7.0, 56], "decor:ivy": [7.3, .1, 50], "decor:photos": [0, 6.4, 140], "decor:clock": [.55, 0, 150], "decor:neon": [4.5, 0, 156],
     "decor:piano": [5.05, 7.5, 32], "decor:aquarium": [.28, 7.0, 34], "decor:olive": [7.35, .5, 52], "decor:artwall": [0, 6.45, 138], "decor:chandelier": [6.6, 4.4, 165], "decor:brass": [4.5, 0, 157]
   };

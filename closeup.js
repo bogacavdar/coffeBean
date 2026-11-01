@@ -205,6 +205,82 @@ window.CLOSEUP = (() => {
     if (pouring && v < 100) { ctx.strokeStyle = "rgba(255,252,245,.95)"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(214, 64); ctx.quadraticCurveTo(240, 90, 250, top); ctx.stroke(); }
     ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("basılı tut · sütü dök · %" + Math.round(Math.min(100, v)), 240, 240);
   }
+  // ---- §3 espresso dışı kahveler: renkli hedef çubuk yerine gerçek göstergeler (terazi, köpük çizgisi, saat, seviye)
+  const ZC = [["k", "rgba(233,196,106,.95)"], ["g", "rgba(156,199,122,.98)"], ["p", "#3f7d34"]];
+  function arcZones(cx, cy, R, w, a0, a1, Z) { if (!Z) return; const A = u => a0 + Math.max(0, Math.min(100, u)) / 100 * (a1 - a0);
+    ZC.forEach(([k, col]) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.arc(cx, cy, R, A(Z.t - Z[k]), A(Z.t + Z[k])); ctx.stroke(); }); }
+  function vZones(x, yTop, yBot, w, Z) { if (!Z) return; const Y = u => yBot - Math.max(0, Math.min(100, u)) / 100 * (yBot - yTop);
+    ZC.forEach(([k, col]) => { ctx.fillStyle = col; const a = Y(Z.t + Z[k]), b = Y(Z.t - Z[k]); ctx.fillRect(x, a, w, Math.max(1.5, b - a)); }); }
+  function scale(cx, cy, val, Z, unit, max) {                                     // dijital terazi + kadran
+    ctx.fillStyle = lg(cx - 70, 0, cx + 70, 0, [[0, "#2b2b30"], [.5, "#4a4a50"], [1, "#2b2b30"]]); rr(cx - 70, cy, 140, 26, 8); ctx.fill();
+    ctx.fillStyle = "#9cf0a8"; ctx.font = "700 15px monospace"; ctx.textAlign = "center"; ctx.fillText((val * max / 100).toFixed(1) + " " + unit, cx, cy + 18);
+    const R = 34, gx = cx + 110, gy = cy + 10; ctx.fillStyle = "#fdfcf9"; ctx.beginPath(); ctx.arc(gx, gy, R + 6, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#8d8f93"; ctx.lineWidth = 2; ctx.stroke();
+    arcZones(gx, gy, R - 4, 9, Math.PI * .75, Math.PI * 2.25, Z);
+    const a = Math.PI * .75 + Math.min(100, val) / 100 * Math.PI * 1.5; ctx.strokeStyle = "#111"; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + Math.cos(a) * (R - 6), gy + Math.sin(a) * (R - 6)); ctx.stroke(); ctx.lineCap = "butt"; }
+  function cezve(x, y, fill, foam) {                                              // yandan bakır cezve
+    ctx.fillStyle = lg(x - 50, 0, x + 50, 0, [[0, "#7a3a1c"], [.35, "#e19a5a"], [.6, "#b8642e"], [1, "#6a3014"]]);
+    ctx.beginPath(); ctx.moveTo(x - 46, y - 70); ctx.lineTo(x + 46, y - 70); ctx.lineTo(x + 54, y); ctx.lineTo(x - 54, y); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#5a3418"; ctx.lineWidth = 8; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(x + 48, y - 50); ctx.lineTo(x + 130, y - 78); ctx.stroke(); ctx.lineCap = "butt";
+    ctx.fillStyle = "#c9a14f"; ctx.fillRect(x - 47, y - 74, 94, 5);
+    if (foam > 0) { ctx.fillStyle = "#c08a55"; const h = foam; ctx.beginPath(); ctx.ellipse(x, y - 70, 46 + h * .1, 6 + h * .5, 0, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = "rgba(255,235,200,.35)"; for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.arc(x - 34 + i * 10, y - 72 - (i % 3) * h * .15, 2.5, 0, Math.PI * 2); ctx.fill(); } }
+  }
+  function tkdose(f, Z) { bg(); shadow(200, H - 64, 80, 10);
+    ctx.fillStyle = lg(150, 0, 250, 0, [[0, "#7a3a1c"], [.4, "#e19a5a"], [1, "#6a3014"]]); ctx.beginPath(); ctx.moveTo(158, 100); ctx.lineTo(242, 100); ctx.lineTo(250, 170); ctx.lineTo(150, 170); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#3a200e"; const h = Math.min(1, f) * 22; ctx.fillRect(160, 168 - h, 80, h);
+    ctx.save(); ctx.translate(250, 70); ctx.rotate(.5); ctx.fillStyle = "#c9ccd0"; rr(-6, -40, 12, 50, 5); ctx.fill(); ctx.fillStyle = "#3a200e"; ctx.beginPath(); ctx.ellipse(0, 12, 14, 9, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    scale(200, 176, f * 100, Z, "g", 10);
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("kadrandaki ibre koyu yeşildeyken bırak · 7 g", 240, 240);
+  }
+  function cezveStir(v, ang) { bg();
+    ctx.fillStyle = "#3a2a20"; ctx.beginPath(); ctx.arc(240, 125, 96, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = rg(240, 125, 10, 88, [[0, "#e19a5a"], [1, "#7a3a1c"]]); ctx.beginPath(); ctx.arc(240, 125, 88, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = rg(240, 125, 5, 76, [[0, "#5a3418"], [1, "#2a170b"]]); ctx.beginPath(); ctx.arc(240, 125, 76, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = `rgba(210,170,120,${.25 + v / 300})`; ctx.lineWidth = 2; for (let i = 1; i < 5; i++) { ctx.beginPath(); ctx.arc(240, 125, i * 15, ang + i, ang + i + 1.4); ctx.stroke(); }
+    const ex = 240 + Math.cos(ang) * 44, ey = 125 + Math.sin(ang) * 44; ctx.strokeStyle = "#c9ccd0"; ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex + 110, ey - 95); ctx.stroke(); ctx.lineCap = "butt";
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("kahve, su ve şeker karışsın · tur " + Math.min(3, Math.floor(v / 33.4)) + "/3", 240, 240);
+  }
+  function cezveFoam(v, run, Z) { bg();
+    ctx.fillStyle = "#2b2b30"; rr(130, 196, 220, 14, 4); ctx.fill();                                                                   // ocak
+    if (run) for (let i = 0; i < 9; i++) { ctx.fillStyle = `rgba(80,140,255,${.5 + .3 * Math.sin(Date.now() / 90 + i)})`; ctx.beginPath(); ctx.ellipse(196 + i * 11, 194, 3, 6, 0, 0, Math.PI * 2); ctx.fill(); }
+    cezve(240, 192, 1, Math.min(100, v) * .55);
+    vZones(312, 70, 192, 12, Z); ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.strokeRect(312, 70, 12, 122);                              // köpük ölçeği
+    const yy = 192 - Math.min(100, v) / 100 * 122; ctx.fillStyle = "#111"; ctx.beginPath(); ctx.moveTo(306, yy); ctx.lineTo(312, yy - 5); ctx.lineTo(312, yy + 5); ctx.fill();
+    if (v > 95) { ctx.fillStyle = "rgba(160,110,60,.8)"; ctx.beginPath(); ctx.ellipse(200, 196, 30, 5, 0, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(run ? "köpük kabarıyor… taşmadan, koyu yeşilde ocaktan al" : "cezveyi ocağa koy", 240, 240);
+  }
+  function press(v, stage, run, Z) { bg(); shadow(240, H - 64, 70, 10);
+    const x = 200, top = 60, bot = 196;
+    if (stage === "steep") { const cx = 360, cy = 110, R = 52; ctx.fillStyle = "#fdfcf9"; ctx.beginPath(); ctx.arc(cx, cy, R + 8, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#8d8f93"; ctx.lineWidth = 3; ctx.stroke();   // kum saati / zamanlayıcı
+      arcZones(cx, cy, R - 6, 12, -Math.PI / 2, Math.PI * 1.5, Z); const a = -Math.PI / 2 + Math.min(100, v) / 100 * Math.PI * 2;
+      ctx.strokeStyle = "#111"; ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * (R - 10), cy + Math.sin(a) * (R - 10)); ctx.stroke(); ctx.lineCap = "butt";
+      ctx.fillStyle = "#2b2117"; ctx.font = "700 14px monospace"; ctx.textAlign = "center"; const sec = Math.round(v / 100 * 360); ctx.fillText(Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"), cx, cy + R + 26); }
+    const lvl = stage === "dose" ? Math.min(1, v / 100) * .18 : stage === "water" ? .18 + Math.min(100, v) / 100 * .7 : .88;
+    ctx.fillStyle = "rgba(220,235,240,.45)"; rr(x - 50, top, 100, bot - top, 6); ctx.fill(); ctx.strokeStyle = "#8e9296"; ctx.lineWidth = 3; ctx.strokeRect(x - 50, top, 100, bot - top);
+    const brew = stage === "steep" ? Math.min(1, v / 66) : stage === "plunge" ? 1 : 0, y0 = bot - lvl * (bot - top);
+    ctx.fillStyle = stage === "dose" ? "#5a3418" : `rgb(${Math.round(150 - brew * 90)},${Math.round(110 - brew * 70)},${Math.round(70 - brew * 45)})`; ctx.fillRect(x - 48, y0, 96, bot - y0 - 2);
+    if (stage !== "dose") { ctx.fillStyle = "#5a3418"; ctx.fillRect(x - 48, stage === "plunge" ? bot - 18 : y0, 96, stage === "plunge" ? 16 : 12); }
+    if (stage === "water") { vZones(x + 56, top, bot, 10, Z); ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.strokeRect(x + 56, top, 10, bot - top); if (run) { ctx.strokeStyle = "rgba(200,225,240,.9)"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 20, 20); ctx.quadraticCurveTo(x - 5, 40, x, y0); ctx.stroke(); } }
+    if (stage === "dose") scale(x + 150, 176, v, Z, "g", 40);
+    const py = stage === "plunge" ? top + 6 + Math.min(100, v) / 100 * (bot - top - 30) : top - 10;               // piston
+    ctx.fillStyle = "#c9ccd0"; ctx.fillRect(x - 3, py - 60, 6, 60); ctx.fillStyle = "#2b2b30"; rr(x - 14, py - 72, 28, 14, 5); ctx.fill(); ctx.fillStyle = "#9ea2a7"; ctx.fillRect(x - 48, py, 96, 6);
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center";
+    ctx.fillText({ dose: "kaba çekilmiş kahve · kadran koyu yeşilde bırak", water: "93 °C su · seviye koyu yeşil çizgide bırak", steep: "4 dakika demle · saat koyu yeşildeyken DURDUR", plunge: "pistonu yavaşça sonuna kadar indir · %" + Math.round(Math.min(100, v)) }[stage], 240, 240);
+  }
+  function v60(v, stage, extra, Z) { bg(); shadow(240, H - 64, 70, 10);
+    ctx.fillStyle = "rgba(220,235,240,.5)"; ctx.beginPath(); ctx.moveTo(185, 140); ctx.lineTo(295, 140); ctx.lineTo(300, 200); ctx.lineTo(180, 200); ctx.closePath(); ctx.fill();   // cam sürahi
+    const out = stage === "pour" ? Math.min(1, v / 100) : stage === "bloom" ? .05 : 0; ctx.fillStyle = "#5a3418"; ctx.fillRect(182, 198 - out * 50, 116, out * 50);
+    ctx.fillStyle = lg(170, 0, 310, 0, [[0, "#e6e1d8"], [.5, "#ffffff"], [1, "#d6d0c4"]]); ctx.beginPath(); ctx.moveTo(165, 60); ctx.lineTo(315, 60); ctx.lineTo(255, 138); ctx.lineTo(225, 138); ctx.closePath(); ctx.fill();   // dripper
+    ctx.fillStyle = "#f6efe0"; ctx.beginPath(); ctx.moveTo(175, 64); ctx.lineTo(305, 64); ctx.lineTo(252, 132); ctx.lineTo(228, 132); ctx.closePath(); ctx.fill();   // kâğıt filtre
+    const g = stage === "dose" ? Math.min(1, v / 100) : 1; if (g > 0) { ctx.fillStyle = stage === "dose" ? "#7a4a28" : "#4a2a14"; ctx.beginPath(); ctx.moveTo(240 - 40 * g, 132 - 40 * g); ctx.lineTo(240 + 40 * g, 132 - 40 * g); ctx.lineTo(250, 132); ctx.lineTo(230, 132); ctx.closePath(); ctx.fill(); }
+    if (stage === "bloom") { ctx.fillStyle = "rgba(200,150,90,.6)"; for (let i = 0; i < Math.min(100, v) / 8; i++) { ctx.beginPath(); ctx.arc(215 + (i * 13) % 50, 100 + (i * 7) % 18, 3 + (i % 3), 0, Math.PI * 2); ctx.fill(); } }
+    if ((stage === "bloom" && extra) || stage === "pour") { const a = stage === "pour" ? extra : 0, kx = 240 + Math.cos(a) * 28, ky = 98 + Math.sin(a) * 8;
+      ctx.strokeStyle = "rgba(200,225,240,.95)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(kx - 40, 22); ctx.quadraticCurveTo(kx - 10, 40, kx, ky); ctx.stroke();
+      ctx.fillStyle = "#b4b8bd"; ctx.save(); ctx.translate(kx - 70, 18); ctx.rotate(.5); rr(-26, -16, 52, 34, 8); ctx.fill(); ctx.restore(); }
+    if (stage === "dose") scale(390, 176, v, Z, "g", 30);
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center";
+    ctx.fillText({ dose: "orta-ince çekim · kadran koyu yeşilde bırak", bloom: "az suyla ıslat, kahve kabarsın (bloom) · %" + Math.round(Math.min(100, v)), pour: "merkezden dışa daire çizerek dök · tur " + Math.min(3, Math.floor(v / 33.4)) + "/3" }[stage], 240, 240);
+  }
   function cupTop(quality, milky, heart) { bg(); ctx.fillStyle = rg(236, 120, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 125, 88, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = milky ? rg(232, 118, 5, 74, [[0, "#f7f1e6"], [.7, "#e9dcc6"], [1, "#b8824a"]]) : rg(232, 118, 5, 74, [[0, "#d9a86a"], [.6, "#b77a3c"], [1, "#6a3d1a"]]);
     ctx.beginPath(); ctx.arc(240, 125, 74, 0, Math.PI * 2); ctx.fill();
@@ -212,5 +288,5 @@ window.CLOSEUP = (() => {
     if (heart) { heartShape(240, 122, 34, "#fffaf2"); heartShape(240, 122, 22, "rgba(233,214,190,.6)"); }
     ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; ctx.fillText("Kalite " + quality, 240, 235);
   }
-  return { init, setQuality, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, shake, stir, swirl, pour, cupTop };
+  return { init, setQuality, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, shake, stir, swirl, pour, tkdose, cezveStir, cezveFoam, press, v60, cupTop };
 })();

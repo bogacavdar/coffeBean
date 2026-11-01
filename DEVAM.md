@@ -7,8 +7,14 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.19)
+## Bekleyen paket (son yayın: v0.20)
 (boş)
+
+## v0.20 – YAYINLANDI (1 Kasım 2026, kullanıcı "hepsini ekle paket çık" dedi)
+Doküman rev 127. Test yapılmadı (Kural 7); yeni oyun açılışı ve Tedarik ekranı hata vermeden açılıyor (otomatik tıklama).
+- **Çekirdek ve süt çeşitleri:** `D.beans` 12 çekirdek (`unlock` yıldız, `cups` satış eşiği, `mult` satış çarpanı, `grindT`), `D.milks` 5 süt (`rep`, `extra`). `beanOpen/openBeans/openMilks/multiBeans/multiMilks`, stok `S.beans[id].kg`, `S.milk` + `S.milkAlt`; `useBean/useMilk`. Müşteri `c.bean` (%40 Brezilya), `c.milk` (%60 inek); `orderName` / `orderPrice` (taban × çekirdek + süt ek ücreti). Seçim sırası çekirdek → tarif → boy → süt; yanlışsa ödemesiz. Stok yoksa "… bile yok!" (−3, `st.nostock`). Tedarik'te tüm açık çekirdek/süt + sıradaki kilitli ipucu; zorunlu yalnız Brezilya ve inek sütü. `checkBeanMilkUnlocks()` haber penceresi. "kullan" düğmesi kalktı (`S.bean` hep brazil).
+- **Espresso dışı kahveler:** `turkish` (cezve; `tkdose` terazi, `tkstir` act, `tkfoam` sweep köpük ölçeği; şeker `c.sugar` + `D.sugarLevels`, `S.extras.sugar` harcanır), `frenchpress` (`fpdose`, `fpwater`, `fpsteep` saat, `fpplunge` act), `filter` (`fdose`, `bloom` act, `pourover` act). Boy `tk` (Türk kahvesi fincanı `tkCup`). Gösterge adımları `dial: true` (bar yok, zonlar closeup'ta; tuval dokunuşu yalnız osc). Aletler `cezve`, `frenchPress`, `v60`; otomasyon `tkMachine`, `filterMachine`. Sahnede `brewBar` (x 2,54–3,39, y ,22–,92); pencere tabureleri x 3,7'den başlıyor. Yıldız Teyze intro güncel.
+- **Telefonda hile:** menüde 3 parmak dokunuşu (`pointerType touch`), küçük kaydırılabilir panel.
 
 ## v0.19 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
 Doküman rev 123. Test yapılmadı (Kural 7); vurgu ve kamera bir ekran görüntüsüyle kontrol edildi.

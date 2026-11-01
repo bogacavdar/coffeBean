@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.19",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.20",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -18,6 +18,13 @@ window.DATA = {
       card: "Espresso ile eşit miktarda süt (1:1), az köpük. Küçük bardakta servis." },
     latte:      { name: "Caffè latte", sizes: ["S","M","L"],  level: 3, req: "macchiato", unlockCups: 44, shop: 2, art: true, price: 16, cost: 4, needs: ["milkKit","boiler"], steps: ["grind","dose","tamp","extract","pressure","milk","swirl"], milk: "micro",
       card: "Espresso + bol süt, ince mikro köpük (~1 cm). Latte art bu dokuyla yapılır." },
+    // §3 espresso dışı kahveler: kendi aletleri ve adımları
+    turkish:    { name: "Türk kahvesi", sizes: ["tk"], level: 2, req: "espresso", unlockCups: 6, price: 12, cost: 2, needs: ["cezve"], sugar: true, steps: ["tkdose","tkstir","tkfoam"],
+      card: "Cezvede, çok ince çekilmiş 7 g kahve + 70 ml soğuk su (+ şeker). Kısık ateşte karıştırmadan ısıt; köpük kabarınca taşmadan ocaktan al. Sade, az, orta ya da şekerli." },
+    frenchpress:{ name: "French press", sizes: ["S","M","L"], level: 2, req: "espresso", unlockCups: 18, price: 13, cost: 2, needs: ["frenchPress","kettle"], steps: ["fpdose","fpwater","fpsteep","fpplunge"],
+      card: "Kaba çekilmiş kahve (1:15) + 93 °C su. 4 dakika demle, pistonu yavaşça bastır. Yağlı, gövdeli bir fincan." },
+    filter:     { name: "Filtre kahve (V60)", sizes: ["S","M","L"], level: 2, req: "espresso", unlockCups: 26, price: 13, cost: 2, needs: ["v60","kettle"], steps: ["fdose","bloom","pourover"],
+      card: "Orta-ince çekim, kâğıt filtre. Önce az suyla 30 sn ön ıslatma (bloom), sonra merkezden dışa dairesel dök. Temiz ve berrak." },
     cappuccino: { name: "Cappuccino", sizes: ["S","M","L"],   level: 3, req: "macchiato", unlockCups: 58, shop: 2, art: true, price: 17, cost: 4, needs: ["milkKit","boiler","cocoa"], steps: ["grind","dose","tamp","extract","pressure","milk","swirl","cocoa"], milk: "foam",
       card: "1/3 espresso, 1/3 süt, 1/3 köpük. Süt 60–65 °C; kalın ama ipeksi köpük." }
   },
@@ -34,6 +41,16 @@ window.DATA = {
     cocoa:   { name: "Kakao çalkala", hint: "Serpiciyi fincanın üstünde sağa-sola kaydırarak çalkala; her çalkalamada kakao yağar." },
     stir:    { name: "Karıştır",     hint: "Kaşıkla fincanın içinde daire çizerek 3 tur karıştır." },
     swirl:   { name: "Sürahiyi çevir", hint: "Sürahiyi daire çizerek 3 tur çevir; süt ile köpük birleşsin." },
+    tkdose:  { name: "Kahve ölç",    hint: "Basılı tut, cezveye kahve koy; 7 g'da (koyu yeşil) bırak." },
+    tkstir:  { name: "Cezvede karıştır", hint: "Kaşıkla cezvenin içinde daire çizerek 3 tur karıştır." },
+    tkfoam:  { name: "Köpüğü al",    hint: "Köpük kabarıyor: taşmadan, koyu yeşildeyken OCAKTAN AL." },
+    fpdose:  { name: "Kaba kahve",   hint: "Basılı tut, kaba çekilmiş kahveyi koy; koyu yeşilde bırak." },
+    fpwater: { name: "Sıcak su",     hint: "Basılı tut, suyu dök; seviye koyu yeşildeyken bırak." },
+    fpsteep: { name: "Demle",        hint: "BAŞLAT'a bas; süre ibresi 4 dakikada (koyu yeşil) DURDUR." },
+    fpplunge:{ name: "Pistonu bastır", hint: "Basılı tut, pistonu yavaşça sonuna kadar indir." },
+    fdose:   { name: "Filtreye kahve", hint: "Basılı tut, kahveyi filtreye koy; koyu yeşilde bırak." },
+    bloom:   { name: "Ön ıslatma",   hint: "Basılı tut, kahveyi az suyla ıslat (bloom)." },
+    pourover:{ name: "Dairesel dök", hint: "Kettle'la merkezden dışa daire çizerek dök." },
     pour:    { name: "Sütü dök",     hint: "Basılı tut, sürahiden fincana süt dök; fincan dolunca biter." },
     art:     { name: "Latte art",    hint: "Basılı tut ve dök, koyu yeşilde bırak; sonra kesim ibresi koyu yeşildeyken KES." }
   },
@@ -57,12 +74,36 @@ window.DATA = {
   },
 
   // §6 – Çekirdekler (MVP: 2). qualityMod kaliteyi etkiler; tolMod espresso aralığını.
+  // §6 çekirdekler fiyatı etkiler (mult = satış fiyatı çarpanı); unlock = dükkan yıldızı, cups = toplam satış eşiği, grindT = öğütme hedefi
   beans: {
-    brazil:   { name: "Brezilya",  price: 100, unlock: 1, notes: "Fındık, çikolata, düşük asidite. Espresso ve sütlü içecekler için ideal.", qualityMod: 0,  tolMod: 1.1,
+    brazil:    { name: "Brezilya",              unlock: 1, cups: 0,   price: 100, mult: 1.00, grindT: 42, notes: "Fındık, çikolata, düşük asidite. Dükkanın ev çekirdeği.", qualityMod: 0, tolMod: 1,
       page: "Dünyanın en büyük üreticisi. Düşük rakım, doğal işleme. Bağışlayıcı bir espresso çekirdeği." },
-    colombia: { name: "Kolombiya", price: 140, unlock: 2, notes: "Dengeli, karamel, hafif meyve. Americano ve filtre için.", qualityMod: 5, tolMod: 1.0,
-      page: "Yıkanmış işleme, 1.200–2.000 m rakım. Temiz ve dengeli; meraklı müşteriler bunu arar." }
+    colombia:  { name: "Kolombiya",             unlock: 2, cups: 0,   price: 140, mult: 1.10, grindT: 55, notes: "Dengeli, karamel, hafif meyve.", qualityMod: 0, tolMod: 1,
+      page: "Yıkanmış işleme, 1.200–2.000 m rakım. Temiz ve dengeli; meraklı müşteriler bunu arar." },
+    ethiopia:  { name: "Etiyopya Yirgacheffe",  unlock: 2, cups: 60,  price: 170, mult: 1.20, grindT: 58, notes: "Çiçeksi, bergamot, limon. Kahvenin anavatanı.", page: "Kahvenin doğduğu topraklar; yüksek rakım, yıkanmış işleme, çay gibi hafif gövde." },
+    kenya:     { name: "Kenya AA",              unlock: 2, cups: 80,  price: 180, mult: 1.25, grindT: 57, notes: "Frenk üzümü, greyfurt, canlı asidite.", page: "AA en iri çekirdek sınıfı; SL28/SL34 çeşitleri, parlak ve sulu." },
+    guatemala: { name: "Guatemala Antigua",     unlock: 2, cups: 100, price: 160, mult: 1.15, grindT: 50, notes: "Kakao, baharat, tam gövde.", page: "Volkanik toprak, gölgede yetişen kahve; dumanlı, baharatlı." },
+    costarica: { name: "Kosta Rika Tarrazú",    unlock: 2, cups: 120, price: 175, mult: 1.20, grindT: 54, notes: "Bal, şeftali, temiz bitiş.", page: "Bal işleme ile tanınır; tatlı ve parlak." },
+    honduras:  { name: "Honduras",              unlock: 2, cups: 140, price: 150, mult: 1.10, grindT: 48, notes: "Karamel, elma, yumuşak.", page: "Orta Amerika'nın en büyük üreticisi; dengeli ve tatlı." },
+    sumatra:   { name: "Sumatra Mandheling",    unlock: 3, cups: 170, price: 185, mult: 1.25, grindT: 44, notes: "Toprak, sedir, yoğun gövde.", page: "Islak kabuk soyma (giling basah) işleme; ağır ve otsu." },
+    peru:      { name: "Peru",                  unlock: 3, cups: 200, price: 165, mult: 1.15, grindT: 50, notes: "Fındık, sütlü çikolata.", page: "And Dağları'nda organik küçük çiftlikler." },
+    yemen:     { name: "Yemen Mocha",           unlock: 3, cups: 240, price: 260, mult: 1.45, grindT: 46, notes: "Kuru meyve, şarap, baharat.", page: "Mocha limanından adını alan tarihi kahve; doğal işleme, nadir." },
+    jamaica:   { name: "Jamaika Blue Mountain", unlock: 3, cups: 280, price: 380, mult: 1.70, grindT: 52, notes: "Çok yumuşak, dengeli, acısız.", page: "Dünyanın en pahalı kahvelerinden; Blue Mountain sıradağları." },
+    geisha:    { name: "Panama Geisha",         unlock: 3, cups: 330, price: 450, mult: 1.90, grindT: 60, notes: "Yasemin, şeftali, bal.", page: "Rekor fiyatlarla satılan efsanevi çeşit; çiçeksi ve zarif." }
   },
+  // §6 süt türleri: rep = açılış itibarı, extra = siparişe ek ücret (₺), with = siparişte söyleniş
+  milks: {
+    cow:     { name: "İnek sütü",     short: "İnek",      with: "inek sütüyle",     price: 15, rep: 0,   extra: 0 },
+    lactose: { name: "Laktozsuz süt", short: "Laktozsuz", with: "laktozsuz sütle",  price: 22, rep: 40,  extra: 2 },
+    oat:     { name: "Yulaf sütü",    short: "Yulaf",     with: "yulaf sütüyle",    price: 28, rep: 80,  extra: 3 },
+    soy:     { name: "Soya sütü",     short: "Soya",      with: "soya sütüyle",     price: 25, rep: 120, extra: 3 },
+    almond:  { name: "Badem sütü",    short: "Badem",     with: "badem sütüyle",    price: 32, rep: 180, extra: 4 }
+  },
+  houseBeanShare: 0.4, cowShare: 0.6,
+  // §3 Türk kahvesi şeker derecesi (n = harcanan şeker adedi)
+  sugarLevels: { sade: { label: "Sade", say: "sade", n: 0 }, az: { label: "Az şekerli", say: "az şekerli", n: 1 }, orta: { label: "Orta şekerli", say: "orta şekerli", n: 2 }, sekerli: { label: "Şekerli", say: "şekerli", n: 3 } },
+  stockOutLines: ["{X} bile yok mu?!", "Nasıl {x} yok?!", "{X} yoksa ben de yokum!", "Bu dükkanda {x} bile yok!"],
+
 
   // §8 – Ekipman + otomasyon (prototip). stars = gereken dükkan seviyesi; auto = otomatik yaptığı adımlar (sabit 85 puan).
   equipment: {
@@ -81,7 +122,9 @@ window.DATA = {
     dualGroup:   { name: "Çift gruplu makine",        price: 700,  stars: 2, effect: "2 paralel sipariş" },
     fridge:      { name: "Süt buzdolabı",             price: 400,  stars: 2, effect: "Süt 3 gün dayanır" },
     superAuto:   { name: "Süper otomatik espresso makinesi", price: 2500, stars: 3, auto: ["grind","dose","tamp","extract"], requires: ["pidGauge","autoGrind","scaleGrind","autoTamp"], effect: "Espressonun tüm adımları tek tuş (85 puan)" },
-    autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  requires: ["thermoPitcher"], effect: "Süt adımı otomatik (85 puan)" }
+    autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  requires: ["thermoPitcher"], effect: "Süt adımı otomatik (85 puan)" },
+    tkMachine:   { name: "Türk kahvesi makinesi",     price: 350,  stars: 1, auto: ["tkstir","tkfoam"], effect: "Türk kahvesinde karıştırma ve köpük otomatik (85 puan)" },
+    filterMachine: { name: "Filtre kahve makinesi",   price: 400,  stars: 2, auto: ["bloom","pourover"], effect: "Filtre kahvede ön ıslatma ve dökme otomatik (85 puan)" }
   },
   // §4 renkli hedef çubuğu: bölge yarı genişlikleri (çubuğun %'si) ve puanları
   zones: { time: { perfect: 0.0267, good: 0.0667, ok: 0.133 } /* §4 eşit zorluk: sn; yarı genişlik % = ibre hızı × süre */, minPerfect: 0.3, widen: 1.5, score: { perfect: 100, good: 88, ok: 72 } },
@@ -91,12 +134,16 @@ window.DATA = {
     kettle:  { name: "Su ısıtıcısı (kettle)",                    price: 80,  stars: 1, step: "water",    effect: "Americano için sıcak su dökme" },
     milkKit: { name: "Süt köpürtme seti (sürahi + buhar çubuğu)", price: 180, stars: 1, step: "milk",     effect: "Sütlü tüm tarifler için süt köpürtme" },
     boiler:  { name: "Büyük buhar kazanı (makine)",              price: 600, stars: 2, step: "pressure", effect: "Latte ve cappuccino için yüksek basınçlı buhar" },
-    cocoa:   { name: "Kakao serpici",                            price: 120, stars: 2, step: "cocoa",    effect: "Cappuccino'nun üstüne kakao" }
+    cocoa:   { name: "Kakao serpici",                            price: 120, stars: 2, step: "cocoa",    effect: "Cappuccino'nun üstüne kakao" },
+    cezve:   { name: "Bakır cezve",                              price: 90,  stars: 1, step: "tkfoam",   effect: "Türk kahvesi için cezve ve ocak" },
+    frenchPress: { name: "French press",                         price: 120, stars: 1, step: "fpsteep",  effect: "French press kahve için demlik" },
+    v60:     { name: "V60 demleme seti",                         price: 110, stars: 1, step: "pourover", effect: "Filtre kahve için dripper, kâğıt filtre ve sürahi" }
   },
   // §7/§8 – Boyutlar ve bardaklar
   sizes: {
     single: { label: "Tek",   say: "",          cup: "espS", bean: 1, milk: 1,   price: 1,    dose: 18 },
     double: { label: "Double", say: "double",   cup: "espD", bean: 2, milk: 1,   price: 1.8,  dose: 36 },
+    tk:     { label: "Fincan", say: "",          cup: "tkCup", bean: 0.4, milk: 0, price: 1,  dose: 7 },
     S:      { label: "Küçük", say: "küçük boy", cup: "cupS", bean: 1, milk: 1,   price: 1,    dose: 18 },
     M:      { label: "Orta",  say: "orta boy",  cup: "cupM", bean: 1, milk: 1.5, price: 1.25, dose: 18 },
     L:      { label: "Büyük", say: "büyük boy", cup: "cupL", bean: 2, milk: 2,   price: 1.6,  dose: 36 }
@@ -106,7 +153,8 @@ window.DATA = {
     espD: { name: "Double shot bardağı",          pack: 10, price: 12 },
     cupS: { name: "Küçük bardak",           pack: 10, price: 12 },
     cupM: { name: "Orta bardak",            pack: 10, price: 15 },
-    cupL: { name: "Büyük bardak",           pack: 10, price: 18 }
+    cupL: { name: "Büyük bardak",           pack: 10, price: 18 },
+    tkCup: { name: "Türk kahvesi fincanı",  pack: 10, price: 14 }
   },
   cupMin: 3, startCups: { espS: 10, espD: 5 },   // §7 yalnız ilk güne özel espresso fincanları; sonrasını oyuncu alır
   // §7 küçük malzemeler (sarf): gizli kullanım oranı (use), takeaway: yalnız karton bardakta
@@ -229,7 +277,7 @@ window.DATA = {
 
   // §10 – Yıldız Teyze metinleri (kısa): açılış dükkanın devrini, kahvelerin espressodan yapıldığını ve tarif defterini anlatır
   tutorial: {
-    intro: "Hoş geldin evladım. Ben Yıldız Teyze. Bu dükkanı yıllardır işletiyorum ama artık yoruldum; bundan sonra dükkan senin. Bil ki bütün kahveler espressodan yapılır. Gerisini tarif defterimden öğrenirsin, köşede duruyor.",
+    intro: "Hoş geldin evladım. Ben Yıldız Teyze. Bu dükkanı yıllardır işletiyorum ama artık yoruldum; bundan sonra dükkan senin. Burada espresso ve ondan yapılan kahvelerin yanında Türk kahvesi, French press, filtre kahve de yapılır. Ben sana espressoyu öğreteyim; gerisini tarif defterimden öğrenirsin, köşede duruyor.",
     milk: "Sütü köpürtürken kâğıt yırtılır gibi hafif bir ses duyarsın. O ses doğru sestir.",
     // §10 ilk kahve öğreticisi: ilk müşteri Yıldız Teyze, adım adım
     first: "İlk kahveyi bana yap bakalım; acelem yok. Sırada dururken bana dokun.",

@@ -1,5 +1,38 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.20 – 1 Kasım 2026
+
+### Çekirdek çeşitleri
+- **12 çekirdek:** Brezilya, Kolombiya, Etiyopya Yirgacheffe, Kenya AA, Guatemala Antigua, Kosta Rika Tarrazú, Honduras, Sumatra Mandheling, Peru, Yemen Mocha, Jamaika Blue Mountain, Panama Geisha.
+- **Fiyatı etkiler, kaliteyi değil:** Brezilya ×1,0'dan Panama Geisha ×1,9'a kadar.
+- **Açılış:** 2★ ve 3★ dükkanda, toplam satılan kahve sayısına göre sırayla açılıyor.
+
+### Süt türleri
+- İnek, laktozsuz, yulaf, soya ve badem sütü.
+- İtibarla açılıyor (40 / 80 / 120 / 180). Bitki ve özel sütler siparişe +₺2–4 ekliyor.
+
+### Siparişte belirtme
+- Ek çekirdek ve süt açılınca müşteriler bunları siparişte söylüyor; sipariş kartında etiket olarak yazıyor.
+- Hazırlarken seçim sırası: çekirdek → tarif → boy → süt (Türk kahvesinde şeker).
+- Yanlış seçimde müşteri para ödemeden gidiyor.
+- İstenen çekirdek, süt ya da şeker stokta yoksa müşteri "… bile yok!" deyip gidiyor.
+
+### Espresso dışı kahveler
+| Kahve | Gerekli alet | Hazırlanışı |
+|---|---|---|
+| **Türk kahvesi** | Bakır cezve | Teraziyle kahve ölç, cezvede karıştır, ocakta köpük kabarırken taşmadan ocaktan al. Sade / az / orta / şekerli; şekerler küçük malzemelerden harcanıyor. |
+| **French press** | French press + su ısıtıcısı | Kaba kahve ölç, su dök (seviye çizgisi), 4 dakika demle (saat), pistonu bastır. |
+| **Filtre kahve (V60)** | V60 seti + su ısıtıcısı | Filtreye kahve ölç, ön ıslatma (bloom), dairesel dök. |
+
+- Bu kahvelerin adımlarında renkli çubuk yerine gerçek göstergeler kullanılıyor: terazi kadranı, köpük ölçeği, demleme saati, su seviyesi. Karıştırma, piston ve dökme gerçek hareketler.
+- Otomasyon: Türk kahvesi makinesi (₺350) ve Filtre kahve makinesi (₺400, 2★).
+- Aletler dükkanda, vitrinin solundaki demleme tezgâhında görünüyor.
+- Yıldız Teyze artık "espressoyu ben öğreteyim, Türk kahvesi, French press ve filtre kahveyi tarif defterimden öğrenirsin" diyor.
+
+### Hile modu (telefon)
+- Telefonda ana menüde ekrana 3 kez hızlıca dokununca açılıyor; fareyle tıklama saymıyor.
+- Telefonda panel küçük ve kaydırılabilir.
+
 ## v0.19 – 1 Kasım 2026
 
 ### Dükkan görünümü
