@@ -190,6 +190,7 @@ function renderTask() {
 // ---------- Gün (§2) ----------
 function startDay() {
   endCtx = null;
+  setTimeout(flushNewFx, 200);
   const n = dayCap(); checkUnlocks();
   const firstTime = S.day === 1 && !S.taught.includes("first");
   day = { t: 0, toSpawn: n, spawnEvery: arrivalEvery(), nextSpawn: firstTime ? 99999 : 1, customers: [], orders: [], active: 0,
@@ -245,14 +246,12 @@ function tick(now) {
 }
 let lastHint = "", lastClock = "", sceneSkip = 0, sceneAcc = 0;
 // §8 satın alınır alınmaz dükkanda görünsün: panel kısa süre kapanır, yeni ürün "✨ Yeni!" efektiyle görünür
-function showPurchase(key, name) {
-  const ov = document.querySelector(".overlay.on"); if (!ov) return; ov.classList.remove("on");
-  const p = SCENE.itemPos && SCENE.itemPos(key); if (p) SCENE.addFx({ pos: { x: p[0], y: p[1] } }, "✨ Yeni!", "#ffd89a", true);
-  toast(name + " dükkana yerleşti ✨");
-  const t0 = performance.now(); let last = t0;
-  const anim = now => { renderScene(Math.min(.05, (now - last) / 1000)); last = now; if (now - t0 < 1900) requestAnimationFrame(anim); else ov.classList.add("on"); };
-  requestAnimationFrame(anim);
+let pendingNew = [];
+function showPurchase(key, name) {                                               // §8 panel kapanmaz: sahne arkada güncellenir, gün başlayınca "✨ Yeni!" efekti
+  const visual = !!(SCENE.itemPos && SCENE.itemPos(key));                      // yalnız dükkanda görünen ürünlerde "Yeni"
+  if (visual) { pendingNew.push(key); toast(name + " dükkana yerleşti ✨"); } else toast(name + " alındı"); renderScene(0);
 }
+function flushNewFx() { pendingNew.forEach((k, i) => SCENE.highlight(k, .3 + i * 1.6)); pendingNew = []; }   // ürünün yerinde parlayan halka + ok, sırayla
 function renderScene(dt) {
   if (day) day.customers = day.customers.filter(c => !c.gone);
   SCENE.draw({ customers: day ? day.customers : [], orders: day ? day.orders : [], t: day ? day.t / DAY_SECONDS : 0.3, level: shop().stars, slots: slots(),
@@ -835,7 +834,7 @@ function renderHub() {
   R.querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const id = b.dataset.dec; if (S.money < D.decor[id].price) return; buy(D.decor[id].price, () => { S.decor[id] = true; }); re(); showPurchase("decor:" + id, D.decor[id].name); });
   R.querySelectorAll("[data-tr]").forEach(b => b.onclick = () => { const k = b.dataset.tr, T = S.traffic[S.shopLevel] = Object.assign({ cust: 0, freq: 0 }, S.traffic[S.shopLevel]);
     if (T[k] >= 3 || S.money < shop().tierCost[T[k]]) return; const nm = D.traffic[k][T[k]]; buy(shop().tierCost[T[k]], () => { S.log.push("Gün " + S.day + ": " + nm); T[k]++; }); re(); showPurchase("tr:" + k + T[k], nm); });
-  const hi = $("#hire"); if (hi) hi.onclick = () => { S.staff.assistant = true; S.log.push("Gün " + S.day + ": yardımcı barista işe alındı"); save(); re(); };
+  const hi = $("#hire"); if (hi) hi.onclick = () => { S.staff.assistant = true; S.log.push("Gün " + S.day + ": yardımcı barista işe alındı"); save(); re(); showPurchase("staff", "Yardımcı barista"); };
   const fi = $("#fire"); if (fi) fi.onclick = () => { S.staff.assistant = false; save(); re(); };
   if (hubTab === "loans") bindLoans(R, re);
   $("#goalBtn").onclick = () => renderGoal();
@@ -996,15 +995,30 @@ const CHEATS = [
   ["☕ Siparişi kendisi yap", cheatAutoOrder], ["🚶 Müşteri getir", () => { if (!day) return toast("Önce günü başlat"); day.tutorialActive = false; spawnCustomer(); layout(); }],
   ["🌙 Günü bitir", cheatEndDay], ["🏠 Kira gününe atla", () => { if (day) return toast("Gün içinde değil, gün aralarında kullan"); S.day = Math.ceil(S.day / 7) * 7; }],
   ["📦 Stokları doldur", () => { S.beans[S.bean] = { kg: (S.beans[S.bean]?.kg || 0) + 5, boughtDay: S.day }; S.milk = (S.milk || 0) + 10; S.milkDay = S.day; Object.keys(D.cups).forEach(k => S.cups[k] = (S.cups[k] || 0) + 50); Object.keys(D.extras).forEach(k => S.extras[k] = (S.extras[k] || 0) + 100); }],
+  ["☕ Sıradaki tarifi aç", () => { const id = nextRecipe(); if (!id) return toast("Tüm tarifler zaten açık"); S.unlocked.push(id); S.perfect[id] = S.perfect[id] || 0; AUDIO.sfx("unlock"); toast("Yeni tarif açıldı: " + D.drinks[id].name); }],
   ["📖 Tüm tarifler + aletler", () => { S.unlocked = Object.keys(D.drinks); Object.keys(D.tools).forEach(k => S.tools[k] = true); }],
   ["🏪 Dükkan seviyesi atla", () => { if (S.shopLevel < D.shopLevels.length - 1) S.shopLevel++; else toast("En üst seviye"); }]
 ];
+function refreshOpenScreen() {                                                    // hile sonrası açık gün sonu ekranını yenile
+  const on = x => $(x).classList.contains("on");
+  if (on("#ovShop")) renderSupply(); if (on("#ovHub")) renderHub(); if (on("#ovPrice")) renderPrices();
+  if (on("#ovLedger") && endCtx) { if ($("#ledgerCard .rentbig")) backToRent(); else backToLedger(); }
+}
 function renderCheats() {
   let el = $("#cheats"); if (!el) { el = document.createElement("div"); el.id = "cheats"; document.body.appendChild(el); }
   if (!S || !cheatOn()) { el.style.display = "none"; return; }
   el.style.display = ""; el.innerHTML = `<div class="chead" id="cheatToggle">🧪 Hileler ${el.dataset.min ? "▸" : "▾"}</div>` + (el.dataset.min ? "" : CHEATS.map(([n], i) => `<button data-ch="${i}">${n}</button>`).join(""));
-  $("#cheatToggle").onclick = () => { if (el.dataset.min) delete el.dataset.min; else el.dataset.min = "1"; renderCheats(); };
-  el.querySelectorAll("[data-ch]").forEach(b => b.onclick = () => { try { CHEATS[+b.dataset.ch][1](); } catch (e) { console.error(e); toast("Hile hatası: " + e.message); } save(); renderHUD(); if ($("#ovShop").classList.contains("on")) renderSupply(); });
+  // tut-sürükle: başlıktan tutup taşı (kısa dokunuş = küçült/büyüt); yer hatırlanır
+  try { const p = JSON.parse(LSG("cb_cheatPos") || "null"); if (p) Object.assign(el.style, { left: p.x + "px", top: p.y + "px", right: "auto", bottom: "auto", transform: "none" }); } catch (e) {}
+  const h = $("#cheatToggle"); let drag = null;
+  h.onpointerdown = e => { const r = el.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, moved: false }; try { h.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); };
+  h.onpointermove = e => { if (!drag) return; if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 6) drag.moved = true; if (!drag.moved) return;
+    const x = clamp(e.clientX - drag.dx, 0, innerWidth - el.offsetWidth), y = clamp(e.clientY - drag.dy, 0, innerHeight - 40);
+    Object.assign(el.style, { left: x + "px", top: y + "px", right: "auto", bottom: "auto", transform: "none" }); };
+  h.onpointerup = h.onpointercancel = () => { if (!drag) return; const moved = drag.moved; drag = null;
+    if (moved) { const r = el.getBoundingClientRect(); LSS("cb_cheatPos", JSON.stringify({ x: Math.round(r.left), y: Math.round(r.top) })); return; }
+    if (el.dataset.min) delete el.dataset.min; else el.dataset.min = "1"; renderCheats(); };
+  el.querySelectorAll("[data-ch]").forEach(b => b.onclick = () => { try { CHEATS[+b.dataset.ch][1](); } catch (e) { console.error(e); toast("Hile hatası: " + e.message); } save(); renderHUD(); refreshOpenScreen(); });
 }
 
 // ---------- §2 İflas: vade dolduğunda borç varsa oyun biter ----------
@@ -1157,8 +1171,15 @@ function quitGame() {
 $("#quitBack").onclick = () => { $("#quitScreen").style.display = "none"; if (S) goMenu(); else { refreshMenu(); AUDIO.startMusic("menu"); } };
 $("#btnQuit").onclick = () => { AUDIO.sfx("click"); quitGame(); };
 $("#exitBtn").onclick = () => { AUDIO.sfx("open"); modal(`<h3>Çıkış</h3><p class="muted">Oyun her durumda oynanan yuvaya kaydedilir.</p>`, [
-  { label: "Vazgeç" }, { label: "💾 Kaydet", fn: () => { save(); toast("Yuva " + curSlot + "'e kaydedildi"); AUDIO.sfx("register"); } },
-  { label: "🏠 Ana menüye dön", fn: () => goMenu() }, { label: "⏻ Çıkış", pri: true, fn: quitGame }]); };
+  { label: "💾 Kaydet", fn: () => { save(); toast("Yuva " + curSlot + "'e kaydedildi"); AUDIO.sfx("register"); } },
+  { label: "🏠 Ana menüye dön", fn: () => goMenu() }, { label: "⏻ Çıkış", pri: true, fn: quitGame }, { label: "Vazgeç" }]);
+  $("#modalCard .row").classList.add("col"); };   // düğmeler alt alta
+// §12 Esc oyun sırasında Çıkış düğmesi gibi: pencereyi açar, açıkken kapatır
+let exitOpen = false;
+document.addEventListener("keydown", e => { if (e.key !== "Escape" || !S || $("#exitBtn").style.display === "none" || $("#quitScreen").style.display === "flex") return;
+  e.preventDefault(); const ov = $("#ovModal");
+  if (ov.classList.contains("on") && exitOpen) { ov.classList.remove("on"); exitOpen = false; return; }
+  $("#exitBtn").click(); exitOpen = true; });
 $("#btnSettings").onclick = () => { AUDIO.startMusic("menu"); AUDIO.sfx("open"); renderSettings(); openOverlay("#ovSettings"); };
 // §11 ana menü müziği: tarayıcının izin verdiği ilk dokunuşta başlar
 document.addEventListener("pointerdown", () => { if (!S) AUDIO.startMusic("menu"); }, { once: true });

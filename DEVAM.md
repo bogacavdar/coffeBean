@@ -7,8 +7,23 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.18)
+## Bekleyen paket (son yayın: v0.19)
 (boş)
+
+## v0.19 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
+Doküman rev 123. Test yapılmadı (Kural 7); vurgu ve kamera bir ekran görüntüsüyle kontrol edildi.
+- **Parlak kenar vurgusu:** `itemLayer(k)` ürünü ayrı tuvale çizer, altın siluet 8 yöne gölgeli basılır, ürün üstte net.
+- **"Yeni" vurgusu doğru yerde:** `SCENE.highlight(key, gecikme)` ürünün `TH_ITEMS` konumunda (z dahil) parlayan halka + ok + yazı, ~4 sn; `flushNewFx` sırayla.
+- **Kamera:** yatay ekranda tüm dükkan kadrajda (`TW = min(84, W/18,5, (H−30)/13,6)`), dik telefonda eski yakın kadraj.
+- **Buzdolabı görünür:** cam kapaklı, arka tezgâhın üstünde (y 5,95); otomatik süt köpürtücü y 3,62'ye taşındı.
+- **Hile:** "☕ Sıradaki tarifi aç" (`nextRecipe`).
+- **Yeni yalnız görselse:** `showPurchase` `SCENE.itemPos(key)` yoksa yalnız "… alındı".
+- **Satın almada panel kapanmıyor:** `showPurchase` yalnız bildirim + `pendingNew`; `startDay` → `flushNewFx()` yeni ürünlerin üstünde "✨ Yeni!".
+- **Hile gün sonunda:** `#cheats` z 12 (ekranların üstünde); `refreshOpenScreen()` açık Kira/Hesap/Tedarik/Dükkan/Fiyatlar ekranını yeniler.
+- **Hile paneli sürüklenir:** başlıktan tut-sürükle (6 px eşik; kısa dokunuş küçült/büyüt), yer `cb_cheatPos`.
+- **Çıkış düğmesi:** "⏻ Çıkış" yazılı, sipariş kartı genişliğinde (340 px / telefonda %46), kartın hemen üstünde (masaüstü top 66, kart top 124; telefonda 8 / 56).
+- **Esc:** oyun sırasında Çıkış penceresini açar, açıkken kapatır (`exitOpen`).
+- **Çıkış penceresi:** düğmeler alt alta, eşit genişlik ve yükseklik (58 px) (`.row.col`); sıra Kaydet, Ana menüye dön, Çıkış, Vazgeç.
 
 ## v0.18 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
 Doküman rev 112. Test yapılmadı (Kural 7).

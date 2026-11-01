@@ -16,8 +16,13 @@ window.SCENE = (() => {
     const dpr = Math.min(Q.maxDpr, window.devicePixelRatio || 1) * Q.scale; const w = cv.clientWidth, h = cv.clientHeight;
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
     W = w; H = h; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    TW = Math.min(84, W / (COLS + ROWS) * 2.1, H / (COLS + ROWS) * 4.2); TH = TW / 2;   // §11 sahne ekranı tamamen kaplar (kenarlar ekran dışına taşar)
-    OX = W / 2 + (ROWS - COLS) * TW / 2 * 0; OY = H * 0.5 - (COLS + ROWS) * TH / 2 + 30;
+    if (W >= H) {                                                                  // §11 yatay ekran: tüm dükkan kadrajda (vitrin, kapı, tabelalar, masalar)
+      TW = Math.min(84, W / 18.5, (H - 30) / 13.6); TH = TW / 2;
+      OX = W / 2 - TW * .6; OY = (H - 13.6 * TW) / 2 + 5.4 * TW + 20;          // üstte duvar (~z 200), altta zeminin ön köşesi
+    } else {                                                                       // dik telefon: tezgâh ve sıra bölgesine yakın
+      TW = Math.min(84, W / (COLS + ROWS) * 2.1, H / (COLS + ROWS) * 4.2); TH = TW / 2;
+      OX = W / 2; OY = H * 0.5 - (COLS + ROWS) * TH / 2 + 30;
+    }
   }
   const iso = (x, y, z = 0) => [OX + (x - y) * TW, OY + (x + y) * TH - z * (TW / 40)];
   function poly(pts, fill, stroke) { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = .6; ctx.stroke(); } }
@@ -111,10 +116,12 @@ window.SCENE = (() => {
   function backCounter(st, only) {
     const f = Object.assign({}, st.equipment || {}, st.tools || {}), show = k => only ? only === k : !!f[k];
     if (!only) { prism(.02, 3.6, .4, 2.8, 34, "#3a2a1f", "#5b4231", "#4a3327"); }
-    if (show("fridge")) { if (only) prism(.02, 3.6, .4, 1.0, 34, "#3a2a1f", "#5b4231", "#4a3327");
-      poly([iso(.42, 3.7, 3), iso(.42, 4.5, 3), iso(.42, 4.5, 31), iso(.42, 3.7, 31)], "#e9ecee"); poly([iso(.42, 3.72, 26), iso(.42, 4.48, 26), iso(.42, 4.48, 29), iso(.42, 3.72, 29)], "#b9bec3");
-      const [hx, hy] = iso(.42, 3.8, 20); ctx.fillStyle = "#7d8187"; ctx.fillRect(hx - 1, hy - 8 * TW / 40, 2.4, 14 * TW / 40);
-      ctx.fillStyle = "#6fc3ff"; const [lx, ly] = iso(.42, 4.4, 28); ctx.beginPath(); ctx.arc(lx, ly, 1.6, 0, Math.PI * 2); ctx.fill(); }
+    if (show("fridge")) { const x = .04, y = 5.95;                               // §8 cam kapaklı süt buzdolabı (arka tezgâhın üstünde, görünür)
+      prism(x, y, .38, .45, 32, "#e9ecee", "#c9cdd1", "#dfe2e5", 34);
+      poly([iso(x + .38, y + .05, 37), iso(x + .38, y + .4, 37), iso(x + .38, y + .4, 63), iso(x + .38, y + .05, 63)], "rgba(170,215,235,.75)");
+      for (let r = 0; r < 2; r++) for (let k = 0; k < 3; k++) cyl(x + .3, y + .11 + k * .11, .035, 8, "#fdfcf9", 38 + r * 13, "#3b6ea8");
+      const [hx, hy] = iso(x + .38, y + .08, 50); ctx.fillStyle = "#7d8187"; ctx.fillRect(hx - 1, hy - 6 * TW / 40, 2.2, 12 * TW / 40);
+      ctx.fillStyle = "#6fc3ff"; const [lx, ly] = iso(x + .38, y + .36, 64); ctx.beginPath(); ctx.arc(lx, ly, 1.6, 0, Math.PI * 2); ctx.fill(); }
     if (show("kettle")) { const [tx, ty, rx] = cyl(.2, 3.95, .1, 14, "#c9ccd0", 34, "#2b2117");
       ctx.strokeStyle = "#2b2117"; ctx.lineWidth = 2.4 * TW / 40; ctx.beginPath(); ctx.arc(tx, ty - 3, rx * .8, Math.PI, 0); ctx.stroke(); prism(.1, 3.8, .2, .1, 3, "#2b2117", "#111", "#222", 34); }
     if (show("milkKit")) { cyl(.2, 4.32, .08, 13, "#d4d7db", 34, "#f6f1e8"); ctx.strokeStyle = "#8a8e93"; ctx.lineWidth = 2; const [px, py] = iso(.2, 4.4, 42); ctx.beginPath(); ctx.arc(px + 4, py, 4 * TW / 40, -1.2, 1.2); ctx.stroke(); }
@@ -123,7 +130,7 @@ window.SCENE = (() => {
     if (show("cocoa")) { const [tx, ty, rx] = cyl(.2, 5.3, .06, 11, "#9a9ea3", 34, "#cfd2d6"); ctx.fillStyle = "#5a3418"; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(tx - rx * .5 + i * rx * .35, ty, 1, 0, Math.PI * 2); ctx.fill(); } }
     if (show("boiler")) { const [tx, ty] = cyl(.2, 5.75, .17, 34, "#b8bcc1", 34, "#9ea2a7"); const [gx, gy] = iso(.37, 5.75, 58);
       ctx.fillStyle = "#fdfcf9"; ctx.beginPath(); ctx.arc(gx, gy, 5 * TW / 40, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#b5533c"; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + 3 * TW / 40, gy - 3 * TW / 40); ctx.stroke(); }
-    if (show("autoMilk")) { prism(.06, 6.0, .32, .34, 22, "#2b2b30", "#121214", "#3a3a40", 34); const [sx, sy] = iso(.38, 6.17, 50); ctx.fillStyle = "#7fd3ff"; rr(sx - 3, sy - 3, 6 * TW / 40, 4 * TW / 40, 1); ctx.fill(); }
+    if (show("autoMilk")) { prism(.06, 3.62, .3, .22, 22, "#2b2b30", "#121214", "#3a3a40", 34); const [sx, sy] = iso(.36, 3.73, 50); ctx.fillStyle = "#7fd3ff"; rr(sx - 3, sy - 3, 6 * TW / 40, 4 * TW / 40, 1); ctx.fill(); }
   }
   // ---- ön tezgâh: makineler, öğütücü, teraziler, bardak yığınları, pasta vitrini, kasa
   function machine(x, y, f = {}) {
@@ -375,8 +382,8 @@ window.SCENE = (() => {
     "eq:scaleTamp": [1.75, 4.85, 46, () => counterTools({}, "scaleTamp")], "eq:autoTamp": [1.5, 5.24, 52, () => counterTools({}, "autoTamp")],
     "eq:pidGauge": [1.6, 1.9, 58, () => machine(1.05, 1.25, { pidGauge: true })], "eq:steamWand": [1.6, 1.9, 58, () => machine(1.05, 1.25, { steamWand: true })],
     "eq:dualGroup": [1.6, 2.65, 56, () => { machine(1.05, 1.25, {}); machine(1.05, 2.75, {}); }], "eq:superAuto": [1.6, 1.85, 64, () => superAuto(1.1, 1.25)],
-    "eq:fridge": [.3, 4.1, 18, () => backCounter({ equipment: {} }, "fridge")], "eq:thermoPitcher": [.2, 4.65, 42, () => backCounter({}, "thermoPitcher")],
-    "eq:pourPitcher": [.2, 4.98, 42, () => backCounter({}, "pourPitcher")], "eq:autoMilk": [.22, 6.17, 46, () => backCounter({}, "autoMilk")],
+    "eq:fridge": [.23, 6.17, 50, () => backCounter({ equipment: {} }, "fridge")], "eq:thermoPitcher": [.2, 4.65, 42, () => backCounter({}, "thermoPitcher")],
+    "eq:pourPitcher": [.2, 4.98, 42, () => backCounter({}, "pourPitcher")], "eq:autoMilk": [.21, 3.73, 46, () => backCounter({}, "autoMilk")],
     "tool:kettle": [.2, 3.95, 42, () => backCounter({}, "kettle")], "tool:milkKit": [.2, 4.32, 42, () => backCounter({}, "milkKit")],
     "tool:boiler": [.2, 5.75, 52, () => backCounter({}, "boiler")], "tool:cocoa": [.2, 5.3, 40, () => backCounter({}, "cocoa")],
     "tr:cust1": [9.6, .5, 26, () => trafficDeco({}, "c1")], "tr:cust2": [1.4, 0, 97, () => trafficDeco({}, "c2")], "tr:cust3": [10, 0, 85, () => trafficDeco({}, "c3")],
@@ -475,12 +482,42 @@ window.SCENE = (() => {
     room(L, state); furniture(level, slots, state);
     customers.forEach(c => step(c, dt));
     [...customers].sort((a, b) => (a.pos.x + a.pos.y) - (b.pos.x + b.pos.y)).forEach(c => person(c, orders.some(o => o.cust === c)));
-    drawFx(dt);
+    drawFx(dt); drawHL(dt);
     // akşam sıcaklığı + vinyet
     if (Q.fx > 0) { const vg = ctx.createRadialGradient(W / 2, H * .45, H * .4, W / 2, H * .45, Math.max(W, H) * .85); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, `rgba(35,20,8,${.12 + .22 * L.warm})`); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H); }
     if (L.warm) { ctx.fillStyle = `rgba(255,150,60,${L.warm * .12})`; ctx.fillRect(0, 0, W, H); }
   }
   function hitTest(px, py) { const h = hits.find(h => px >= h.x && px <= h.x + h.w && py >= h.y && py <= h.y + h.h); return h ? h.id : null; }
-  const itemPos = k => { const it = TH_ITEMS[k] || (k === "tr:cust0" ? null : TH_ITEMS[k.replace(/\d$/, m => Math.min(3, +m))]); return it ? [it[0], it[1]] : null; };
-  return { init, setQuality, draw, hitTest, addFx, queueSlot, thumb, itemPos, DOOR };
+  const itemPos = k => { const it = TH_ITEMS[k]; return it ? [it[0], it[1], it[2] || 0] : null; };   // yalnız dükkanda çizimi olan ürünler
+  // §8 "✨ Yeni!" vurgusu: ürünün tam çizildiği yerde nabız gibi parlayan halka + ok + yazı (~4 sn)
+  const HL = [];
+  function highlight(k, delay = 0) { const p = itemPos(k); if (p) HL.push({ k, x: p[0], y: p[1], z: p[2], t: -delay }); return !!p; }
+  // ürünün kendisini ayrı tuvale çizip kenarlarını parlak altın ışıkla çevreler
+  let hlCv = null, hlTint = null;
+  function itemLayer(k) {
+    const it = TH_ITEMS[k], fn = it && (it[3] || DECOR[k.slice(6)]); if (!fn) return null;
+    const dpr = cv.width / W; if (!hlCv) { hlCv = document.createElement("canvas"); hlTint = document.createElement("canvas"); }
+    [hlCv, hlTint].forEach(c => { if (c.width !== cv.width || c.height !== cv.height) { c.width = cv.width; c.height = cv.height; } });
+    const save = ctx, c2 = hlCv.getContext("2d"); c2.setTransform(1, 0, 0, 1, 0, 0); c2.clearRect(0, 0, hlCv.width, hlCv.height); c2.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx = c2; try { fn(); } catch (e) {} ctx = save;
+    const t2 = hlTint.getContext("2d"); t2.setTransform(1, 0, 0, 1, 0, 0); t2.globalCompositeOperation = "source-over"; t2.clearRect(0, 0, hlTint.width, hlTint.height);
+    t2.drawImage(hlCv, 0, 0); t2.globalCompositeOperation = "source-in"; t2.fillStyle = "#ffd23a"; t2.fillRect(0, 0, hlTint.width, hlTint.height); t2.globalCompositeOperation = "source-over";
+    return true;
+  }
+  function drawHL(dt) {
+    for (let i = HL.length - 1; i >= 0; i--) { const h = HL[i]; h.t += dt; if (h.t < 0) continue; if (h.t > 4.2) { HL.splice(i, 1); continue; }
+      const [sx, sy] = iso(h.x, h.y, h.z), s = TW / 40, a = h.t < 3.6 ? 1 : 1 - (h.t - 3.6) / .6, pulse = 1 + .25 * Math.sin(h.t * 7);
+      ctx.save(); ctx.globalAlpha = a;
+      if (itemLayer(h.k)) {                                                        // parlak kenar: altın siluet etrafa yayılır, ürün üstte net
+        ctx.setTransform(1, 0, 0, 1, 0, 0); const o = Math.max(2, 3 * s * cv.width / W) * pulse;
+        ctx.shadowColor = "rgba(255,210,58,.95)"; ctx.shadowBlur = 18 * pulse * cv.width / W;
+        [[o, 0], [-o, 0], [0, o], [0, -o], [o * .7, o * .7], [-o * .7, o * .7], [o * .7, -o * .7], [-o * .7, -o * .7]].forEach(([dx, dy]) => ctx.drawImage(hlTint, dx, dy));
+        ctx.shadowBlur = 0; ctx.drawImage(hlCv, 0, 0); const d = cv.width / W; ctx.setTransform(d, 0, 0, d, 0, 0);
+      } else { ctx.strokeStyle = "#ffd23a"; ctx.lineWidth = 3 * s; ctx.beginPath(); ctx.ellipse(sx, sy, 24 * s * pulse, 12 * s * pulse, 0, 0, Math.PI * 2); ctx.stroke(); }
+      const by = sy - 46 * s - Math.abs(Math.sin(h.t * 4)) * 6 * s;
+      ctx.fillStyle = "#ffd23a"; ctx.beginPath(); ctx.moveTo(sx, sy - 18 * s); ctx.lineTo(sx - 8 * s, by + 14 * s); ctx.lineTo(sx + 8 * s, by + 14 * s); ctx.closePath(); ctx.fill();
+      ctx.font = `800 ${16 * s}px system-ui`; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0,0,0,.6)"; ctx.strokeText("✨ Yeni!", sx, by); ctx.fillStyle = "#fff4c2"; ctx.fillText("✨ Yeni!", sx, by);
+      ctx.restore(); }
+  }
+  return { init, setQuality, draw, hitTest, addFx, queueSlot, thumb, itemPos, highlight, DOOR };
 })();

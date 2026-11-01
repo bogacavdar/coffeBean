@@ -1,5 +1,26 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.19 – 1 Kasım 2026
+
+### Dükkan görünümü
+- **Kamera:** bilgisayarda ve yatay ekranda dükkanın tamamı görünüyor (vitrin, kapı, tabelalar, tezgâh, masalar). Dik telefonda kamera tezgâha yakın.
+- **"✨ Yeni!" vurgusu:**
+  - Gün başlayınca o gün alınan her yeni ürün kendi yerinde gösteriliyor; ürünün kenarları altın renkli parlak bir ışıkla çevreleniyor.
+  - Üstünde bir ok ve "✨ Yeni!" yazısı çıkıyor; birden fazla ürün sırayla gösteriliyor.
+  - Yalnızca dükkanda görünen bir değişiklik varsa çıkıyor.
+- **Satın alırken:** yönetim ekranı artık kapanıp açılmıyor; arkadaki dükkan hemen güncelleniyor.
+- **Buzdolabı:** cam kapaklı, içi görünen bir dolap olarak arka tezgâhın üstünde duruyor.
+
+### Çıkış ve kısayollar
+- **Çıkış düğmesi:** "⏻ Çıkış" yazılı, sipariş kartıyla aynı genişlikte ve kartın hemen üstünde.
+- **Çıkış penceresi:** düğmeler alt alta ve eşit boyda (Kaydet, Ana menüye dön, Çıkış, Vazgeç).
+- **Esc:** oyun sırasında Çıkış penceresini açıyor ya da kapatıyor.
+
+### Hile modu
+- Panel başlığından tutup sürükleyerek istediğin yere taşınabiliyor; yeri hatırlanıyor.
+- Gün sonu ekranlarının üstünde de görünüyor ve kullanılabiliyor.
+- Yeni düğme: "☕ Sıradaki tarifi aç".
+
 ## v0.18 – 1 Kasım 2026
 
 ### Çıkış
