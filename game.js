@@ -144,7 +144,7 @@ function renderHUD() {
   const milkTxt = needsMilk() ? ` · Süt ${(S.milk || 0).toFixed(1)}L` : "";
   $("#hStock").textContent = "Brezilya " + beanKg("brazil").toFixed(2) + "kg" + milkTxt;
   $("#shopBadge").style.display = !restockOk() ? "inline-block" : "none";
-  $("#openDay").style.display = (!day && !dayFlow && !(S.day === 1 && !S.taught.includes("first"))) ? "" : "none";   // §11 ilk gün düğme yok
+  $("#openDay").style.display = (!day && !dayFlow && !mandatoryRestock && !endCtx && !(S.day === 1 && !S.taught.includes("first"))) ? "" : "none";   // §11 ilk gün düğme yok
 }
 
 // ---------- Açılım (§3, §9) ----------
@@ -1311,7 +1311,18 @@ $("#scene").addEventListener("pointerdown", e => { if (!day) return; const r = e
 $("#sheet").addEventListener("pointerdown", e => { if (e.target !== $("#sheet") || !day) return; const o = day.orders[day.active]; if (!o || o.tutorial) return;
   AUDIO.stopLoops(); o.hidden = true; if (o.phase === "run") { o.phase = "ready"; o.v = 0; }
   $("#sheet").classList.remove("on"); toast("Sipariş bekliyor; devam etmek için müşteriye dokun"); });
-$("#openDay").onclick = () => { if (!day && !mandatoryRestock) startDay(); };
+$("#openDay").onclick = () => { if (day) return; if (mandatoryRestock || endCtx) return resumeEndFlow(); startDay(); };
+// v0.28 donma düzeltmesi: gün sonu ekranlarından biri (ör. Kahve Gazetesi) dışına dokunarak ya da Esc › Vazgeç ile kapanırsa
+// oyun "gün sonu akışında" kalıp hiçbir ekran göstermiyordu ve Günü başlat çalışmıyordu. Akış kaldığı ekrandan geri açılır.
+function resumeEndFlow() {
+  if (!S || day || !(mandatoryRestock || endCtx)) return;
+  if (dayFlow === "hub") { renderHub(); return openOverlay("#ovHub"); }
+  if (dayFlow === "price") { renderPrices(); return openOverlay("#ovPrice"); }
+  if (dayFlow === "supply" || (endCtx && endCtx.advanced) || (!endCtx && firstSupply)) { dayFlow = "supply"; renderHUD(); renderSupply(); return openOverlay("#ovShop"); }
+  if (endCtx) { if (endCtx.L && endCtx.L.news) return showNews(weekNo(endCtx.dayNum), endCtx.L.news, openRestock, backToLedger); return backToLedger(); }
+  dayFlow = "supply"; renderHUD(); renderSupply(); openOverlay("#ovShop");
+}
+setInterval(() => { try { if (S && !day && (mandatoryRestock || endCtx) && $("#menu").style.display === "none" && !document.querySelector(".overlay.on")) resumeEndFlow(); } catch (e) { console.error(e); } }, 700);   // emniyet: gün sonunda ekran kalmadıysa geri aç
 $("#icBook").onclick = () => { AUDIO.sfx("open"); renderBook(); openOverlay("#ovBook"); };
 $("#icShop").onclick = () => { AUDIO.sfx("open"); renderSupply(); openOverlay("#ovShop"); };
 $("#icPrice").onclick = () => { AUDIO.sfx("open"); renderPrices(); openOverlay("#ovPrice"); };
