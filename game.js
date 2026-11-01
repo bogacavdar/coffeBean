@@ -931,7 +931,8 @@ function renderSettings() {
       <div class="row" style="justify-content:flex-start;margin-top:0"><button id="setFull">${isFull() ? "⛶ Tam ekrandan çık" : "⛶ Tam ekran"}</button>${installEvt ? '<button id="setInstall">📲 Uygulamayı yükle</button>' : ""}</div>
       <p class="muted">${isStandalone() ? "Oyun uygulama olarak açık ✓" : inFrame() ? `Oyun şu an başka bir sayfanın içinde açık; uygulama olarak yüklemek için oyunu kendi adresinden aç: <b>${PAGES_URL}</b> (Android Chrome: menü › Uygulamayı yükle).` : installEvt ? "Bu cihaza CoffeBean uygulaması olarak yükleyebilirsin; yüklü uygulama tam ekran açılır." : "Tarayıcı menüsünden \"Ana ekrana ekle / Uygulamayı yükle\" ile yükleyebilirsin."}</p></div>
     <div class="box"><h4>Kayıtlar</h4><p class="muted">Kaydı dosya olarak saklayabilir ya da bir dosyadan yuvaya aktarabilirsin.</p>
-      <div class="row" style="justify-content:flex-start"><button id="setExport">Kaydı dışa aktar</button><button id="setImport">Kaydı içe aktar</button></div></div>`;
+      <div class="row" style="justify-content:flex-start"><button id="setExport">Kaydı dışa aktar</button><button id="setImport">Kaydı içe aktar</button></div></div>
+    ${cheatUnlocked() ? `<div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="setCheat" ${cheatOn() ? "checked" : ""}> 🧪 Hile modu (test için)</label></div>` : ""}`;
   $("#setX").onclick = () => closeOverlay("#ovSettings");
   $("#volMusic").oninput = e => AUDIO.setMusic(+e.target.value / 100);
   $("#volSfx").oninput = e => { AUDIO.setSfx(+e.target.value / 100); AUDIO.sfx("click"); };
@@ -944,6 +945,39 @@ function renderSettings() {
   $("#settingsCard").querySelectorAll("[data-q]").forEach(b => b.onclick = () => { GFX.quality = b.dataset.q; saveGfx(); SCENE.setQuality(GFX.quality); CLOSEUP.setQuality(GFX.quality);
     if (S) renderScene(0); else idleLoop(); renderSettings(); });
   $("#setImport").onclick = () => { closeOverlay("#ovSettings"); $("#fileImport").click(); };
+  const sc = $("#setCheat"); if (sc) sc.onchange = e => { setCheat(e.target.checked); };
+}
+
+// ---------- Hile modu (geliştirici testi): menüde "cheat" yaz / sürüm yazısına 5 kez dokun ----------
+const LSG = k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, LSS = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const cheatUnlocked = () => LSG("cb_cheatUnlocked") === "1", cheatOn = () => cheatUnlocked() && LSG("cb_cheat") === "1";
+function setCheat(on) { LSS("cb_cheat", on ? "1" : "0"); renderCheats(); toast(on ? "🧪 Hile modu açık" : "Hile modu kapalı"); }
+function unlockCheat() { LSS("cb_cheatUnlocked", "1"); setCheat(true); AUDIO.sfx("unlock"); }
+let cheatBuf = "", verTaps = [];
+document.addEventListener("keydown", e => { if ($("#menu").style.display === "none" || !e.key || e.key.length !== 1) return; cheatBuf = (cheatBuf + e.key.toLowerCase()).slice(-5); if (cheatBuf === "cheat") { cheatBuf = ""; unlockCheat(); } });
+$("#menuVer").addEventListener("click", () => { const t = performance.now(); verTaps = verTaps.filter(x => t - x < 2500).concat(t); if (verTaps.length >= 5) { verTaps = []; unlockCheat(); } });
+function cheatAutoOrder() {
+  if (!day) return toast("Önce günü başlat");
+  let o = day.orders[day.active];
+  if (!o) { const c = queueOf()[0]; if (!c) return toast("Sırada müşteri yok"); if (!c.say) c.say = orderLine(c); takeOrder(c.id); o = day.orders[day.active]; if (!o) return; }
+  if (o.selecting) prepareOrder(o, o.cust.drink, o.cust.size);
+  o.mismatch = false; o.all.forEach(st => { o.scores[st] = 100; }); o.i = o.steps.length; AUDIO.stopLoops(); o.reviewing = false; serve(o);
+}
+function cheatEndDay() { if (!day) return toast("Gün başlamadı"); AUDIO.stopLoops(); day.toSpawn = 0; day.orders = []; day.asst = null; day.customers = []; day.tutorialActive = false; renderBench(); endDay(); }
+const CHEATS = [
+  ["💰 +₺1000", () => { S.money += 1000; }], ["⭐ +50 itibar", () => { S.rep += 50; }], ["🎓 +100 XP", () => { S.xp += 100; checkUnlocks(); }],
+  ["☕ Siparişi kendisi yap", cheatAutoOrder], ["🚶 Müşteri getir", () => { if (!day) return toast("Önce günü başlat"); day.tutorialActive = false; spawnCustomer(); layout(); }],
+  ["🌙 Günü bitir", cheatEndDay], ["🏠 Kira gününe atla", () => { if (day) return toast("Gün içinde değil, gün aralarında kullan"); S.day = Math.ceil(S.day / 7) * 7; }],
+  ["📦 Stokları doldur", () => { S.beans[S.bean] = { kg: (S.beans[S.bean]?.kg || 0) + 5, boughtDay: S.day }; S.milk = (S.milk || 0) + 10; S.milkDay = S.day; Object.keys(D.cups).forEach(k => S.cups[k] = (S.cups[k] || 0) + 50); Object.keys(D.extras).forEach(k => S.extras[k] = (S.extras[k] || 0) + 100); }],
+  ["📖 Tüm tarifler + aletler", () => { S.unlocked = Object.keys(D.drinks); Object.keys(D.tools).forEach(k => S.tools[k] = true); }],
+  ["🏪 Dükkan seviyesi atla", () => { if (S.shopLevel < D.shopLevels.length - 1) S.shopLevel++; else toast("En üst seviye"); }]
+];
+function renderCheats() {
+  let el = $("#cheats"); if (!el) { el = document.createElement("div"); el.id = "cheats"; document.body.appendChild(el); }
+  if (!S || !cheatOn()) { el.style.display = "none"; return; }
+  el.style.display = ""; el.innerHTML = `<div class="chead" id="cheatToggle">🧪 Hileler ${el.dataset.min ? "▸" : "▾"}</div>` + (el.dataset.min ? "" : CHEATS.map(([n], i) => `<button data-ch="${i}">${n}</button>`).join(""));
+  $("#cheatToggle").onclick = () => { if (el.dataset.min) delete el.dataset.min; else el.dataset.min = "1"; renderCheats(); };
+  el.querySelectorAll("[data-ch]").forEach(b => b.onclick = () => { try { CHEATS[+b.dataset.ch][1](); } catch (e) { console.error(e); toast("Hile hatası: " + e.message); } save(); renderHUD(); if ($("#ovShop").classList.contains("on")) renderSupply(); });
 }
 
 // ---------- §2 İflas: vade dolduğunda borç varsa oyun biter ----------
@@ -1033,7 +1067,7 @@ function goMenu() {
   ["#ovGameMenu", "#ovBook", "#ovSettings", "#ovLedger"].forEach(x => $(x).classList.remove("on"));
   mandatoryRestock = false; dayFlow = null; ["#ovShop", "#ovHub", "#ovPrice", "#ovLoan", "#ovGoal"].forEach(x => $(x).classList.remove("on")); $("#sheet").classList.remove("on");
   ["#hud", "#hint", "#icons", "#task", "#openDay", "#orders"].forEach(x => $(x).style.display = "none");
-  S = null; $("#menu").style.display = "flex"; refreshMenu(); idleLoop(); AUDIO.startMusic("menu");
+  S = null; renderCheats(); $("#menu").style.display = "flex"; refreshMenu(); idleLoop(); AUDIO.startMusic("menu");
 }
 
 // ---------- Başlat ----------
@@ -1046,7 +1080,7 @@ function begin(state, slot) {
   if (!S.loans) { S.loans = []; if (S.debt > 0) { S.loanSeq = 1; S.loans.push({ id: 1, amount: Math.round(S.debt / (1 + D.economy.loanInterest)), owe: S.debt, rem: S.debt, day: S.day, due: (S.debtDue || S.day + D.economy.rentLoanDays) }); } } syncDebt(); if (!S.milkDay) S.milkDay = S.day;
   AUDIO.startMusic("game");
   $("#menu").style.display = "none"; $("#hud").style.display = "flex"; $("#hint").style.display = "block"; $("#icons").style.display = "flex";
-  day = null; renderHUD(); renderBench();
+  day = null; renderHUD(); renderBench(); renderCheats();
   lastT = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
   const firstDay = S.day === 1 && !S.taught.includes("first");                   // §11 ilk gün Günü başlat yok: Devral'la kendiliğinden başlar
   if (!S.taught.includes("intro")) { S.taught.push("intro"); modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.intro}</p>`, [{ label: "Devral", pri: true, fn: () => { if (firstDay && !day) startDay(); } }]); }

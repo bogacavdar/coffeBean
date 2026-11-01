@@ -7,8 +7,12 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.16)
+## Bekleyen paket (son yayın: v0.17)
 (boş)
+
+## v0.17 – YAYINLANDI (1 Kasım 2026, kullanıcı "yaptıktan sonra hemen paket çık" dedi)
+Doküman rev 95. Test yapılmadı (Kural 7).
+- **Hile modu:** menüde `cheat` yazmak ya da `#menuVer`'e 5 dokunuş → `cb_cheatUnlocked`; Ayarlar'da aç/kapa (`cb_cheat`). Sağda `#cheats` paneli (`CHEATS`: para, itibar, XP, siparişi kendisi yap `cheatAutoOrder`, müşteri getir, günü bitir `cheatEndDay`, kira gününe atla, stokları doldur, tüm tarifler/aletler, dükkan seviyesi).
 
 ## v0.16 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
 Doküman rev 94. Test yapılmadı (Kural 7).

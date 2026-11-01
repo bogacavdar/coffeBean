@@ -1,5 +1,20 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.17 – 1 Kasım 2026
+
+### Hile modu (test için)
+- **Açmak:** ana menüde klavyeden **cheat** yaz. Telefonda menü altındaki sürüm yazısına 5 kez hızlıca dokun.
+- **Ayarlar:** bir kez açıldıktan sonra Ayarlar'da "🧪 Hile modu" kutusu çıkar; oradan açıp kapatabilirsin.
+- **Hile paneli:** oyunda sağ köşedeki ikonların solunda duruyor; başlığına dokununca küçülüyor. Hileler:
+  - +₺1000, +50 itibar, +100 XP
+  - Siparişi kendisi yap
+  - Müşteri getir
+  - Günü bitir
+  - Kira gününe atla
+  - Stokları doldur
+  - Tüm tarifler ve aletler
+  - Dükkan seviyesi atla
+
 ## v0.16 – 1 Kasım 2026
 
 ### Otomatik kayıt ve Devam
