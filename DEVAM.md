@@ -7,8 +7,12 @@ Son güncelleme: 2026-11-01
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.26)
+## Bekleyen paket (son yayın: v0.27)
 (boş)
+
+## v0.27 – YAYINLANDI (1 Kasım 2026; kullanıcı kararı: buzdolabı 1★'da satın alınabilsin, hemen yayınla)
+- `newState` artık `equipment: {}`; `begin()`'deki zorla `fridge = true` kalktı. Tek seferlik göç (`S.fridgeFix`): 1★ ve `S.fridgePaid` yoksa `equipment.fridge` silinir (v0.24–0.26'nın bedava verdiği). Satın almada `S.fridgePaid = true`. `D.equipment.fridge` stars 1, ₺3.600.
+- Kullanıcı kararı: süt buzdolabısız 2 gün (`D.economy.milkShelfNoFridge`), buzdolabıyla 6 gün (`milkShelfDays`). `endDay` bozulma koşulu buna göre; Tedarik metni de.
 
 ## v0.26 – YAYINLANDI (1 Kasım 2026, kullanıcı "kritik çöz" dedi)
 - **Teslim et çalışmıyordu:** v0.24'te `data.js`'teki `extrasStart` satırının sonuna eklenen `//` açıklaması aynı satırdaki `extrasLow` ve `extraTip`'i yorum içine almıştı → `serve()` içinde `D.extraTip[...]` TypeError. Satır düzeltildi. v0.22 data.js ile anahtar karşılaştırması yapıldı, başka kayıp anahtar yok. Hata kullanıcı bildirdiği için öğretici teslimi otomatik olarak doğrulandı (Kural 7 istisnası).

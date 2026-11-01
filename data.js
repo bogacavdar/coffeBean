@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.26",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.27",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -323,7 +323,7 @@ window.DATA = {
     scaleGrind:  { name: "Tartılı öğütücü",           price: 400,  stars: 1, auto: ["dose"],  requires: ["precScale"], effect: "Dozlama otomatik (85 puan)" },
     autoTamp:    { name: "Otomatik temper",           price: 450,  stars: 2, auto: ["tamp"],  requires: ["scaleTamp"], effect: "Temperleme otomatik (85 puan)" },
     dualGroup:   { name: "Çift gruplu makine",        price: 700,  stars: 2, effect: "2 paralel sipariş" },
-    fridge:      { name: "Süt buzdolabı",             price: 400,  stars: 1, effect: "Süt 3 gün dayanır (her dükkanda baştan var)" },
+    fridge:      { name: "Süt buzdolabı",             price: 400,  stars: 1, effect: "Süt 6 gün dayanır (buzdolabı yoksa 2 gün)" },
     superAuto:   { name: "Süper otomatik espresso makinesi", price: 2500, stars: 3, auto: ["grind","dose","tamp","extract"], requires: ["pidGauge","autoGrind","scaleGrind","autoTamp"], effect: "Espressonun tüm adımları tek tuş (85 puan)" },
     autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  requires: ["thermoPitcher"], effect: "Süt adımı otomatik (85 puan)" },
     tkMachine:   { name: "Türk kahvesi makinesi",     price: 350,  stars: 1, auto: ["tkstir","tkfoam"], effect: "Türk kahvesinde karıştırma ve köpük otomatik (85 puan)" },
@@ -471,7 +471,7 @@ window.DATA = {
 
 
   // §8 – Ekonomi
-  economy: { startMoney: 300, beanPerCup: 0.018 /* kg */, milkPrice: 15 /* ₺/L */, milkPerCup: 0.2 /* L */, minBeans: 0.3, minMilk: 1, milkShelfDays: 3, autoScore: 85, loanInterest: 0.10, loanDailyCut: 0.20,
+  economy: { startMoney: 300, beanPerCup: 0.018 /* kg */, milkPrice: 15 /* ₺/L */, milkPerCup: 0.2 /* L */, minBeans: 0.3, minMilk: 1, milkShelfDays: 6, milkShelfNoFridge: 2, autoScore: 85, loanInterest: 0.10, loanDailyCut: 0.20,
     loans: [{ amount: 100, days: 5 }, { amount: 250, days: 8 }], rentLoanDays: 6, refuseBelow: 50, rentLoanStep: 50 },   // §7 ortalama < 50: müşteri almaz   // §2 kredi türleri ve vadeleri
 
   // §9 – Dükkan seviyeleri (MVP: 3). Prototip kalibrasyonu: günlük müşteri sayısı azaltıldı (gün kısa ve odaklı kalsın).

@@ -31,7 +31,7 @@ function newState(diff = "normal") {
     diff, day: 1, money: (D.difficulty[diff] || D.difficulty.normal).startMoney, rep: 0, xp: 0, shopLevel: 0,
     perfect: { espresso: 0 }, served: {}, unlocked: ["espresso"], taught: [],
     beans: { brazil: { kg: 1, boughtDay: 1 } }, bean: "brazil", milk: 0,
-    equipment: { fridge: true }, prices: {}, tipsLearned: [], regulars: {}, log: [],
+    equipment: {}, prices: {}, tipsLearned: [], regulars: {}, log: [],
     debt: 0, staff: {}, decor: {}, streak: 0, milkDay: 1, traffic: {}, tools: {}, market: {}, loans: [], cups: Object.assign({}, D.startCups), extras: Object.fromEntries(Object.keys(D.extras).map(k => [k, typeof D.extrasStart === "object" ? (D.extrasStart[k] || 0) : D.extrasStart])), econ: D.econScale, syr: {}, cbBrewing: 0
   };
 }
@@ -566,7 +566,8 @@ function endDay() {
   { const r = Object.keys(activeDecor()).reduce((a, k) => a + (D.decor[k].rep || 0), 0); if (r) { L.plant = r; S.rep += r; } }   // §8 dekor itibarı
   if (S.day % 7 === 0) L.news = updateMarket();                                                // §8 hafta sonu borsa
   const repDelta = S.rep - st.repStart; const dayNum = S.day;
-  if (!S.equipment.fridge || S.day - (S.milkDay || S.day) + 1 >= D.economy.milkShelfDays) { L.spoiled = S.milk > 0 || Object.values(S.milkAlt || {}).some(v => v > 0); S.milk = 0; S.milkAlt = {}; }   // §8 süt bozulur (buzdolabıyla 3 gün)
+  if (S.day - (S.milkDay || S.day) + 1 >= (S.equipment.fridge ? D.economy.milkShelfDays : D.economy.milkShelfNoFridge)) {   // v0.27: buzdolabı yoksa 2 gün, varsa 6 gün
+    L.spoiled = S.milk > 0 || Object.values(S.milkAlt || {}).some(v => v > 0); S.milk = 0; S.milkAlt = {}; }   // §8 süt bozulur (buzdolabısız 2, buzdolabıyla 6 gün)
   AUDIO.stopLoops(); AUDIO.sfx("shopClose");                                       // §11 kapanış sesi
   day = null; save(); renderHUD(); renderScene(0);
   endCtx = S.endPending = { dayNum, st, L, repDelta, advanced: false };           // §2 gün sonu ekranları arasında geri dönebilmek için; kayda da yazılır (çıkıp Devam edince aynı gün tekrar oynanamaz)
@@ -873,7 +874,7 @@ function renderSupply() {
     return `<tr><td>${th("sup:bean")}<b>${b.name}</b> <span class="muted">· satış ×${b.mult.toFixed(2)}</span><br><span class="muted">${b.notes} · stok ${kg.toFixed(2)} kg</span></td><td>₺${SP(b.price)}</td>
       <td><button data-buy="${id}" ${S.money < SP(b.price) ? "disabled" : ""}>1 kg al</button></td></tr>`; }).join("") + `</table>${nextBean ? `<p class="muted">🔒 Sıradaki: ${D.beans[nextBean].name} — ${D.beans[nextBean].unlock}★ dükkan${D.beans[nextBean].cups ? ` ve toplam ${D.beans[nextBean].cups} kahve satışı (şu an ${totalSold()})` : ""}</p>` : ""}</div>`;
   if (needsMilk() || S.tools.milkKit) { const nextMilk = Object.keys(D.milks).find(k => !openMilks().includes(k));
-    html += `<div class="box ${milkLow ? "need" : ""}"><h4>Sütler (₺/L)</h4><p class="muted">Her tarif kendi süt miktarını harcar (macchiato 30 ml … latte 200 ml; büyük boy daha fazla). ${S.equipment.fridge ? "Buzdolabı var: sütler 3 gün dayanır." : "Buzdolabı yok: gün sonunda kalan sütler bozulur."} İnek sütü en az ${D.economy.minMilk} L olmalı.</p><table>` +
+    html += `<div class="box ${milkLow ? "need" : ""}"><h4>Sütler (₺/L)</h4><p class="muted">Her tarif kendi süt miktarını harcar (macchiato 30 ml … latte 200 ml; büyük boy daha fazla). ${S.equipment.fridge ? `Buzdolabı var: süt ${D.economy.milkShelfDays} gün dayanır.` : `Buzdolabı yok: süt ${D.economy.milkShelfNoFridge} gün dayanır (buzdolabıyla ${D.economy.milkShelfDays} gün).`} Yeni süt alınca stokun günü yenilenir. İnek sütü en az ${D.economy.minMilk} L olmalı.</p><table>` +
       openMilks().map(k => { const m = D.milks[k], l = milkL(k); return `<tr><td>${th("sup:milk")}<b>${m.name}</b>${m.extra ? ` <span class="muted">· siparişe +₺${m.extra}</span>` : ""}<br><span class="muted">stok ${l.toFixed(1)} L</span></td><td>₺${SP(m.price)}</td>
         <td><button data-milk="${k}" ${S.money < SP(m.price) ? "disabled" : ""}>1 L al</button></td></tr>`; }).join("") + `</table>${nextMilk ? `<p class="muted">🔒 Sıradaki: ${D.milks[nextMilk].name} — ${D.milks[nextMilk].rep} itibar (şu an ${S.rep})</p>` : ""}</div>`; }
   html += `<div class="box">${"<h4>Bardaklar (10'lu paket)</h4>"}<p class="muted">Her içecek kendi bardağıyla servis edilir; bardak yoksa müşteri o boyu alamadan kızıp gider. Her bardak türünden en az ${D.cupMin} adet olmalı.</p><table>` +
@@ -967,7 +968,7 @@ function renderHub() {
   $("#hubCard").innerHTML = html;
   const R = $("#hubCard"), re = () => renderHub();
   R.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { hubTab = b.dataset.tab; AUDIO.sfx("click"); re(); });
-  R.querySelectorAll("[data-eq]").forEach(b => b.onclick = () => { const id = b.dataset.eq; if (S.money < D.equipment[id].price) return; buy(D.equipment[id].price, () => { S.equipment[id] = true; if (id === "fridge") S.milkDay = S.day; }); re(); showPurchase("eq:" + id, D.equipment[id].name); });
+  R.querySelectorAll("[data-eq]").forEach(b => b.onclick = () => { const id = b.dataset.eq; if (S.money < D.equipment[id].price) return; buy(D.equipment[id].price, () => { S.equipment[id] = true; if (id === "fridge") { S.milkDay = S.day; S.fridgePaid = true; } }); re(); showPurchase("eq:" + id, D.equipment[id].name); });
   R.querySelectorAll("[data-tool]").forEach(b => b.onclick = () => { const id = b.dataset.tool; if (S.money < D.tools[id].price) return; buy(D.tools[id].price, () => { S.tools[id] = true; S.log.push("Gün " + S.day + ": " + D.tools[id].name + " alındı"); }); re(); showPurchase("tool:" + id, D.tools[id].name); });
   R.querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const id = b.dataset.dec; if (S.money < D.decor[id].price) return; buy(D.decor[id].price, () => { S.decor[id] = true; }); re(); showPurchase("decor:" + id, D.decor[id].name); });
   R.querySelectorAll("[data-tr]").forEach(b => b.onclick = () => { const k = b.dataset.tr, T = S.traffic[S.shopLevel] = Object.assign({ cust: 0, freq: 0 }, S.traffic[S.shopLevel]);
@@ -1265,7 +1266,8 @@ function begin(state, slot) {
     const K = D.econScale || 9, m = x => Math.round((x || 0) * K);
     S.money = m(S.money); S.debt = m(S.debt); (S.loans || []).forEach(l => { l.amount = m(l.amount); l.owe = m(l.owe); l.rem = m(l.rem); });
     if (S.priceTL) Object.keys(S.priceTL).forEach(k => S.priceTL[k] = m(S.priceTL[k])); S.econ = K; }
-  S.equipment = S.equipment || {}; S.equipment.fridge = true;                     // v0.24: her dükkanda süt buzdolabı var
+  S.equipment = S.equipment || {};
+  if (!S.fridgeFix) { S.fridgeFix = true; if (S.shopLevel === 0 && !S.fridgePaid) delete S.equipment.fridge; }   // v0.27: buzdolabı yine satın alınır; v0.24–0.26'da 1★'da bedava verilen geri alınır
   S.extras = S.extras || {}; if (S.syr && S.syr.sugarx) { S.extras.sugar = (S.extras.sugar || 0) + S.syr.sugarx; delete S.syr.sugarx; }   // v0.24 tek şeker stoku
   if (S.milk == null) S.milk = 0; mandatoryRestock = false; S.bean = "brazil"; if (!S.milkAlt) S.milkAlt = {};
   ["debt", "streak"].forEach(k => { if (S[k] == null) S[k] = 0; }); ["staff", "decor", "traffic", "market"].forEach(k => { if (!S[k]) S[k] = {}; });

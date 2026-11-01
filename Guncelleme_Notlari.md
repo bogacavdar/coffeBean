@@ -1,5 +1,10 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.27 – 1 Kasım 2026
+- **Süt buzdolabı yine satın alınıyor:** v0.24'ten beri buzdolabı alınmadan "alındı" görünüyordu. Artık baştan yok; 1★ dükkandan itibaren Dükkan › Kapasite ve personel bölümünden ₺3.600'e alınır.
+- **Süt dayanıklılığı:** buzdolabı yoksa süt 2 gün, buzdolabıyla 6 gün dayanır (önce: buzdolabısız 1 gün, buzdolabıyla 3 gün). Yeni süt alınca stokun günü yenilenir.
+- Eski kayıtlar: 1★ dükkanda bedava verilmiş buzdolabı geri alınır; 2★ ve üstü dükkanlarda dokunulmaz.
+
 ## v0.26 – 1 Kasım 2026 (kritik)
 - **"Teslim et" düğmesi çalışmıyordu (düzeltildi):** v0.24'te bahşiş çarpanlarının bulunduğu ayar satırı yanlışlıkla devre dışı kalmıştı; teslimde hata oluşuyor, Yıldız Teyze'nin öğreticisi dahil hiçbir sipariş teslim edilemiyordu.
 
