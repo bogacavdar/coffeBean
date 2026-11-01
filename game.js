@@ -691,23 +691,24 @@ const CZ = o => DR(o).cezve || {};
 const BR = o => DR(o).brewer || "v60";
 const before = (o, a, b) => { const A = o.all || o.steps, i = A.indexOf(a), j = A.indexOf(b); return i >= 0 && (j < 0 || i < j); };   // a adımı b'den önce mi
 const iced = o => /^ice/.test(SZ(o.size).cup);
+const ZM = (o, v, label, pos) => { if (o && o.z && o.tgt != null) CLOSEUP.zmeter(v, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }, Object.assign({ label }, pos || {})); };   // v0.29: tuval içinde de renkli hedef göstergesi
 const EXT_T = o => { const r = D.drinks[o.drink].ratio || 2; return r === 1.5 ? 20 : r === 3 ? 37.5 : 27.5; };
 const MG = {
   grind:   { mode: "osc", speed: 85, btn: "ÖĞÜT", left: "kaba", right: "ince", target: o => clamp((D.beans[o.bean || "brazil"].grindT || 50) + ((D.drinks[o.drink].profile || {}).grind || 0), 10, 90), sfx: "grind", tipLow: "grind_low", tipHigh: "grind_high",
-             draw: (o, v) => CLOSEUP.grind(v) },
+             draw: (o, v) => { CLOSEUP.grind(v); ZM(o, v, "hedef öğütüm"); } },
   dose:    { mode: "hold", speed: 9 * 100 / 24, btn: "BASILI TUT · dozla", left: "0 g", right: o => `${Math.round(SZ(o.size).dose * 4 / 3)} g`, target: () => 75, sfx: "dose", tipLow: "dose_low", tipHigh: "dose_high",
-             onStart: () => AUDIO.sfx("dose"), draw: (o, v) => CLOSEUP.dose(v * SZ(o.size).dose * 4 / 300, SZ(o.size).dose) },   // §7 double/büyük: 36 g
+             onStart: () => AUDIO.sfx("dose"), draw: (o, v) => { CLOSEUP.dose(v * SZ(o.size).dose * 4 / 300, SZ(o.size).dose); ZM(o, v, "hedef " + SZ(o.size).dose + " g"); } },   // §7 double/büyük: 36 g
   tamp:    { mode: "osc", ring: true, speed: 65, btn: "BASTIR", target: () => 58, sfx: "tamp", tipLow: "tamp_low", tipHigh: "tamp_high",
              draw: (o, v) => CLOSEUP.tamp(v / 100, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }) },
   extract: { mode: "sweep", speed: EXTRACT_SPEED * 100 / 45, btn0: "BAŞLAT", btn: "DURDUR", left: "0 sn", right: "45 sn", target: o => EXT_T(o) / 45 * 100, tipLow: "extract_low", tipHigh: "extract_high",
              onStart: () => AUDIO.loop("extract", true), onStop: () => { AUDIO.loop("extract", false); AUDIO.sfx("extractStop"); },
-             draw: (o, v) => { const t = v * .45, tT = EXT_T(o), tg = Math.round(SZ(o.size).dose * (D.drinks[o.drink].ratio || 2)); CLOSEUP.extract(t, Math.max(0, (t - 6) * tg / (tT - 6)), tg, o.phase === "run", tT, 2.5, { tWin: o.z ? [+(tT - o.z.k * .45).toFixed(1), +(tT + o.z.k * .45).toFixed(1)] : [tT - 2.5, tT + 2.5] }); } },   // ön ıslatma 6 sn, sonra verim (g); gösterilen pencere renkli bölgelerin gerçek genişliği
+             draw: (o, v) => { const t = v * .45, tT = EXT_T(o), tg = Math.round(SZ(o.size).dose * (D.drinks[o.drink].ratio || 2)); CLOSEUP.extract(t, Math.max(0, (t - 6) * tg / (tT - 6)), tg, o.phase === "run", tT, 2.5, { tWin: o.z ? [+(tT - o.z.k * .45).toFixed(1), +(tT + o.z.k * .45).toFixed(1)] : [tT - 2.5, tT + 2.5], Z: o.z ? { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k } : null }); } },   // ön ıslatma 6 sn, sonra verim (g); gösterilen pencere renkli bölgelerin gerçek genişliği
   milk:    { mode: "hold", speed: () => (S.equipment.steamWand ? 24 : 16) * 100 / 65, btn: "BASILI TUT · ısıt", left: "20 °C", right: "85 °C", target: () => (62.5 - 20) / 65 * 100, tipLow: "milk_low", tipHigh: "milk_high",
              onStart: () => { AUDIO.loop("milk", true); AUDIO.milkAir(true); }, onTick: o => AUDIO.milkAir(20 + o.v * .65 < 45),
-             draw: (o, v) => { const temp = 20 + v * .65, tt = { dollop: 1.2, foam: 1.8, micro: .8, hot: .2 }[D.drinks[o.drink].milk] || 1; CLOSEUP.milk(temp, tt * clamp(v / (o.tgt || 65), 0, 1.3), tt, o.phase === "run" && temp < 45 && DR(o).milk !== "hot", o.phase === "run", { liquid: DR(o).milkLiquid || "milk" }); } },
+             draw: (o, v) => { const temp = 20 + v * .65, tt = { dollop: 1.2, foam: 1.8, micro: .8, hot: .2 }[D.drinks[o.drink].milk] || 1; CLOSEUP.milk(temp, tt * clamp(v / (o.tgt || 65), 0, 1.3), tt, o.phase === "run" && temp < 45 && DR(o).milk !== "hot", o.phase === "run", { liquid: DR(o).milkLiquid || "milk" }); ZM(o, v, "hedef 60–65 °C", { x: 30 }); } },
   // §3 aletlerin mini oyunları (espressodan sonra; her biri farklı biçim)
   water:   { mode: "hold", speed: 28, btn: "BASILI TUT · sıcak su", left: "boş", right: "taşar", target: () => 72, tipLow: "water_low", tipHigh: "water_high",
-             onStart: () => AUDIO.loop("extract", true), onStop: () => AUDIO.loop("extract", false), draw: (o, v) => CLOSEUP.water(v, o.phase === "run", { empty: before(o, "water", "extract") }) },   // v0.24 long black: su önce, bardak boş
+             onStart: () => AUDIO.loop("extract", true), onStop: () => AUDIO.loop("extract", false), draw: (o, v) => { CLOSEUP.water(v, o.phase === "run", { empty: before(o, "water", "extract") }); ZM(o, v, "hedef seviye"); } },   // v0.24 long black: su önce, bardak boş
   pressure:{ mode: "osc", dial: true, speed: 55, btn: "VİDAYI KAPAT", target: () => 62, sfx: "tamp", tipLow: "pressure_low", tipHigh: "pressure_high",
              draw: (o, v) => CLOSEUP.pressure(v, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }) },
   // §3 espresso dışı kahveler: Türk kahvesi (cezve), French press, filtre (V60)
@@ -760,7 +761,7 @@ const MG = {
   steepcup:{ mode: "act", act: "hold", speed: 35, btn: "BASILI TUT · sıcak su dök", draw: (o, v) => CLOSEUP.kit("steepcup", v, { run: o.phase === "run" }) },
   dust:    { mode: "act", act: "shake", need: 6, btn: "Sağa-sola kaydırarak serp", draw: (o, v) => { const k = DR(o).dust || "cinnamon", sp = D.specials[k] || {}; CLOSEUP.kit("dust", v, { x: o.shx, color: sp.color, name: (sp.name || "tarçın").toLocaleLowerCase("tr") }); } },
   art:     { mode: "hold", speed: 32, btn: "BASILI TUT · dök", left: "%0", right: "%100", target: () => 72.5, tipLow: "art_low", tipHigh: "art_high",
-             draw: (o, v) => o.artCut ? CLOSEUP.art(o.fill, v / 100) : CLOSEUP.art(v, null) }
+             draw: (o, v) => { if (o.artCut) CLOSEUP.art(o.fill, v / 100); else CLOSEUP.art(v, null); ZM(o, v, o.artCut ? "kesim: tam orta" : "doluluk %65–80", { x: 345 }); } }
 };
 function uiAct(o, el, s) {                                                        // §4 hareket adımı: ilerleme çubuğu + gerçek hareket
   const c = MG[s]; o.v = 0; o.ang = 0; o.shx = 50; o.phase = "run"; o.frozen = false; let last = null, acc = 0, dir = 0, run = 0;

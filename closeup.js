@@ -41,6 +41,15 @@ window.CLOSEUP = (() => {
     if (label) { ctx.font = "11px system-ui"; ctx.textAlign = "left"; ctx.fillStyle = "#2b2117"; ctx.fillText(label, x, y - 5); }
     ctx.restore();
   }
+  // v0.29 küçük hedef göstergesi: alttaki büyük çubuğun renkli bölgelerinin (sarı/açık yeşil/koyu yeşil) aynısı + ibre.
+  // Z = { t: hedef, p, g, k: bölge yarı genişlikleri } (0–100 çubuk birimi; §4 eşit zorluk: ibre hızıyla orantılı). opt: { x, y, w, label }
+  function zmeter(v, Z, opt) { const o = obj(opt), z = obj(Z), x0 = num(o.x, 330), y0 = num(o.y, 182), bw = num(o.w, 120), val = clamp(v, 0, 100, 0), X = u => x0 + Math.max(0, Math.min(100, num(u))) / 100 * bw;
+    ctx.fillStyle = lg(x0, 0, x0 + bw, 0, [[0, "#2b2b30"], [.5, "#4a4a50"], [1, "#2b2b30"]]); rr(x0, y0, bw, 22, 6); ctx.fill();
+    ctx.fillStyle = "#9cf0a8"; ctx.font = "700 12px monospace"; ctx.textAlign = "center"; ctx.fillText(String(o.label || "hedef"), x0 + bw / 2, y0 + 15);
+    const by = y0 + 28; ctx.fillStyle = "rgba(255,255,255,.7)"; rr(x0, by, bw, 8, 3); ctx.fill();
+    const t = num(z.t, NaN); if (Number.isFinite(t)) [[num(z.k), "#e9c46a"], [num(z.g), "#9cc77a"], [num(z.p), "#3f7d34"]].forEach(([h, c]) => { if (h > 0) { const a = X(t - h), b = X(t + h); ctx.fillStyle = c; ctx.fillRect(a, by, Math.max(1.5, b - a), 8); } });
+    const d = Number.isFinite(t) ? Math.abs(val - t) : 999, col = d <= num(z.p) ? "#1f4d18" : d <= num(z.k) ? "#2b2117" : "#b5533c";
+    ctx.fillStyle = col; ctx.fillRect(X(val) - 1.5, by - 4, 3, 16); }
   // ---- Öğütme: öğütücü, hazne, çıkan kahvenin tane iriliği
   function grind(v) { v = num(v); bg(); shadow(240, H - 66, 90, 10);
     ctx.fillStyle = lg(0, 0, 0, 1, [[0, "#1e1e21"], [1, "#0e0e10"]]); rr(190, 42, 100, 118, 10); ctx.fill();               // gövde
@@ -97,9 +106,10 @@ window.CLOSEUP = (() => {
     if (o) { const fm = u => String(Math.round(u * 10) / 10).replace(".", ","), x0 = 330, y0 = 182, bw = 120, mx = targetG * 1.5, X = u => x0 + Math.max(0, Math.min(1, u / mx)) * bw;   // terazi: hedef verim
       ctx.fillStyle = lg(x0, 0, x0 + bw, 0, [[0, "#2b2b30"], [.5, "#4a4a50"], [1, "#2b2b30"]]); rr(x0, y0, bw, 22, 6); ctx.fill();
       ctx.fillStyle = "#9cf0a8"; ctx.font = "700 12px monospace"; ctx.textAlign = "center"; ctx.fillText("hedef " + fm(targetG) + " g", x0 + bw / 2, y0 + 15);
-      const by = y0 + 28; ctx.fillStyle = "rgba(255,255,255,.65)"; rr(x0, by, bw, 6, 3); ctx.fill();
+      if (o.Z) zmeter(t / 45 * 100, o.Z, { x: x0, y: y0, w: bw, label: "hedef " + fm(targetG) + " g" });   // v0.29: büyük çubuktaki renkli bölgelerin aynısı (§4 eşit zorluk)
+      else { const by = y0 + 28; ctx.fillStyle = "rgba(255,255,255,.65)"; rr(x0, by, bw, 6, 3); ctx.fill();
       ctx.fillStyle = "rgba(63,125,52,.9)"; ctx.fillRect(X(targetG - 2), by, Math.max(2, X(targetG + 2) - X(targetG - 2)), 6);
-      ctx.fillStyle = Math.abs(g - targetG) <= 2 ? "#3f7d34" : g > targetG + 2 ? "#b5533c" : "#2b2117"; ctx.fillRect(X(g) - 1.5, by - 3, 3, 12);
+      ctx.fillStyle = Math.abs(g - targetG) <= 2 ? "#3f7d34" : g > targetG + 2 ? "#b5533c" : "#2b2117"; ctx.fillRect(X(g) - 1.5, by - 3, 3, 12); }
       if (Array.isArray(o.tWin) && o.tWin.length > 1) { const lo = num(o.tWin[0]), hi = num(o.tWin[1]); ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.textAlign = "left"; ctx.fillText("süre " + fm(lo) + "–" + fm(hi) + " sn", x0, 128); } }
   }
   // ---- Süt köpürtme: çelik sütlük, buhar çubuğu, süt ve köpük seviyesi, buhar
@@ -767,7 +777,7 @@ window.CLOSEUP = (() => {
   }
   // v0.24: hiçbir çizim çağrısı hata fırlatmasın; çizim durumu her çağrıdan sonra geri yüklenir
   const safe = fn => function () { if (!ctx) return; ctx.save(); try { return fn.apply(null, arguments); } catch (e) { try { console.warn("CLOSEUP." + fn.name, e); } catch (_) {} } finally { try { ctx.restore(); } catch (_) {} } };
-  const D = { grind, dose, tamp, extract, milk, art, water, pressure, cocoa, shake, stir, swirl, pour, tkdose, cezveStir, cezveFoam, press, v60, kit, cupTop };
+  const D = { zmeter, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, shake, stir, swirl, pour, tkdose, cezveStir, cezveFoam, press, v60, kit, cupTop };
   const out = { init, setQuality }; Object.keys(D).forEach(k => { out[k] = safe(D[k]); });
   return out;
 })();
