@@ -7,8 +7,14 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.15)
+## Bekleyen paket (son yayın: v0.16)
 (boş)
+
+## v0.16 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
+Doküman rev 94. Test yapılmadı (Kural 7).
+- **Türkçe ad:** Tamping → Temperleme, tamper → temper (Tartılı temper, Otomatik temper); data.js, game.js, doküman.
+- **Eşit zorluk:** `zoneSet(step, spd)` yarı genişlik = hız × `D.zones.time` (0,0267 / 0,0667 / 0,133 sn) × rütbe × widen × zorluk; `stepMult` kaldırıldı; en küçük koyu yeşil %0,3. Ristretto: bölge × hız (1,5) × 0,6.
+- **Otomatik kayıt + Devam:** `pagehide` / `beforeunload` / `visibilitychange(hidden)` → `save()`; menüde en üstte `#btnResume` (en son `savedAt` olan, iflas etmemiş yuva; `latestSlot()`), altında yuva/gün/para; Yeni oyun artık ikincil.
 
 ## v0.15 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
 Doküman rev 76. Test yapılmadı (Kural 7).

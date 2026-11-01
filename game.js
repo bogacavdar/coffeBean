@@ -571,7 +571,10 @@ function setTut(html) { const t = $("#tut"); if (t) t.innerHTML = html; }   // �
 // Ortada koyu yeşil Mükemmel (100), yanında açık yeşil Güzel (88), en dışta sarı İyi (72); dışı Kaçtı.
 // Bölgeler rütbe toleransıyla daralır, ilgili hassasiyet yükseltmesiyle ×1,5 genişler (§8).
 const hasWiden = step => Object.keys(S.equipment).some(k => S.equipment[k] && D.equipment[k] && D.equipment[k].widen === step);
-function zoneSet(step) { const Z = D.zones, w = DF().zone * Math.min(1, tol()) * (hasWiden(step) ? Z.widen : 1) * ((Z.stepMult || {})[step] || 1);  /* başlangıçta toplam ≤ %10 */ return { p: Z.perfect * w, g: Z.good * w, k: Z.ok * w }; }
+const mgSpeed = c => typeof c.speed === "function" ? c.speed() : c.speed;
+function zoneSet(step, spd) {                                                     // §4 eşit zorluk: bölge genişliği ibre hızıyla orantılı (aynı zaman penceresi)
+  const Z = D.zones, T = Z.time, v = spd || mgSpeed(MG[step]) || 37.5, w = DF().zone * Math.min(1, tol()) * (hasWiden(step) ? Z.widen : 1) * v;
+  return { p: Math.max(Z.minPerfect, T.perfect * w), g: Math.max(Z.minPerfect * 2, T.good * w), k: Math.max(Z.minPerfect * 4, T.ok * w) }; }
 function zoneScore(v, t, z) {
   const d = Math.abs(v - t), sc = D.zones.score;
   if (d <= z.p) return [sc.perfect, "perfect"]; if (d <= z.g) return [sc.good, "good"]; if (d <= z.k) return [sc.ok, "ok"];
@@ -639,7 +642,8 @@ function uiZone(o, el) {
   o.z = zoneSet(s); o.tgt = c.target(o); o.mode = null; o.artCut = false; o.dir = 1; o.frozen = false; o.spd = 1; o.blond = null;
   const pf = (s === "extract" && D.drinks[o.drink].profile) || {};                 // §4 tarif profili: ristretto hızlı + dar, lungo iki aşamalı
   if (pf.extractSpeed) o.spd = pf.extractSpeed;
-  if (pf.extractZone) o.z = { p: o.z.p * pf.extractZone, g: o.z.g * pf.extractZone, k: o.z.k * pf.extractZone };
+  const zm = (pf.extractSpeed || 1) * (pf.extractZone || 1);                       // hızlanan ibre → bölge orantılı genişler; ristretto penceresi ayrıca ×0,6
+  if (zm !== 1) o.z = { p: o.z.p * zm, g: o.z.g * zm, k: o.z.k * zm };
   if (pf.blond) o.blond = { t: Math.round(o.tgt * .62), done: false, score: null };
   o.v = c.mode === "osc" ? Math.random() * 100 : 0; o.phase = c.mode === "osc" ? "run" : "ready";
   const legend = `<div class="zends" style="justify-content:center"><span class="zleg"><i class="perf"></i>Mükemmel <i class="good"></i>Güzel <i class="ok"></i>İyi</span></div>`;
@@ -822,7 +826,7 @@ function renderGoal() {
   else {
     const ok = (c, t) => `<div class="req ${c ? "ok" : ""}">${t} ${c ? "✓" : ""}</div>`;
     html += `<p>Sıradaki dükkan: <b>${"★".repeat(next.stars)} ${next.name}</b></p>` + ok(S.money >= next.money, `Kasa ₺${S.money} / ₺${next.money}`) + ok(S.rep >= next.rep, `İtibar ${S.rep} / ${next.rep}`) + ok(!(S.debt > 0), S.debt > 0 ? `Borç yok (şu an ₺${S.debt})` : "Borç yok");
-    html += `<p class="muted">Açar: sıra ${next.maxQueue} kişi, günde ${next.customersPerDay} müşteri · haftalık kira ₺${next.rent} · ${next.stars === 2 ? "latte, cappuccino, buhar kazanı, kakao serpici, çift gruplu makine, otomatik tamper, buzdolabı, yardımcı barista" : "süper otomatik makine, otomatik süt köpürtücü, latte art, döküm sürahisi"}. Aldığın aletler ve makineler yeni dükkana taşınır.</p>`;
+    html += `<p class="muted">Açar: sıra ${next.maxQueue} kişi, günde ${next.customersPerDay} müşteri · haftalık kira ₺${next.rent} · ${next.stars === 2 ? "latte, cappuccino, buhar kazanı, kakao serpici, çift gruplu makine, otomatik temper, buzdolabı, yardımcı barista" : "süper otomatik makine, otomatik süt köpürtücü, latte art, döküm sürahisi"}. Aldığın aletler ve makineler yeni dükkana taşınır.</p>`;
     const can = S.money >= next.money && S.rep >= next.rep && !(S.debt > 0);
     html += `<div class="row"><button class="pri" id="lvUp" ${can ? "" : "disabled"}>Seviye atla</button></div>`;
   }
@@ -1089,7 +1093,16 @@ document.addEventListener("pointerdown", () => { if (!S) AUDIO.startMusic("menu"
 $("#icMenu").onclick = () => { AUDIO.sfx("open"); renderGameMenu(); openOverlay("#ovGameMenu"); };
 ["ovSlots", "ovGameMenu", "ovHub", "ovPrice", "ovLoan", "ovGoal"].forEach(id => $("#" + id).addEventListener("click", e => { if (e.target.id === id) closeOverlay("#" + id); }));
 window.addEventListener("resize", () => { if (S) renderScene(0); else idleLoop(); });
-function refreshMenu() { try { $("#btnContinue").disabled = !anySlot(); } catch (e) {} $("#menuVer").textContent = "Sürüm " + D.version; }
+// §12 Devam: en son kaydedilen (iflas etmemiş) yuva
+function latestSlot() { let best = 0, t = -1; for (let i = 1; i <= 3; i++) { const x = loadSlot(i); if (x && !x.bankrupt && (x.savedAt || 0) > t) { t = x.savedAt || 0; best = i; } } return best; }
+function refreshMenu() { try { $("#btnContinue").disabled = !anySlot(); const i = latestSlot(), r = $("#btnResume"), n = $("#btnNew");
+    if (i) { const x = loadSlot(i); r.style.display = ""; $("#resumeInfo").textContent = `Yuva ${i} · ${weekday(x.day)} · Gün ${x.day} · ₺${x.money}`; n.classList.remove("pri"); }
+    else { r.style.display = "none"; n.classList.add("pri"); } } catch (e) {} $("#menuVer").textContent = "Sürüm " + D.version; }
+$("#btnResume").onclick = () => { const i = latestSlot(); if (!i) return refreshMenu(); const x = loadSlot(i); AUDIO.sfx("open"); begin(x, i); };
+// §12 otomatik kayıt: tarayıcı kapanırken / sekme gizlenirken
+window.addEventListener("pagehide", () => save());
+window.addEventListener("beforeunload", () => save());
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") save(); });
 refreshMenu();
 // Menü açıkken de sahne boş dükkan olarak arkada dönsün
 function idleLoop() { if (!S) SCENE.draw({ customers: [], orders: [], t: 0.35, level: 1, slots: 1 }, 0); }   // §12 performans: menüde sahne bir kez çizilir

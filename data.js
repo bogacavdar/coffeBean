@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.15",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.16",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -26,7 +26,7 @@ window.DATA = {
   minigames: {
     grind:   { name: "Öğütme",       hint: "Siyah ibre hızla gidip geliyor: koyu yeşilde ÖĞÜT'e bas." },
     dose:    { name: "Dozlama",      hint: "Basılı tut, kahve dolsun; ibre 18 g'da (koyu yeşil) iken bırak." },
-    tamp:    { name: "Tamping",      hint: "Daire büyüyüp küçülüyor: kenarı koyu yeşil halkadayken dokun." },
+    tamp:    { name: "Temperleme",      hint: "Daire büyüyüp küçülüyor: kenarı koyu yeşil halkadayken dokun." },
     extract: { name: "Ekstraksiyon", hint: "BAŞLAT'a bas; ibre süreyi gösterir, koyu yeşilde DURDUR." },
     milk:    { name: "Süt köpürtme", hint: "Basılı tut, süt ısınır; ibre koyu yeşildeyken bırak (60–65 °C)." },
     water:   { name: "Su dök",       hint: "Kettle'ı basılı tut, su seviyesi koyu yeşildeyken bırak." },
@@ -69,7 +69,7 @@ window.DATA = {
     // hassasiyet: renkli hedef bölgeleri ×1,5 (widen); otomasyon için önce bunlar gerekir (requires)
     grindPrecise:  { name: "Mikro ayarlı öğütücü",       price: 150,  stars: 1, widen: "grind",   effect: "Öğütme hedef bölgeleri ×1,5 geniş" },
     precScale:     { name: "Hassas terazi",              price: 160,  stars: 1, widen: "dose",    effect: "Dozlama hedef bölgeleri ×1,5 geniş" },
-    scaleTamp:     { name: "Tartılı tamper",             price: 180,  stars: 1, widen: "tamp",    effect: "Tamping hedef bölgeleri ×1,5 geniş" },
+    scaleTamp:     { name: "Tartılı temper",             price: 180,  stars: 1, widen: "tamp",    effect: "Temperleme hedef bölgeleri ×1,5 geniş" },
     pidGauge:      { name: "Basınç göstergesi (PID)",    price: 220,  stars: 1, widen: "extract", effect: "Ekstraksiyon hedef bölgeleri ×1,5 geniş" },
     thermoPitcher: { name: "Termometreli sürahi",        price: 140,  stars: 1, widen: "milk",    effect: "Süt hedef bölgeleri ×1,5 geniş" },
     steamWand:     { name: "Buhar çubuğu yükseltmesi",   price: 300,  stars: 1, effect: "Süt köpürtme hızlanır" },
@@ -77,14 +77,14 @@ window.DATA = {
     // otomasyon (sabit 85 puan)
     autoGrind:   { name: "Otomatik öğütücü",          price: 350,  stars: 1, auto: ["grind"], requires: ["grindPrecise"], effect: "Öğütme otomatik (85 puan)" },
     scaleGrind:  { name: "Tartılı öğütücü",           price: 400,  stars: 1, auto: ["dose"],  requires: ["precScale"], effect: "Dozlama otomatik (85 puan)" },
-    autoTamp:    { name: "Otomatik tamper",           price: 450,  stars: 2, auto: ["tamp"],  requires: ["scaleTamp"], effect: "Tamping otomatik (85 puan)" },
+    autoTamp:    { name: "Otomatik temper",           price: 450,  stars: 2, auto: ["tamp"],  requires: ["scaleTamp"], effect: "Temperleme otomatik (85 puan)" },
     dualGroup:   { name: "Çift gruplu makine",        price: 700,  stars: 2, effect: "2 paralel sipariş" },
     fridge:      { name: "Süt buzdolabı",             price: 400,  stars: 2, effect: "Süt 3 gün dayanır" },
     superAuto:   { name: "Süper otomatik espresso makinesi", price: 2500, stars: 3, auto: ["grind","dose","tamp","extract"], requires: ["pidGauge","autoGrind","scaleGrind","autoTamp"], effect: "Espressonun tüm adımları tek tuş (85 puan)" },
     autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  requires: ["thermoPitcher"], effect: "Süt adımı otomatik (85 puan)" }
   },
   // §4 renkli hedef çubuğu: bölge yarı genişlikleri (çubuğun %'si) ve puanları
-  zones: { perfect: 1, good: 2.5, ok: 5, stepMult: { tamp: 3 }, widen: 1.5, score: { perfect: 100, good: 88, ok: 72 } },
+  zones: { time: { perfect: 0.0267, good: 0.0667, ok: 0.133 } /* §4 eşit zorluk: sn; yarı genişlik % = ibre hızı × süre */, minPerfect: 0.3, widen: 1.5, score: { perfect: 100, good: 88, ok: 72 } },
 
   // §3 – Tarife özel aletler ve makineler (Dükkan › Aletler & Makineler). step: getirdiği mini oyun (espressodan sonra)
   tools: {
@@ -210,8 +210,8 @@ window.DATA = {
     grind_high:   "Öğütüm çok ince: su yavaş geçer, acı tat. Bir kademe kabalaştır.",
     dose_low:     "Doz eksik: sepet boş kalır, kanal oluşur. 18 g hedefle.",
     dose_high:    "Doz fazla: grup kafasına değer, akış tıkanır.",
-    tamp_low:     "Tamping zayıf: kahve yatağı eşit sıkışmaz, kanal oluşur.",
-    tamp_high:    "Tamping çok sert: fayda yok, bileği yorar. Düz ve eşit basınç yeter.",
+    tamp_low:     "Temperleme zayıf: kahve yatağı eşit sıkışmaz, kanal oluşur.",
+    tamp_high:    "Temperleme çok sert: fayda yok, bileği yorar. Düz ve eşit basınç yeter.",
     extract_low:  "Çok erken durdurdun: az ekstraksiyon, ekşi ve ince.",
     extract_high: "Çok geç durdurdun: fazla ekstraksiyon, acı ve kuru.",
     milk_low:     "Süt soğuk kaldı: köpük tutmaz. 60 °C'yi bekle.",
@@ -237,7 +237,7 @@ window.DATA = {
     steps: {
       grind:   "<b>1. Öğütme.</b> Çekirdeği çok kaba öğütürsen su hızlı geçer, kahve ekşi olur; çok ince öğütürsen tıkanır, acı olur. İbre gidip geliyor; tam ortadaki <b>koyu yeşile</b> gelince <b>ÖĞÜT</b>'e bas. Bu sefer ibreyi senin için orada bekleteceğim, sonra kendi gözünle yakalayacaksın.",
       dose:    "<b>2. Dozlama.</b> Sepete 18 gram kahve koyacağız. Düğmeyi <b>basılı tut</b>; kahve dolar, terazi artar. Sakın erken bırakma, ibre <b>koyu yeşile gelene kadar</b> basılı tut.",
-      tamp:    "<b>3. Tamping.</b> Kahveyi tamperla düz ve eşit sıkıştırırız ki su her yerden aynı hızda geçsin; gevşek kalırsa su kanal açar, kahve sulu olur. Tamper dairesi büyüyüp küçülüyor; siyah kenarı <b>koyu yeşil halkaya</b> gelince daireye ya da <b>BASTIR</b>'a dokun.",
+      tamp:    "<b>3. Temperleme.</b> Kahveyi temper aletiyle düz ve eşit sıkıştırırız ki su her yerden aynı hızda geçsin; gevşek kalırsa su kanal açar, kahve sulu olur. Temper dairesi büyüyüp küçülüyor; siyah kenarı <b>koyu yeşil halkaya</b> gelince daireye ya da <b>BASTIR</b>'a dokun.",
       extract: "<b>4. Çekme.</b> Portafiltreyi makineye taktık. <b>BAŞLAT</b>'a bas, kahve fincana akmaya başlasın. İbre saniyeleri sayar; <b>koyu yeşile</b> gelince <b>DURDUR</b>.",
       milk:    "<b>Süt köpürtüyoruz.</b> Düğmeyi basılı tut: süt ısınır, ibre sağa ilerler. İbre koyu yeşildeyken (<b>60–65 °C</b>) bırak.",
       art:     "<b>Latte art.</b> Basılı tut ve sütü dök; ibre doluluğu gösterir, koyu yeşilde bırak. Sonra kesim ibresi gidip gelir: koyu yeşildeyken <b>KES</b>."

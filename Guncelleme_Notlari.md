@@ -1,5 +1,21 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.16 – 1 Kasım 2026
+
+### Otomatik kayıt ve Devam
+- Oyun tarayıcı kapanırken, sekme arka plana geçerken ve ana menüye dönülürken de kaydediliyor.
+- Ana menüde en üstte **▶ Devam** düğmesi var. En son kaydedilen oyunu açıyor; altında yuva, gün ve para yazıyor.
+- Gün ortasında çıkılırsa kazanılanlar kalıyor, gün baştan başlıyor.
+
+### Mini oyunlarda eşit zorluk
+- Renkli bölgelerin genişliği artık ibrenin hızına göre hesaplanıyor. Hızlı giden ibrede bölgeler geniş, yavaş gidende dar.
+- Böylece dört espresso adımında tutturulacak süre aynı: koyu yeşil ±0,027 sn, açık yeşil ±0,067 sn, sarı ±0,133 sn.
+- Çekme (4. adım) artık eskisi kadar kolay değil.
+- Süt, su, basınç ve latte art da aynı kurala geçti.
+
+### Türkçe
+- "Tamping" artık **Temperleme**; aletlerin adı "Tartılı temper" ve "Otomatik temper".
+
 ## v0.15 – 1 Kasım 2026
 
 ### Zorluk seçimi
