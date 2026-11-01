@@ -1,6 +1,6 @@
 # CoffeBean – Güncelleme Notları
 
-## v0.29 – (yayın bekliyor)
+## v0.29 – 1 Kasım 2026
 - Barlı tüm adımlarda (öğütme, dozlama, ekstraksiyon, süt köpürtme, sıcak su, latte art) yakın plan çiziminde de küçük bir hedef göstergesi var: alttaki büyük çubuğun aynı sarı / açık yeşil / koyu yeşil bölgeleri ve ibre. Ekstraksiyondaki gösterge artık sabit ±2 g yerine gerçek renkli bölgeleri gösteriyor.
 
 ## v0.28 – 1 Kasım 2026 (acil)

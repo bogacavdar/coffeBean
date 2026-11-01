@@ -7,7 +7,10 @@ Son güncelleme: 2026-11-01
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.28)
+## Bekleyen paket (son yayın: v0.29)
+(boş)
+
+## v0.29 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
 - **Tuval içi hedef göstergesi (kullanıcı isteği):** ekstraksiyondaki küçük göstergeye benzer `CLOSEUP.zmeter(v, Z, {label,x,y,w})` eklendi; büyük çubuğun aynı renkli bölgelerini (sarı/açık yeşil/koyu yeşil, `o.z`) ve ibreyi gösterir. Öğütme ("hedef öğütüm"), dozlama ("hedef 18 g"), ekstraksiyon (sabit ±2 g bandı yerine gerçek bölgeler), süt ("hedef 60–65 °C", solda), sıcak su ("hedef seviye"), latte art ("doluluk %65–80" / "kesim: tam orta") adımlarında. Kural 9 gereği bölgeler ibre hızıyla orantılı `o.z`'den gelir. Göstergeli (dial/ring) adımlarda bölgeler zaten çizimin üstünde.
 
 ## v0.28 – YAYINLANDI (1 Kasım 2026, kullanıcı "acilen çöz" dedi)
