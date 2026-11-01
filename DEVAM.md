@@ -7,8 +7,20 @@ Son güncelleme: 2026-10-31
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.17)
+## Bekleyen paket (son yayın: v0.18)
 (boş)
+
+## v0.18 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
+Doküman rev 112. Test yapılmadı (Kural 7).
+- **Çıkış:** sağ üst `#exitBtn` (z 10, gün sonu ekranlarının üstünde) → modal Kaydet / Ana menüye dön / Çıkış; menüde `#btnQuit`; `quitGame()` kaydeder, `window.close()` dener, olmazsa `#quitScreen`. `#ovModal` z 11; HUD sağ boşluk; telefonda sipariş kartı top 60.
+- **Kartta sıradakiler:** `queueHTML()` (ad + sabır çubuğu `qpat<id>`), `updOrderBars` sıra değişince kartı yeniler (`queueSig`).
+- **Boy fiyatları:** fiyat yalnız tek/küçük boydan ayarlanır; `sizePrice` = taban × boy çarpanı (double 1,8 = +%80, orta 1,25, büyük 1,6). Fiyatlar ekranında diğer boyların hesaplanan fiyatı bilgi olarak; maliyet `sizeCost`; `rollReaction(id, size)`.
+- **Ad:** espresso bardakları "Tek shot bardağı" / "Double shot bardağı".
+- **İlk gün fincanları:** `startCups {espS:10, espD:5}` (yalnız ilk gün için); Devral → stok yeterliyse doğrudan `startDay`, değilse `openFirstSupply`.
+- **Hediye yok:** `startCups {}`, `extrasStart 0`, tarif açılınca bardak hediyesi kalktı (yalnız listeye eklenir). İlk gün: Devral → `openFirstSupply()` (Tedarik, düğme "Günü başlat ☕" → `startDay`). Eski kayıt göçleri eskisi gibi hediye verir.
+- **Yeni tarifin bardakları:** `cupsKnown()` (tüm açık tarifler) Tedarik listesinde ve stok özetinde; `checkUnlocks` yeni bardak türüne 1 paket hediye + modalda not. Zorunlu min 3 hâlâ `cupsNeeded()` (menüdekiler).
+- **Kötü sipariş:** `D.economy.refuseBelow` 50; altında müşteri almaz, para yok, −3, `D.badLines`, `st.bad`; değerlendirme ekranında uyarı. Bahşiş artık kaliteye (≥80) bağlı, hız çarpanıyla. Hesapta "Yanlış sipariş / Kötü sipariş (para ödemeden giden)".
+- **Kira ekranında para ikonu:** `BILL` / `cashBox()` ortak (Tedarik + Kira).
 
 ## v0.17 – YAYINLANDI (1 Kasım 2026, kullanıcı "yaptıktan sonra hemen paket çık" dedi)
 Doküman rev 95. Test yapılmadı (Kural 7).

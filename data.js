@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.17",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.18",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -96,19 +96,19 @@ window.DATA = {
   // §7/§8 – Boyutlar ve bardaklar
   sizes: {
     single: { label: "Tek",   say: "",          cup: "espS", bean: 1, milk: 1,   price: 1,    dose: 18 },
-    double: { label: "Double", say: "double",   cup: "espD", bean: 2, milk: 1,   price: 1.7,  dose: 36 },
+    double: { label: "Double", say: "double",   cup: "espD", bean: 2, milk: 1,   price: 1.8,  dose: 36 },
     S:      { label: "Küçük", say: "küçük boy", cup: "cupS", bean: 1, milk: 1,   price: 1,    dose: 18 },
     M:      { label: "Orta",  say: "orta boy",  cup: "cupM", bean: 1, milk: 1.5, price: 1.25, dose: 18 },
     L:      { label: "Büyük", say: "büyük boy", cup: "cupL", bean: 2, milk: 2,   price: 1.6,  dose: 36 }
   },
   cups: {
-    espS: { name: "Espresso fincanı (tek)", pack: 10, price: 10 },
-    espD: { name: "Double fincan",          pack: 10, price: 12 },
+    espS: { name: "Tek shot bardağı", pack: 10, price: 10 },
+    espD: { name: "Double shot bardağı",          pack: 10, price: 12 },
     cupS: { name: "Küçük bardak",           pack: 10, price: 12 },
     cupM: { name: "Orta bardak",            pack: 10, price: 15 },
     cupL: { name: "Büyük bardak",           pack: 10, price: 18 }
   },
-  cupMin: 3, startCups: { espS: 20, espD: 10 },
+  cupMin: 3, startCups: { espS: 10, espD: 5 },   // §7 yalnız ilk güne özel espresso fincanları; sonrasını oyuncu alır
   // §7 küçük malzemeler (sarf): gizli kullanım oranı (use), takeaway: yalnız karton bardakta
   extras: {
     sleeve:    { name: "Bardak tutacağı",   pack: 50,  price: 15, use: 0.90, takeaway: true, miss: "Bardak tutacağı bile yok, elim yandı!" },
@@ -118,13 +118,14 @@ window.DATA = {
     sweetener: { name: "Tatlandırıcı",      pack: 50,  price: 12, use: 0.05, miss: "Tatlandırıcı bile yok!" },
     straw:     { name: "Pipet",             pack: 50,  price: 5,  use: 0.05, miss: "Pipet bile yok!" }
   },
-  extrasStart: 20, extrasLow: 10, extraTip: [1, 0.3, 0],
+  extrasStart: 0, extrasLow: 10, extraTip: [1, 0.3, 0],
   // §12 zorluk: Normal = belgedeki değerler
   difficulty: {
     easy:   { label: "Kolay",  desc: "Müşteriler daha sabırlı, renkli bölgeler %10 geniş, tedarik %20 ucuz (daha çok kâr), ₺400 ile başla.", patience: 1.3,  zone: 1.10, cost: 0.80, startMoney: 400 },
     normal: { label: "Normal", desc: "Oyunun dengelendiği zorluk.", patience: 1,    zone: 1,    cost: 1,    startMoney: 300 },
     hard:   { label: "Zor",    desc: "Müşteriler sabırsız, renkli bölgeler %15 dar, tedarik %20 pahalı (az kâr), ₺250 ile başla.", patience: 0.75, zone: 0.85, cost: 1.20, startMoney: 250 }
   },
+  badLines: ["Bunu içemem, almıyorum!", "Bu kahve mi şimdi? Para vermem!", "Berbat olmuş, kalsın.", "Yeniden yap ya da hiç yapma!", "Böyle kahve olmaz, gidiyorum."],
   noCupLines: ["Nasıl {s} bardağınız yok?!", "{S} bardak mı bitmiş? Olacak iş değil!", "Bardak yoksa ben de yokum!", "Bu dükkanda {s} bardak bile yok mu?"],
   wrongLines: ["Ben bunu istemedim!", "Bu benim siparişim değil!", "Yanlış kahve verdin, almıyorum.", "Ben {d} istemiştim!"],
   // §7 – Sipariş cümleleri ({d} = içecek adı); genel + tipe özel, rastgele seçilir
@@ -177,7 +178,7 @@ window.DATA = {
 
   // §8 – Ekonomi
   economy: { startMoney: 300, beanPerCup: 0.018 /* kg */, milkPrice: 15 /* ₺/L */, milkPerCup: 0.2 /* L */, minBeans: 0.3, minMilk: 1, milkShelfDays: 3, autoScore: 85, loanInterest: 0.10, loanDailyCut: 0.20,
-    loans: [{ amount: 100, days: 5 }, { amount: 250, days: 8 }], rentLoanDays: 6 },   // §2 kredi türleri ve vadeleri
+    loans: [{ amount: 100, days: 5 }, { amount: 250, days: 8 }], rentLoanDays: 6, refuseBelow: 50 },   // §7 ortalama < 50: müşteri almaz   // §2 kredi türleri ve vadeleri
 
   // §9 – Dükkan seviyeleri (MVP: 3). Prototip kalibrasyonu: günlük müşteri sayısı azaltıldı (gün kısa ve odaklı kalsın).
   shopLevels: [

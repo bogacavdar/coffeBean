@@ -55,8 +55,8 @@ const priceOf = id => Math.max(1, Math.round((S.priceTL && S.priceTL[id]) || def
 const priceRatio = id => priceOf(id) / defaultPrice(id);
 const marketIdx = id => (S.market && S.market[id]) || 1;
 const fairPrice = id => defaultPrice(id) * marketIdx(id);
-function rollReaction(id) {                                   // §7/§8 öndeki müşteri sipariş anında fiyata tepki verir
-  const d = priceOf(id) / fairPrice(id) - 1, P = D.pricing, p = x => Math.min(1, (x - P.neutral) / (P.all - P.neutral));
+function rollReaction(id, size) {                                   // §7/§8 öndeki müşteri sipariş anında fiyata tepki verir
+  const d = sizePrice(id, size) / (fairPrice(id) * SZ(size).price) - 1, P = D.pricing, p = x => Math.min(1, (x - P.neutral) / (P.all - P.neutral));
   if (d > P.neutral && Math.random() < p(d)) return "expensive";
   if (d < -P.neutral && Math.random() < p(-d)) return "cheap";
   return "ok";
@@ -70,7 +70,9 @@ function beanQualityMod() {                                   // §6 tazelik: 7 
 const SZ = k => D.sizes[k || "single"];
 const sizedName = (id, size) => { const sz = SZ(size); return (sz.say ? sz.say + " " : "") + D.drinks[id].name.toLocaleLowerCase("tr"); };
 const cap1 = t => t.charAt(0).toLocaleUpperCase("tr") + t.slice(1);
-const sizePrice = (id, size) => Math.max(1, Math.round(priceOf(id) * SZ(size).price));
+const sizePrice = (id, size) => Math.max(1, Math.round(priceOf(id) * SZ(size).price));   // §8 fiyat tek/küçük boydan; double ×1,8 (+%80), orta ×1,25, büyük ×1,6
+const sizeCost = (id, size) => { const d = D.drinks[id], z = SZ(size); return D.economy.beanPerCup * z.bean * D.beans[S.bean].price + (d.steps.includes("milk") ? D.economy.milkPerCup * z.milk * D.economy.milkPrice : 0) + d.cost; };
+const cupsKnown = () => { const set = new Set(); S.unlocked.forEach(id => (D.drinks[id].sizes || ["single"]).forEach(z => set.add(SZ(z).cup))); return [...set]; };   // §7 açılan tariflerin tüm bardakları (listede görünür)
 const cupsNeeded = () => { const set = new Set(); S.unlocked.filter(hasTools).forEach(id => (D.drinks[id].sizes || ["single"]).forEach(z => set.add(SZ(z).cup))); return [...set]; };
 const needsMilk = () => S.unlocked.some(id => hasTools(id) && D.drinks[id].steps.includes("milk"));
 const restockOk = () => (S.beans[S.bean]?.kg || 0) >= D.economy.minBeans && (!needsMilk() || (S.milk || 0) >= D.economy.minMilk) && cupsNeeded().every(k => (S.cups[k] || 0) >= D.cupMin);
@@ -151,13 +153,16 @@ function canUnlock(id) {
 function checkUnlocks() {
   const fresh = Object.keys(D.drinks).filter(canUnlock);
   if (!fresh.length) return;
+  const cupsBefore = new Set(cupsKnown());
   fresh.forEach(id => { S.unlocked.push(id); S.perfect[id] = S.perfect[id] || 0; S.log.push("Gün " + S.day + ": " + D.drinks[id].name + " açıldı"); });
+  const giftCups = cupsKnown().filter(k => !cupsBefore.has(k));                  // §7 yeni bardak türü Tedarik listesine eklenir (hediye yok)
   const milkNew = fresh.some(id => D.drinks[id].steps.includes("milk")) && !S.taught.includes("milk");
   if (milkNew) S.taught.push("milk");
   AUDIO.sfx("unlock");
   modal(`<h3>Yeni tarif${fresh.length > 1 ? "ler" : ""}: ${fresh.map(id => D.drinks[id].name).join(", ")}</h3><p class="muted">Yıldız Teyze'nin defterinden</p>` +
     fresh.map(id => { const miss = (D.drinks[id].needs || []).filter(t => !S.tools[t]);
       return `<div class="recipe">${drinkIcon(id, false)}<div><b>${D.drinks[id].name}</b><br>${D.drinks[id].card}${miss.length ? `<div class="req" style="margin-top:6px">Menüye girmesi için gerekli: ${miss.map(t => D.tools[t].name).join(", ")} (gün sonunda Dükkan › Aletler & Makineler)</div>` : ""}</div></div>`; }).join("") +
+    (giftCups.length ? `<div class="req" style="margin-top:8px">🥤 Yeni bardaklar Tedarik listesine eklendi: ${giftCups.map(k => D.cups[k].name.toLocaleLowerCase("tr")).join(", ")}. Gün sonunda Tedarik'ten satın al.</div>` : "") +
     (milkNew ? `<p><i>${D.tutorial.milk}</i></p>` : ""));
 }
 
@@ -293,7 +298,7 @@ function takeOrder(id) {
   if ((S.beans[S.bean]?.kg || 0) < D.economy.beanPerCup * sz.bean) { toast("Çekirdek bitti! Tedarik ikonuna dokun."); return; }
   if (D.drinks[c.drink].steps.includes("milk") && (S.milk || 0) < D.economy.milkPerCup * sz.milk - 1e-9) { toast("Süt bitti! Tedarik ikonuna dokun."); return; }
   if (c.type !== "nejla") {                                       // §7/§8 sipariş anında fiyat tepkisi
-    const r = rollReaction(c.drink);
+    const r = rollReaction(c.drink, c.size);
     if (r === "expensive") { c.say = "Çok pahalı! Almıyorum."; c.sayUntil = performance.now() + 2600; c.leaving = true; day.stats.pricey++; AUDIO.sfx("sad"); SCENE.addFx(c, "Pahalı!", "#e9c46a"); layout(); renderHUD(); return; }
     if (r === "cheap") { c.say = "Ne kadar ucuz!"; c.sayUntil = performance.now() + 1800; SCENE.addFx(c, "Ucuz!", "#9cc77a"); } else c.say = null;
   }
@@ -337,11 +342,17 @@ function renderOrders() {
   el.innerHTML = `<div class="ohead">Siparişler</div>` + list.map((o, i) => `<div class="ord${o.mismatch ? " bad" : ""}"><div class="oname">${o.cust.name}</div>
     <div class="odrink"><b>${D.drinks[o.cust.drink].name}</b><span class="osize">${SZ(o.cust.size).label}</span></div>
     ${o.selecting ? '<div class="ostate">tarif ve boy seç</div>' : o.mismatch ? '<div class="ostate">⚠ yanlış seçim</div>' : ""}
-    ${o.cust.patienceMax ? `<div class="opat"><i id="opat${i}"></i></div>` : ""}</div>`).join("");
+    ${o.cust.patienceMax ? `<div class="opat"><i id="opat${i}"></i></div>` : ""}</div>`).join("") + queueHTML();
   updOrderBars();
 }
+// §7 kartta sırada bekleyenler: yalnız ad + sabır (sipariş görünmez)
+let queueSig = "";
+function queueHTML() { const q = queueOf().filter(c => c.patienceMax); queueSig = q.map(c => c.id).join(",");
+  return q.length ? `<div class="oqhead">Sırada bekleyenler</div>` + q.map(c => `<div class="oq"><span>${c.name}</span><div class="opat"><i id="qpat${c.id}"></i></div></div>`).join("") : ""; }
 function updOrderBars() {                                                         // §7 kartta kalan sabır çubuğu
-  if (!day) return; day.orders.forEach((o, i) => { const b = document.getElementById("opat" + i), c = o.cust; if (!b || !c.patienceMax) return;
+  if (!day) return;
+  if (day.orders.length && queueOf().filter(c => c.patienceMax).map(c => c.id).join(",") !== queueSig) return renderOrders();   // sıra değişti: kartı yenile
+  queueOf().forEach(c => { const b = document.getElementById("qpat" + c.id); if (!b || !c.patienceMax) return; const p = clamp(c.patience / c.patienceMax, 0, 1); b.style.width = (p * 100).toFixed(1) + "%"; b.style.background = p < .3 ? "#b5533c" : p < .6 ? "#e0a93a" : "#5f9a4b"; }); day.orders.forEach((o, i) => { const b = document.getElementById("opat" + i), c = o.cust; if (!b || !c.patienceMax) return;
     const p = clamp(c.patience / (c.patienceTop || c.patienceMax * 1.5), 0, 1); b.style.width = (p * 100).toFixed(1) + "%"; b.style.background = p < .3 ? "#b5533c" : p < .6 ? "#e0a93a" : "#5f9a4b"; });
 }
 
@@ -400,7 +411,7 @@ function renderReview(o, tabs) {
   const q = orderQuality(o), rv = reviewOf(q), d = D.drinks[o.drink], cc = cupCost(o.drink, o.size);
   const canRedo = (S.beans[S.bean]?.kg || 0) >= cc.kg * 2 && (!cc.milk || (S.milk || 0) >= cc.milk * 2 - 1e-9) && Object.values(S.cups).some(n => n > 0);
   const steps = `<div class="steps">${o.all.map(st => `<span class="done">${o.auto.has(st) ? "⚙ " : ""}${D.minigames[st].name} ${o.scores[st]}</span>`).join("")}</div>`;
-  $("#sheetBody").innerHTML = `${tabs}<h3>${o.cust.name} için ${cap1(sizedName(o.drink, o.size))}</h3>${steps}${o.mismatch ? `<div class="miss">⚠ Müşteri "${cap1(sizedName(o.cust.drink, o.cust.size))}" istemişti; teslim edersen almaz (itibar −3). Yeniden yap ile doğrusunu seç.</div>` : ""}<canvas id="closeup"></canvas>
+  $("#sheetBody").innerHTML = `${tabs}<h3>${o.cust.name} için ${cap1(sizedName(o.drink, o.size))}</h3>${steps}${o.mismatch ? `<div class="miss">⚠ Müşteri "${cap1(sizedName(o.cust.drink, o.cust.size))}" istemişti; teslim edersen almaz (itibar −3). Yeniden yap ile doğrusunu seç.</div>` : ""}${!o.mismatch && !o.tutorial && q < D.economy.refuseBelow ? `<div class="miss">⚠ Kalite çok düşük (%${q}); müşteri bu kahveyi almaz ve para ödemez (itibar −3). Yeniden yapmayı düşün.</div>` : ""}<canvas id="closeup"></canvas>
     <div class="zres ${rv.cls}" style="font-size:30px">%${q} · ${rv.label}</div><p class="muted" style="margin:2px 0 0">Tüm adımların ortalaması</p>
     <div class="row" style="justify-content:center"><button class="hold big pri" id="rvServe" style="max-width:300px">Teslim et</button>
     ${o.tutorial ? "" : `<button class="hold big" id="rvRedo" style="max-width:300px;box-shadow:none" ${canRedo ? "" : "disabled"}>Yeniden yap<br><span style="font-size:12px;font-weight:600">−${cc.kg} kg çekirdek${cc.milk ? `, −${cc.milk} L süt` : ""} · yeni bardak${canRedo ? "" : " · malzeme yetmiyor"}</span></button>`}</div>`;
@@ -426,12 +437,20 @@ function serve(o) {
     c.leaving = true; c.angry = true; c.ordered = false; S.rep = Math.max(0, S.rep - 3); S.streak = 0; day.stats.wrong = (day.stats.wrong || 0) + 1;
     SCENE.addFx(c, "−3", "#b5533c"); AUDIO.sfx("sad"); day.orders = day.orders.filter(x => x !== o); day.active = 0;
     renderHUD(); renderOrders(); save(); setTimeout(renderBench, 500); return; }
+  if (!o.assist && !o.tutorial && quality < D.economy.refuseBelow) {               // §7 kötü sipariş: müşteri almaz, para ödemez
+    S.beans[S.bean].kg = Math.max(0, S.beans[S.bean].kg - D.economy.beanPerCup * szz.bean);
+    if (D.drinks[o.drink].steps.includes("milk")) S.milk = Math.max(0, (S.milk || 0) - D.economy.milkPerCup * szz.milk);
+    c.say = pick(D.badLines); c.sayUntil = performance.now() + 3000;
+    c.leaving = true; c.angry = true; c.ordered = false; S.rep = Math.max(0, S.rep - 3); S.streak = 0; day.stats.bad = (day.stats.bad || 0) + 1;
+    SCENE.addFx(c, "−3", "#b5533c"); AUDIO.sfx("sad"); day.orders = day.orders.filter(x => x !== o); day.active = 0;
+    toast(`${c.name}: kalite ${quality} — kahveyi almadan gitti (−3 itibar)`);
+    renderHUD(); renderOrders(); save(); setTimeout(renderBench, 500); return; }
   let price = sizePrice(o.drink, o.size); if (ct.discount) price = Math.round(price * ct.discount);
   const sm = streakMult();                                                          // §7 mükemmel seri çarpanı
   // §7 küçük malzemeler: müşteri gizli oranla kullanır; yoksa tepki verir, bahşiş azalır
   const missing = []; Object.entries(D.extras).forEach(([k, e]) => { if (e.takeaway && !/^cup/.test(SZ(o.size).cup)) return; if (Math.random() >= e.use) return;
     if ((S.extras[k] || 0) > 0) S.extras[k]--; else missing.push(k); });
-  let tip = 0; if (service >= 80) tip = Math.round(price * 0.25 * ((service - 70) / 30) * ct.tip * rank().tipMult * sm * decorMult("tip"));
+  let tip = 0; if (quality >= 80) tip = Math.round(price * 0.25 * ((quality - 70) / 30) * speedMult * ct.tip * rank().tipMult * sm * decorMult("tip"));
   tip = Math.round(tip * D.extraTip[Math.min(2, missing.length)]);
   if (!o.assist) S.streak = service >= 95 ? (S.streak || 0) + 1 : 0;
   S.money += price + tip; day.stats.income += price; day.stats.tips += tip; day.stats.served++;
@@ -496,7 +515,8 @@ function showRent(dayNum, L, next) {
   if (dr === 0 && !paid && !canPay && S.money + maxLoan < rent) return bankrupt(null, rent - S.money);   // kira günü: para da kredi de yetmiyor → iflas
   $("#ledgerCard").innerHTML = `<h2>🏠 Kira</h2>
     <div class="rentbig ${dr === 0 && !paid ? "due" : ""}">${paid ? "Bu haftanın kirası ödendi ✓" : dr === 0 ? "Kira bugün!" : `Kiraya ${dr} gün kaldı`}</div>
-    <div class="box"><table><tr><td>Haftalık kira (${shop().name})</td><td class="num"><b>₺${rent}</b></td></tr><tr><td>Kasa</td><td class="num"><b>₺${S.money}</b></td></tr>
+    ${cashBox()}
+    <div class="box"><table><tr><td>Haftalık kira (${shop().name})</td><td class="num"><b>₺${rent}</b></td></tr>
       ${S.debt ? `<tr><td>Toplam borç</td><td class="num">₺${S.debt}</td></tr>` : ""}</table></div>
     ${!paid && dr === 0 && !canPay ? `<div class="req">Kasa kirayı karşılamıyor. Kredi çekip kirayı öde, yoksa devam edemezsin.</div>` : ""}
     <div class="row">${paid ? "" : `<button id="rentLoan" class="loanbtn">🏦 Kredi çek</button><button class="pri" id="rentPay" ${canPay ? "" : "disabled"}>Kirayı öde (₺${rent})</button>`}
@@ -517,7 +537,8 @@ function showLedger(dayNum, st, L, repDelta) {
       ${st.bounced ? `<tr><td>Kapıdan dönen (sıra doluydu)</td><td class="num">${st.bounced}</td></tr>` : ""}
       ${st.pricey ? `<tr><td>Pahalı bulup giden</td><td class="num">${st.pricey}</td></tr>` : ""}
       ${st.nocup ? `<tr><td>Bardak olmadığı için giden</td><td class="num">${st.nocup}</td></tr>` : ""}
-      ${st.wrong ? `<tr><td>Yanlış sipariş yüzünden giden</td><td class="num">${st.wrong}</td></tr>` : ""}
+      ${st.wrong ? `<tr><td>Yanlış sipariş (para ödemeden giden)</td><td class="num">${st.wrong}</td></tr>` : ""}
+      ${st.bad ? `<tr><td>Kötü sipariş (para ödemeden giden)</td><td class="num">${st.bad}</td></tr>` : ""}
       ${st.extraMiss ? `<tr><td>Küçük malzeme eksikliğinden az bahşiş bırakan</td><td class="num">${st.extraMiss}</td></tr>` : ""}
       <tr><td>Satış</td><td class="num">₺${st.income}</td></tr>
       <tr><td>Bahşiş</td><td class="num">₺${st.tips}</td></tr>
@@ -538,6 +559,9 @@ function showLedger(dayNum, st, L, repDelta) {
   const lbk = $("#ledgerBack"); if (lbk) lbk.onclick = () => backToRent();
   $("#ledgerOk").onclick = () => { if (short) { takeLoan(need, D.economy.rentLoanDays); showLedger(dayNum, st, L, repDelta); return; } $("#ovLedger").classList.remove("on"); if (L.news) showNews(weekNo(dayNum), L.news, openRestock, backToLedger); else openRestock(); };
 }
+// §7 ilk günden önce tedarik: bardak ve küçük malzemeleri oyuncu alır; Günü başlat ilk günü açar
+let firstSupply = false;
+function openFirstSupply() { firstSupply = true; mandatoryRestock = true; dayFlow = "supply"; renderHUD(); renderSupply(); openOverlay("#ovShop"); }
 function openRestock() { mandatoryRestock = true; dayFlow = "supply"; if (!endCtx || !endCtx.advanced) { S.day++; if (endCtx) endCtx.advanced = true; } save(); renderHUD(); renderSupply(); openOverlay("#ovShop"); }
 
 // ---------- Alt panel (tezgâh, §11) ----------
@@ -711,10 +735,9 @@ function renderSupply() {
   const lv = shop(), miss = supplyMissing(), flow = dayFlow === "supply";
   let html = `<h2>Tedarik${flow ? "" : '<span class="x" id="supX">✕</span>'}</h2>`;
   const kgNow = S.beans[S.bean]?.kg || 0;                                         // §7 kasa ve mevcut stok özeti
-  const bill = `<svg viewBox="0 0 48 28" width="54" height="32" aria-hidden="true"><rect x="1.5" y="1.5" width="45" height="25" rx="4" fill="#4f9a44" stroke="#2f6b2a" stroke-width="2"/><rect x="6" y="6" width="36" height="16" rx="2.5" fill="none" stroke="#bfe6b2" stroke-width="1.4"/><circle cx="24" cy="14" r="5.5" fill="#bfe6b2"/><text x="24" y="17.6" text-anchor="middle" font-size="9" font-weight="800" fill="#2f6b2a">₺</text><circle cx="10.5" cy="14" r="1.6" fill="#bfe6b2"/><circle cx="37.5" cy="14" r="1.6" fill="#bfe6b2"/></svg>`;
-  html += `<div class="cash">${bill}<span>₺${S.money}</span><small>Kasa</small></div>`;   // §7 para belirgin, yeşil kağıt para ikonu
+  html += cashBox();   // §7 para belirgin, yeşil kağıt para ikonu
   html += `<div class="box" style="text-align:left"><h4>Mevcut stok</h4><p style="margin:4px 0 0">☕ Çekirdek: <b>${kgNow.toFixed(2)} kg</b> (≈ ${Math.floor(kgNow / D.economy.beanPerCup + 1e-9)} tek shot)${needsMilk() || S.tools.milkKit ? ` · 🥛 Süt: <b>${(S.milk || 0).toFixed(1)} L</b>` : ""}<br>
-    🥤 Bardak: ${cupsNeeded().map(k => `${D.cups[k].name} <b>${S.cups[k] || 0}</b>`).join(" · ")}</p></div>`;
+    🥤 Bardak: ${cupsKnown().map(k => `${D.cups[k].name} <b>${S.cups[k] || 0}</b>`).join(" · ")}</p></div>`;
   html += miss.length ? miss.map(t => `<div class="miss">EKSİK: ${t}</div>`).join("") : `<div class="req ok" style="font-size:15px">Malzemeler tamam ✓</div>`;
   const beanLow = (S.beans[S.bean]?.kg || 0) < D.economy.minBeans, milkLow = needsMilk() && (S.milk || 0) < D.economy.minMilk;
   html += `<div class="box ${beanLow ? "need" : ""}"><h4>Çekirdek (₺/kg) · kullanımda: ${D.beans[S.bean].name} ${(S.beans[S.bean]?.kg || 0).toFixed(2)} kg</h4><table>` + Object.entries(D.beans).filter(([, b]) => b.unlock <= lv.stars).map(([id, b]) => { const st = S.beans[id];
@@ -723,12 +746,12 @@ function renderSupply() {
   if (needsMilk() || S.tools.milkKit) html += `<div class="box ${milkLow ? "need" : ""}">${th("sup:milk")}<h4>Süt (₺${SP(D.economy.milkPrice)}/L)</h4><p class="muted">Sütlü içecek başına ${D.economy.milkPerCup} L harcanır. ${S.equipment.fridge ? "Buzdolabı var: süt 3 gün dayanır." : "Buzdolabı yok: gün sonunda kalan süt bozulur."}</p>
     <p>Stok: <b>${(S.milk || 0).toFixed(1)} L</b> <button id="buyMilk" ${S.money < SP(D.economy.milkPrice) ? "disabled" : ""}>1 L al</button></p></div>`;
   html += `<div class="box">${"<h4>Bardaklar (10'lu paket)</h4>"}<p class="muted">Her içecek kendi bardağıyla servis edilir; bardak yoksa müşteri o boyu alamadan kızıp gider. Her bardak türünden en az ${D.cupMin} adet olmalı.</p><table>` +
-    cupsNeeded().map(k => { const cp = D.cups[k], n = S.cups[k] || 0;
+    cupsKnown().map(k => { const cp = D.cups[k], n = S.cups[k] || 0;
       return `<tr class="${n < D.cupMin ? "need" : ""}"><td>${th("cup:" + k)}<b>${cp.name}</b><br><span class="muted">stok ${n} adet</span></td><td>₺${SP(cp.price)}</td><td><button data-cup="${k}" ${S.money < SP(cp.price) ? "disabled" : ""}>${cp.pack}'lu paket al</button></td></tr>`; }).join("") + `</table></div>`;
   html += `<div class="box"><h4>Küçük malzemeler</h4><p class="muted">Müşteriler bunları her kahvede değil, ara sıra kullanır. Eksikse "… bile yok!" deyip az bahşiş bırakırlar.</p><table>` +
     Object.entries(D.extras).map(([k, e]) => { const n = S.extras[k] || 0, low = n < D.extrasLow;
       return `<tr><td>${th("ex:" + k)}<b>${e.name}</b><br><span class="muted" style="${n === 0 ? "color:var(--kotu);font-weight:700" : low ? "color:#b58a1e;font-weight:700" : ""}">stok ${n} adet${n === 0 ? " · bitti" : low ? " · az kaldı" : ""}</span></td><td>₺${SP(e.price)}</td><td><button data-ex="${k}" ${S.money < SP(e.price) ? "disabled" : ""}>${e.pack}'lü paket al</button></td></tr>`; }).join("") + `</table></div>`;
-  html += `<div class="row">${flow && endCtx ? '<button id="supBack">← Geri</button>' : ""}<button id="supLoan" class="loanbtn">🏦 Kredi al</button><button class="pri" id="supNext" ${flow && miss.length ? "disabled" : ""}>${flow ? "Devam →" : "Kapat"}</button></div>`;
+  html += `<div class="row">${flow && endCtx ? '<button id="supBack">← Geri</button>' : ""}<button id="supLoan" class="loanbtn">🏦 Kredi al</button><button class="pri" id="supNext" ${flow && miss.length ? "disabled" : ""}>${flow ? (firstSupply ? "Günü başlat ☕" : "Devam →") : "Kapat"}</button></div>`;
   $("#shopCard").innerHTML = html;
   const re = () => renderSupply();
   $("#shopCard").querySelectorAll("[data-buy]").forEach(b => b.onclick = () => { const id = b.dataset.buy; buy(SP(D.beans[id].price), () => { S.beans[id] = { kg: (S.beans[id]?.kg || 0) + 1, boughtDay: S.day }; }); re(); });
@@ -739,7 +762,8 @@ function renderSupply() {
   $("#supLoan").onclick = () => openLoans(re);
   const sx = $("#supX"); if (sx) sx.onclick = () => closeOverlay("#ovShop");
   const sbk = $("#supBack"); if (sbk) sbk.onclick = backFromSupply;
-  $("#supNext").onclick = () => { if (!flow) return closeOverlay("#ovShop"); if (supplyMissing().length) return; dayFlow = "hub"; $("#ovShop").classList.remove("on"); hubTab = "upg"; renderHub(); openOverlay("#ovHub"); };
+  $("#supNext").onclick = () => { if (!flow) return closeOverlay("#ovShop"); if (supplyMissing().length) return;
+    if (firstSupply) { firstSupply = false; dayFlow = null; mandatoryRestock = false; $("#ovShop").classList.remove("on"); return startDay(); } dayFlow = "hub"; $("#ovShop").classList.remove("on"); hubTab = "upg"; renderHub(); openOverlay("#ovHub"); };
 }
 
 // --- Krediler (Dükkan sekmesi + Tedarik'ten açılır pencere) ---
@@ -841,8 +865,9 @@ function renderPrices() {                                                       
   const flow = dayFlow === "price", list = S.unlocked.filter(hasTools), maxP = id => Math.max(2, Math.round(defaultPrice(id) * D.pricing.max));
   let html = `<h2>Fiyatlar${flow ? "" : '<span class="x" id="prX">✕</span>'}</h2><p class="muted">Fiyatı lira olarak artır ya da azalt. Müşterilerin tepkilerini dükkanda izle: "çok pahalı" deyip gidiyorlarsa düşür, "ucuz" diyorlarsa artırabilirsin. Değişiklik sıradaki müşteriden itibaren geçerlidir.</p><table class="ptable">
     <tr><th>Tarif</th><th>Maliyet</th><th>Senin fiyatın</th></tr>`;
-  html += list.map(id => { const p = priceOf(id);
-    return `<tr><td><b>${D.drinks[id].name}</b></td><td class="num">₺${unitCost(id).toFixed(1)}</td>
+  html += list.map(id => { const p = priceOf(id), zs = D.drinks[id].sizes || ["single"], base = zs[0];
+    const others = zs.slice(1).map(z => `${SZ(z).label} ₺${sizePrice(id, z)}`).join(" · ");   // §8 diğer boylar tek/küçükten hesaplanır
+    return `<tr><td><b>${D.drinks[id].name}</b> <span class="muted">(${SZ(base).label})</span>${others ? `<br><span class="muted">${others} · otomatik</span>` : ""}</td><td class="num">₺${sizeCost(id, base).toFixed(1)}</td>
       <td><div class="pbtns"><button data-pd="${id}" ${p <= 1 ? "disabled" : ""}>−₺1</button><input type="number" class="pin" data-pi="${id}" min="1" max="${maxP(id)}" value="${p}"><button data-pu="${id}" ${p >= maxP(id) ? "disabled" : ""}>+₺1</button></div></td></tr>`; }).join("");
   html += `</table>${S.unlocked.filter(id => !hasTools(id)).length ? `<p class="muted">Aleti eksik olduğu için menüde olmayan: ${S.unlocked.filter(id => !hasTools(id)).map(id => D.drinks[id].name).join(", ")} (Dükkan › Aletler & Makineler).</p>` : ""}
     <div class="row">${flow ? '<button id="prBack">← Geri</button>' : ""}<button class="pri" id="prNext">${flow ? "Günü başlat ☕" : "Kapat"}</button></div>`;
@@ -949,6 +974,8 @@ function renderSettings() {
 }
 
 // ---------- Hile modu (geliştirici testi): menüde "cheat" yaz / sürüm yazısına 5 kez dokun ----------
+const BILL = `<svg viewBox="0 0 48 28" width="54" height="32" aria-hidden="true"><rect x="1.5" y="1.5" width="45" height="25" rx="4" fill="#4f9a44" stroke="#2f6b2a" stroke-width="2"/><rect x="6" y="6" width="36" height="16" rx="2.5" fill="none" stroke="#bfe6b2" stroke-width="1.4"/><circle cx="24" cy="14" r="5.5" fill="#bfe6b2"/><text x="24" y="17.6" text-anchor="middle" font-size="9" font-weight="800" fill="#2f6b2a">₺</text><circle cx="10.5" cy="14" r="1.6" fill="#bfe6b2"/><circle cx="37.5" cy="14" r="1.6" fill="#bfe6b2"/></svg>`;   // §7 yeşil kağıt para ikonu
+const cashBox = () => `<div class="cash">${BILL}<span>₺${S.money}</span><small>Kasa</small></div>`;
 const LSG = k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, LSS = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 const cheatUnlocked = () => LSG("cb_cheatUnlocked") === "1", cheatOn = () => cheatUnlocked() && LSG("cb_cheat") === "1";
 function setCheat(on) { LSS("cb_cheat", on ? "1" : "0"); renderCheats(); toast(on ? "🧪 Hile modu açık" : "Hile modu kapalı"); }
@@ -1065,9 +1092,9 @@ function renderGameMenu() {
 function goMenu() {
   AUDIO.stopLoops(); cancelAnimationFrame(raf); day = null; save();
   ["#ovGameMenu", "#ovBook", "#ovSettings", "#ovLedger"].forEach(x => $(x).classList.remove("on"));
-  mandatoryRestock = false; dayFlow = null; ["#ovShop", "#ovHub", "#ovPrice", "#ovLoan", "#ovGoal"].forEach(x => $(x).classList.remove("on")); $("#sheet").classList.remove("on");
+  mandatoryRestock = false; dayFlow = null; firstSupply = false; ["#ovShop", "#ovHub", "#ovPrice", "#ovLoan", "#ovGoal"].forEach(x => $(x).classList.remove("on")); $("#sheet").classList.remove("on");
   ["#hud", "#hint", "#icons", "#task", "#openDay", "#orders"].forEach(x => $(x).style.display = "none");
-  S = null; renderCheats(); $("#menu").style.display = "flex"; refreshMenu(); idleLoop(); AUDIO.startMusic("menu");
+  S = null; renderCheats(); $("#exitBtn").style.display = "none"; $("#menu").style.display = "flex"; refreshMenu(); idleLoop(); AUDIO.startMusic("menu");
 }
 
 // ---------- Başlat ----------
@@ -1075,16 +1102,16 @@ function begin(state, slot) {
   if (slot) curSlot = slot; S = state; if (S.milk == null) S.milk = 0; mandatoryRestock = false;
   ["debt", "streak"].forEach(k => { if (S[k] == null) S[k] = 0; }); ["staff", "decor", "traffic", "market"].forEach(k => { if (!S[k]) S[k] = {}; });
   if (!S.tools) { S.tools = {}; S.unlocked.forEach(id => (D.drinks[id].needs || []).forEach(t => { if (D.tools[t].stars <= shop().stars) S.tools[t] = true; })); }   // eski kayıt: açık tariflerin aletleri hediye
-  if (!S.extras) S.extras = Object.fromEntries(Object.keys(D.extras).map(k => [k, D.extrasStart]));   // §7 eski kayıt: küçük malzemeler
-  if (!S.cups) S.cups = Object.assign({ cupS: 20, cupM: 10, cupL: 10 }, D.startCups);   // §7 eski kayıt: başlangıç bardakları
+  if (!S.extras) S.extras = Object.fromEntries(Object.keys(D.extras).map(k => [k, 20]));   // §7 eski kayıt: küçük malzemeler
+  if (!S.cups) S.cups = { espS: 20, espD: 10, cupS: 20, cupM: 10, cupL: 10 };   // §7 eski kayıt: başlangıç bardakları
   if (!S.loans) { S.loans = []; if (S.debt > 0) { S.loanSeq = 1; S.loans.push({ id: 1, amount: Math.round(S.debt / (1 + D.economy.loanInterest)), owe: S.debt, rem: S.debt, day: S.day, due: (S.debtDue || S.day + D.economy.rentLoanDays) }); } } syncDebt(); if (!S.milkDay) S.milkDay = S.day;
   AUDIO.startMusic("game");
   $("#menu").style.display = "none"; $("#hud").style.display = "flex"; $("#hint").style.display = "block"; $("#icons").style.display = "flex";
-  day = null; renderHUD(); renderBench(); renderCheats();
+  day = null; renderHUD(); renderBench(); renderCheats(); $("#exitBtn").style.display = "";
   lastT = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
   const firstDay = S.day === 1 && !S.taught.includes("first");                   // §11 ilk gün Günü başlat yok: Devral'la kendiliğinden başlar
-  if (!S.taught.includes("intro")) { S.taught.push("intro"); modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.intro}</p>`, [{ label: "Devral", pri: true, fn: () => { if (firstDay && !day) startDay(); } }]); }
-  else if (firstDay) setTimeout(() => { if (S && !day) startDay(); }, 400);
+  if (!S.taught.includes("intro")) { S.taught.push("intro"); modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.intro}</p>`, [{ label: "Devral", pri: true, fn: () => { if (firstDay && !day) { if (restockOk()) startDay(); else openFirstSupply(); } } }]); }
+  else if (firstDay) setTimeout(() => { if (S && !day) { if (restockOk()) startDay(); else openFirstSupply(); } }, 400);
   save();
 }
 // ---------- §12 Grafik: ekran kartı algılama + kalite ----------
@@ -1121,6 +1148,17 @@ $("#fileImport").onchange = e => { const f = e.target.files[0]; if (!f) return; 
 $("#btnFull").onclick = () => toggleFull();
 $("#btnInstall").onclick = doInstall;
 if (isStandalone()) $("#btnFull").style.display = "none";
+// §12 Çıkış: oyun içinde sağ üst ⏻ (Kaydet / Ana menüye dön / Çıkış), menüde Çıkış
+function quitGame() {
+  if (S) save(); AUDIO.stopLoops(); try { AUDIO.stopMusic && AUDIO.stopMusic(); } catch (e) {}
+  try { window.close(); } catch (e) {}
+  setTimeout(() => { if (!window.closed) { $("#quitScreen").style.display = "flex"; } }, 250);
+}
+$("#quitBack").onclick = () => { $("#quitScreen").style.display = "none"; if (S) goMenu(); else { refreshMenu(); AUDIO.startMusic("menu"); } };
+$("#btnQuit").onclick = () => { AUDIO.sfx("click"); quitGame(); };
+$("#exitBtn").onclick = () => { AUDIO.sfx("open"); modal(`<h3>Çıkış</h3><p class="muted">Oyun her durumda oynanan yuvaya kaydedilir.</p>`, [
+  { label: "Vazgeç" }, { label: "💾 Kaydet", fn: () => { save(); toast("Yuva " + curSlot + "'e kaydedildi"); AUDIO.sfx("register"); } },
+  { label: "🏠 Ana menüye dön", fn: () => goMenu() }, { label: "⏻ Çıkış", pri: true, fn: quitGame }]); };
 $("#btnSettings").onclick = () => { AUDIO.startMusic("menu"); AUDIO.sfx("open"); renderSettings(); openOverlay("#ovSettings"); };
 // §11 ana menü müziği: tarayıcının izin verdiği ilk dokunuşta başlar
 document.addEventListener("pointerdown", () => { if (!S) AUDIO.startMusic("menu"); }, { once: true });

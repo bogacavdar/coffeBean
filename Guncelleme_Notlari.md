@@ -1,5 +1,31 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.18 – 1 Kasım 2026
+
+### Çıkış
+- Oyunda sağ üst köşede her zaman bir **⏻** düğmesi var; gün sonu ekranlarında da görünüyor. Seçenekler:
+  - Kaydet
+  - Ana menüye dön
+  - Çıkış
+- Ana menüde **⏻ Çıkış** düğmesi var.
+- Tarayıcı sekmeyi kapatmaya izin vermezse "Oyun kaydedildi, bu sekmeyi kapatabilirsin" ekranı çıkıyor.
+
+### Siparişler ve kalite
+- **Kötü sipariş:** ortalama kalite 50'nin altındaysa müşteri kahveyi almıyor, para ödemiyor ve itibar 3 düşüyor. Değerlendirme ekranı teslimden önce uyarıyor.
+- **Yanlış sipariş:** yanlış tarif ya da boyda da müşteri para ödemeden gidiyor.
+- **Bahşiş:** kaliteye bağlı; ortalama 80 ve üstünde bahşiş veriliyor.
+- **Gün sonu hesabı:** "Yanlış sipariş" ve "Kötü sipariş (para ödemeden giden)" ayrı satırlarda.
+- **Sağ üstteki kart:** sipariş hazırlarken **Sırada bekleyenler** bölümü var; müşterilerin yalnızca adı ve sabrı görünüyor.
+
+### Fiyat ve bardaklar
+- **Fiyat:** yalnızca tek ya da küçük boy için ayarlanıyor. Double fiyatı tekin %80 fazlası; orta ×1,25, büyük ×1,6. Diğer boyların fiyatı ekranda bilgi olarak yazıyor.
+- **Shot bardakları:** espresso bardaklarının adı "Tek shot bardağı" ve "Double shot bardağı" oldu.
+- **Hediye stok kalktı:** yeni oyunda yalnızca ilk güne yetecek shot bardakları var (10 tek, 5 double). Küçük malzemeler ve diğer bardaklar baştan satın alınıyor.
+- **Yeni tarifin bardakları:** yeni tarif açılınca bardak türleri Tedarik listesine ekleniyor, hediye verilmiyor.
+
+### Kira ekranı
+- Kasadaki para yeşil kağıt para ikonuyla gösteriliyor.
+
 ## v0.17 – 1 Kasım 2026
 
 ### Hile modu (test için)
