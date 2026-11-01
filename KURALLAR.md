@@ -47,6 +47,11 @@ GitHub reposuna gönderim paketin zorunlu parçasıdır (Kural 4); gönderilmeye
 - İstisna: kullanıcı "şu süreci test et" derse ya da "şurada bir hata var" diye bir hata bildirirse, hatayı bulmak/doğrulamak için gerektiği kadar test yapılır.
 - Teslim mesajlarında "test ettim" denmez; neyin değiştiği ve kullanıcının neyi denemesi gerektiği yazılır.
 
+## Kural 9 – Eşit zorluk: gösterge bölgeleri ibre hızıyla orantılıdır (değişmez)
+- Her mini oyun adımında renkli bölgelerin (koyu yeşil, açık yeşil, sarı) genişliği, o adımdaki ibrenin/barın hızıyla orantılıdır: **bölge genişliği = ibre hızı × zaman penceresi** (tasarım dokümanı §4).
+- Bir barın hızı artırılırsa bölgeler aynı oranda büyür, yavaşlatılırsa aynı oranda küçülür (tarif profili, alet, yükseltme ya da başka bir sebeple fark etmez).
+- Hiçbir adımda bölgeler hızdan bağımsız, sabit bir genişliğe (ör. saniye cinsinden) ayarlanamaz. Yalnız bilinçli zorluk çarpanları (rütbe, hassasiyet yükseltmesi ×1,5, zorluk seviyesi, tarif profili ör. ristretto ×0,75) bunun üstüne uygulanır.
+
 ## Kural 8 – Uzun işlerde ilerleme bildirimi
 - Uzun, çok adımlı işlerde (geliştirme paketi, test turu, rapor) ilerleme yaklaşık %20, %40, %60 ve %80'e ulaştığında kullanıcıya kısa bir durum mesajı gönderilir: yüzde, ne bitti, sırada ne var (1–2 cümle). Alt ajanlar (ör. grafik ajanı) da aynı şekilde ilerleme bildirir ve bu kullanıcıya aktarılır.
 

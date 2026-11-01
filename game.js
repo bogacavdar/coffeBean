@@ -699,7 +699,7 @@ const MG = {
              draw: (o, v) => CLOSEUP.tamp(v / 100, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }) },
   extract: { mode: "sweep", speed: EXTRACT_SPEED * 100 / 45, btn0: "BAŞLAT", btn: "DURDUR", left: "0 sn", right: "45 sn", target: o => EXT_T(o) / 45 * 100, tipLow: "extract_low", tipHigh: "extract_high",
              onStart: () => AUDIO.loop("extract", true), onStop: () => { AUDIO.loop("extract", false); AUDIO.sfx("extractStop"); },
-             draw: (o, v) => { const t = v * .45, tT = EXT_T(o), tg = Math.round(SZ(o.size).dose * (D.drinks[o.drink].ratio || 2)); CLOSEUP.extract(t, Math.max(0, (t - 6) * tg / (tT - 6)), tg, o.phase === "run", tT, 2.5, { tWin: [tT - 2.5, tT + 2.5] }); } },   // v0.24: ön ıslatma 6 sn, sonra verim (g) hedefe
+             draw: (o, v) => { const t = v * .45, tT = EXT_T(o), tg = Math.round(SZ(o.size).dose * (D.drinks[o.drink].ratio || 2)); CLOSEUP.extract(t, Math.max(0, (t - 6) * tg / (tT - 6)), tg, o.phase === "run", tT, 2.5, { tWin: o.z ? [+(tT - o.z.k * .45).toFixed(1), +(tT + o.z.k * .45).toFixed(1)] : [tT - 2.5, tT + 2.5] }); } },   // ön ıslatma 6 sn, sonra verim (g); gösterilen pencere renkli bölgelerin gerçek genişliği
   milk:    { mode: "hold", speed: () => (S.equipment.steamWand ? 24 : 16) * 100 / 65, btn: "BASILI TUT · ısıt", left: "20 °C", right: "85 °C", target: () => (62.5 - 20) / 65 * 100, tipLow: "milk_low", tipHigh: "milk_high",
              onStart: () => { AUDIO.loop("milk", true); AUDIO.milkAir(true); }, onTick: o => AUDIO.milkAir(20 + o.v * .65 < 45),
              draw: (o, v) => { const temp = 20 + v * .65, tt = { dollop: 1.2, foam: 1.8, micro: .8, hot: .2 }[D.drinks[o.drink].milk] || 1; CLOSEUP.milk(temp, tt * clamp(v / (o.tgt || 65), 0, 1.3), tt, o.phase === "run" && temp < 45 && DR(o).milk !== "hot", o.phase === "run", { liquid: DR(o).milkLiquid || "milk" }); } },
@@ -790,10 +790,9 @@ function uiZone(o, el) {
   $("#closeup").onpointerdown = $("#closeup").onpointermove = null;
   o.z = zoneSet(s); o.tgt = c.target(o); o.mode = null; o.artCut = false; o.dir = 1; o.frozen = false; o.spd = 1; o.blond = null;
   const pf = (s === "extract" && D.drinks[o.drink].profile) || {};                 // §4 tarif profili (ristretto biraz daha dar pencere)
-  if (s === "extract") {                                                          // v0.24 verim terazisi: 25–30 sn penceresi affedici (mükemmel ±1,5 sn, güzel ±3, iyi ±5)
-    const w = DF().zone * Math.min(1, tol()) * (hasWiden("extract") ? D.zones.widen : 1) * (pf.extractZone || 1) * 100 / 45;
-    o.z = { p: 1.5 * w, g: 3 * w, k: 5 * w }; }
-  if (s === "tkfoam" && (D.drinks[o.drink].cezve || {}).vessel === "sand") o.spd = 0.65;   // v0.24 kumda pişirme: köpük yavaş kabarır
+  if (pf.extractZone) o.z = { p: o.z.p * pf.extractZone, g: o.z.g * pf.extractZone, k: o.z.k * pf.extractZone };   // ristretto: aynı hızda biraz daha dar pencere
+  if (s === "tkfoam" && (D.drinks[o.drink].cezve || {}).vessel === "sand") o.spd = 0.65;   // kumda pişirme: köpük yavaş kabarır
+  if (o.spd !== 1) o.z = { p: o.z.p * o.spd, g: o.z.g * o.spd, k: o.z.k * o.spd };       // §4 eşit zorluk: ibre hızı değişirse bölgeler de aynı oranda değişir
   if (pf.blond) o.blond = { t: Math.round(o.tgt * .62), done: false, score: null };
   o.v = c.mode === "osc" ? Math.random() * 100 : 0; o.phase = c.mode === "osc" ? "run" : "ready";
   const legend = `<div class="zends" style="justify-content:center"><span class="zleg"><i class="perf"></i>Mükemmel <i class="good"></i>Güzel <i class="ok"></i>İyi</span></div>`;

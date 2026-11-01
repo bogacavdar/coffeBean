@@ -1,5 +1,12 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.25 – 1 Kasım 2026 (kritik)
+
+### Eşit zorluk kuralı geri geldi
+- Espresso çekme adımında renkli bölgeler yine ibrenin hızına göre: ibre yavaş ilerlediği için bölgeler dar (v0.24'te kurala aykırı olarak büyütülmüştü).
+- Kumda Türk kahvesinde köpük yavaş kabardığı için bölgeler de aynı oranda daralıyor.
+- Ekstraksiyon ekranındaki süre penceresi bölgelerin gerçek genişliğini gösteriyor.
+
 ## v0.24 – 1 Kasım 2026
 
 Barista incelemesi ve hile modu tarif testindeki bulgularla gerçekçilik paketi.
