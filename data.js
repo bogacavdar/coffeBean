@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.25",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.26",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -399,7 +399,7 @@ window.DATA = {
     sweetener: { name: "Tatlandırıcı",      pack: 50,  price: 12, use: 0.05, miss: "Tatlandırıcı bile yok!" },
     straw:     { name: "Pipet",             pack: 50,  price: 5,  use: 0.05, miss: "Pipet bile yok!" }
   },
-  extrasStart: { sleeve: 20, napkin: 60, sugar: 60, stirrer: 30, sweetener: 20, straw: 10 },   // v0.24: Yıldız Teyze'den kalan stok extrasLow: 10, extraTip: [1, 0.3, 0],
+  extrasStart: { sleeve: 20, napkin: 60, sugar: 60, stirrer: 30, sweetener: 20, straw: 10 }, extrasLow: 10, extraTip: [1, 0.3, 0],   // v0.24: Yıldız Teyze'den kalan stok
   // §12 zorluk: Normal = belgedeki değerler
   difficulty: {
     easy:   { label: "Kolay",  desc: "Müşteriler daha sabırlı, renkli bölgeler %10 geniş, tedarik %20 ucuz (daha çok kâr), ₺3.600 ile başla.", patience: 1.3,  zone: 1.10, cost: 0.80, startMoney: 400 },

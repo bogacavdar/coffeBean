@@ -7,8 +7,12 @@ Son güncelleme: 2026-11-01
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.25)
+## Bekleyen paket (son yayın: v0.26)
 (boş)
+
+## v0.26 – YAYINLANDI (1 Kasım 2026, kullanıcı "kritik çöz" dedi)
+- **Teslim et çalışmıyordu:** v0.24'te `data.js`'teki `extrasStart` satırının sonuna eklenen `//` açıklaması aynı satırdaki `extrasLow` ve `extraTip`'i yorum içine almıştı → `serve()` içinde `D.extraTip[...]` TypeError. Satır düzeltildi. v0.22 data.js ile anahtar karşılaştırması yapıldı, başka kayıp anahtar yok. Hata kullanıcı bildirdiği için öğretici teslimi otomatik olarak doğrulandı (Kural 7 istisnası).
+- Ders: bir satırın ORTASINA açıklama eklenmez; açıklama satırın en sonuna ya da ayrı satıra yazılır.
 
 ## v0.25 – YAYINLANDI (1 Kasım 2026, kullanıcı "kritik paket çık" dedi; KURALLAR Kural 9 eklendi)
 - **§4 eşit zorluk kuralı geri getirildi (kullanıcı bildirdi):** v0.24'te ekstraksiyon bölgeleri saniyeye göre sabit büyütülmüştü (±1,5/±3/±5 sn); ibre yavaş olduğu için bölgeler kurala aykırı biçimde büyüktü. `uiZone`'daki özel ekstraksiyon bloğu kalktı; bölgeler yine `zoneSet` (ibre hızı × zaman penceresi). Ristretto `extractZone` ×0,75 korunuyor. Kumda Türk kahvesinde ibre yavaşlatılınca (`o.spd` 0,65) bölgeler de aynı oranda daralıyor (genel kural: `o.spd ≠ 1` → bölgeler ×`o.spd`). Ekstraksiyon ekranındaki pencere metni artık bölgelerin gerçek genişliğini gösteriyor. Doküman §0'a "Eşit zorluk" satırı eklendi.

@@ -1,5 +1,8 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.26 – 1 Kasım 2026 (kritik)
+- **"Teslim et" düğmesi çalışmıyordu (düzeltildi):** v0.24'te bahşiş çarpanlarının bulunduğu ayar satırı yanlışlıkla devre dışı kalmıştı; teslimde hata oluşuyor, Yıldız Teyze'nin öğreticisi dahil hiçbir sipariş teslim edilemiyordu.
+
 ## v0.25 – 1 Kasım 2026 (kritik)
 
 ### Eşit zorluk kuralı geri geldi
