@@ -156,7 +156,7 @@ function renderHUD() {
   const milkTxt = needsMilk() ? ` · Süt ${(S.milk || 0).toFixed(1)}L` : "";
   $("#hStock").textContent = "Brezilya " + beanKg("brazil").toFixed(2) + "kg" + milkTxt;
   $("#shopBadge").style.display = !restockOk() ? "inline-block" : "none";
-  $("#openDay").style.display = (!day && !dayFlow && !mandatoryRestock && !endCtx && !(S.day === 1 && !S.taught.includes("first"))) ? "" : "none";   // §11 ilk gün düğme yok
+  $("#openDay").style.display = "none";   // v0.30: sol üstteki "Günü başlat" kaldırıldı; gün yalnız Fiyatlar ekranındaki "Günü başlat ☕" ile başlar   // §11 ilk gün düğme yok
 }
 
 // ---------- Açılım (§3, §9) ----------
@@ -1302,6 +1302,7 @@ function begin(state, slot) {
   else if (firstDay) setTimeout(() => { if (S && !day) { if (restockOk()) startDay(); else openFirstSupply(); } }, 400);
   endCtx = S.endPending || null;                                                   // §2 gün sonu ekranlarında çıkılmışsa oradan devam
   if (endCtx) { mandatoryRestock = true; if (endCtx.advanced) openRestock(); else backToRent(); }
+  else if (!firstDay && S.taught.includes("first")) setTimeout(() => { if (S && !day) openBetweenDays(); }, 300);   // v0.30: devam eden oyun gün arası ekranlarından (Dükkan › Fiyatlar › Günü başlat) açılır
   save();
 }
 // ---------- §12 Grafik: ekran kartı algılama + kalite ----------
@@ -1332,6 +1333,11 @@ $("#sheet").addEventListener("pointerdown", e => { if (e.target !== $("#sheet") 
 $("#openDay").onclick = () => { if (day) return; if (mandatoryRestock || endCtx) return resumeEndFlow(); startDay(); };
 // v0.28 donma düzeltmesi: gün sonu ekranlarından biri (ör. Kahve Gazetesi) dışına dokunarak ya da Esc › Vazgeç ile kapanırsa
 // oyun "gün sonu akışında" kalıp hiçbir ekran göstermiyordu ve Günü başlat çalışmıyordu. Akış kaldığı ekrandan geri açılır.
+function openBetweenDays() {                                                      // v0.30: "Günü başlat" düğmesi yok; gün arası akışı Dükkan'dan (stok eksikse Tedarik'ten) başlar
+  if (!S || day) return; mandatoryRestock = true;
+  if (!restockOk()) { dayFlow = "supply"; renderHUD(); renderSupply(); return openOverlay("#ovShop"); }
+  dayFlow = "hub"; renderHUD(); renderHub(); openOverlay("#ovHub");
+}
 function resumeEndFlow() {
   if (!S || day || !(mandatoryRestock || endCtx)) return;
   if (dayFlow === "hub") { renderHub(); return openOverlay("#ovHub"); }
@@ -1340,7 +1346,7 @@ function resumeEndFlow() {
   if (endCtx) { if (endCtx.L && endCtx.L.news) return showNews(weekNo(endCtx.dayNum), endCtx.L.news, openRestock, backToLedger); return backToLedger(); }
   dayFlow = "supply"; renderHUD(); renderSupply(); openOverlay("#ovShop");
 }
-setInterval(() => { try { if (S && !day && (mandatoryRestock || endCtx) && $("#menu").style.display === "none" && !document.querySelector(".overlay.on")) resumeEndFlow(); } catch (e) { console.error(e); } }, 700);   // emniyet: gün sonunda ekran kalmadıysa geri aç
+setInterval(() => { try { if (S && !day && $("#menu").style.display === "none" && !document.querySelector(".overlay.on")) { if (mandatoryRestock || endCtx) resumeEndFlow(); else if (S.taught.includes("first")) openBetweenDays(); } } catch (e) { console.error(e); } }, 700);   // emniyet: gün sonunda ekran kalmadıysa geri aç
 $("#icBook").onclick = () => { AUDIO.sfx("open"); renderBook(); openOverlay("#ovBook"); };
 $("#icShop").onclick = () => { AUDIO.sfx("open"); renderSupply(); openOverlay("#ovShop"); };
 $("#icPrice").onclick = () => { AUDIO.sfx("open"); renderPrices(); openOverlay("#ovPrice"); };
