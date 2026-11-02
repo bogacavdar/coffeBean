@@ -254,19 +254,19 @@ window.DATA = {
   beans: {
     brazil:    { name: "Brezilya",              unlock: 1, cups: 0,   price: 100, mult: 1.00, grindT: 42, notes: "Fındık, çikolata, düşük asidite. Dükkanın ev çekirdeği.", qualityMod: 0, tolMod: 1,
       page: "Dünyanın en büyük üreticisi. Düşük rakım, doğal işleme. Bağışlayıcı bir espresso çekirdeği." },
-    colombia:  { name: "Kolombiya",             unlock: 2, cups: 0,   price: 140, mult: 1.10, grindT: 55, notes: "Dengeli, karamel, hafif meyve.", qualityMod: 0, tolMod: 1,
+    colombia:  { name: "Kolombiya",             unlock: 1, cups: 20,   price: 140, mult: 1.10, grindT: 55, notes: "Dengeli, karamel, hafif meyve.", qualityMod: 0, tolMod: 1,
       page: "Yıkanmış işleme, 1.200–2.000 m rakım. Temiz ve dengeli; meraklı müşteriler bunu arar." },
-    ethiopia:  { name: "Etiyopya Yirgacheffe",  unlock: 2, cups: 60,  price: 170, mult: 1.20, grindT: 58, notes: "Çiçeksi, bergamot, limon. Kahvenin anavatanı.", page: "Kahvenin doğduğu topraklar; yüksek rakım, yıkanmış işleme, çay gibi hafif gövde." },
-    kenya:     { name: "Kenya AA",              unlock: 2, cups: 80,  price: 180, mult: 1.25, grindT: 57, notes: "Frenk üzümü, greyfurt, canlı asidite.", page: "AA en iri çekirdek sınıfı; SL28/SL34 çeşitleri, parlak ve sulu." },
-    guatemala: { name: "Guatemala Antigua",     unlock: 2, cups: 100, price: 160, mult: 1.15, grindT: 50, notes: "Kakao, baharat, tam gövde.", page: "Volkanik toprak, gölgede yetişen kahve; dumanlı, baharatlı." },
-    costarica: { name: "Kosta Rika Tarrazú",    unlock: 2, cups: 120, price: 175, mult: 1.20, grindT: 54, notes: "Bal, şeftali, temiz bitiş.", page: "Bal işleme ile tanınır; tatlı ve parlak." },
-    honduras:  { name: "Honduras",              unlock: 2, cups: 140, price: 150, mult: 1.10, grindT: 48, notes: "Karamel, elma, yumuşak.", page: "Orta Amerika'nın en büyük üreticisi; dengeli ve tatlı." },
-    sumatra:   { name: "Sumatra Mandheling",    unlock: 3, cups: 170, price: 185, mult: 1.25, grindT: 44, notes: "Toprak, sedir, yoğun gövde.", page: "Islak kabuk soyma (giling basah) işleme; ağır ve otsu." },
-    peru:      { name: "Peru",                  unlock: 3, cups: 200, price: 165, mult: 1.15, grindT: 50, notes: "Fındık, sütlü çikolata.", page: "And Dağları'nda organik küçük çiftlikler." },
-    yemen:     { name: "Yemen Mocha",           unlock: 3, cups: 240, price: 260, mult: 1.45, grindT: 46, notes: "Kuru meyve, şarap, baharat.", page: "Mocha limanından adını alan tarihi kahve; doğal işleme, nadir." },
-    jamaica:   { name: "Jamaika Blue Mountain", unlock: 3, cups: 280, price: 380, mult: 1.70, grindT: 52, notes: "Çok yumuşak, dengeli, acısız.", page: "Dünyanın en pahalı kahvelerinden; Blue Mountain sıradağları." },
-    decaf:     { name: "Kafeinsiz Kolombiya",   unlock: 2, cups: 50,  price: 170, mult: 1.15, grindT: 53, notes: "Karamel, fındık; kafeinsiz.", page: "Swiss Water yöntemiyle, kimyasal kullanmadan kafeini alınmış; akşam ve hamile müşterilerin tercihi." },
-    geisha:    { name: "Panama Geisha",         unlock: 3, cups: 330, price: 450, mult: 1.90, grindT: 60, notes: "Yasemin, şeftali, bal.", page: "Rekor fiyatlarla satılan efsanevi çeşit; çiçeksi ve zarif." }
+    ethiopia:  { name: "Etiyopya Yirgacheffe",  unlock: 3, cups: 175,  price: 170, mult: 1.20, grindT: 58, notes: "Çiçeksi, bergamot, limon. Kahvenin anavatanı.", page: "Kahvenin doğduğu topraklar; yüksek rakım, yıkanmış işleme, çay gibi hafif gövde." },
+    kenya:     { name: "Kenya AA",              unlock: 3, cups: 210,  price: 180, mult: 1.25, grindT: 57, notes: "Frenk üzümü, greyfurt, canlı asidite.", page: "AA en iri çekirdek sınıfı; SL28/SL34 çeşitleri, parlak ve sulu." },
+    guatemala: { name: "Guatemala Antigua",     unlock: 2, cups: 85, price: 160, mult: 1.15, grindT: 50, notes: "Kakao, baharat, tam gövde.", page: "Volkanik toprak, gölgede yetişen kahve; dumanlı, baharatlı." },
+    costarica: { name: "Kosta Rika Tarrazú",    unlock: 3, cups: 140, price: 175, mult: 1.20, grindT: 54, notes: "Bal, şeftali, temiz bitiş.", page: "Bal işleme ile tanınır; tatlı ve parlak." },
+    honduras:  { name: "Honduras",              unlock: 1, cups: 40, price: 150, mult: 1.10, grindT: 48, notes: "Karamel, elma, yumuşak.", page: "Orta Amerika'nın en büyük üreticisi; dengeli ve tatlı." },
+    sumatra:   { name: "Sumatra Mandheling",    unlock: 4, cups: 260, price: 185, mult: 1.25, grindT: 44, notes: "Toprak, sedir, yoğun gövde.", page: "Islak kabuk soyma (giling basah) işleme; ağır ve otsu." },
+    peru:      { name: "Peru",                  unlock: 2, cups: 70, price: 165, mult: 1.15, grindT: 50, notes: "Fındık, sütlü çikolata.", page: "And Dağları'nda organik küçük çiftlikler." },
+    yemen:     { name: "Yemen Mocha",           unlock: 4, cups: 320, price: 260, mult: 1.45, grindT: 46, notes: "Kuru meyve, şarap, baharat.", page: "Mocha limanından adını alan tarihi kahve; doğal işleme, nadir." },
+    jamaica:   { name: "Jamaika Blue Mountain", unlock: 5, cups: 390, price: 380, mult: 1.70, grindT: 52, notes: "Çok yumuşak, dengeli, acısız.", page: "Dünyanın en pahalı kahvelerinden; Blue Mountain sıradağları." },
+    decaf:     { name: "Kafeinsiz Kolombiya",   unlock: 2, cups: 100,  price: 170, mult: 1.15, grindT: 53, notes: "Karamel, fındık; kafeinsiz.", page: "Swiss Water yöntemiyle, kimyasal kullanmadan kafeini alınmış; akşam ve hamile müşterilerin tercihi." },
+    geisha:    { name: "Panama Geisha",         unlock: 5, cups: 415, price: 450, mult: 1.90, grindT: 60, notes: "Yasemin, şeftali, bal.", page: "Rekor fiyatlarla satılan efsanevi çeşit; çiçeksi ve zarif." }
   },
   // §6 süt türleri: rep = açılış itibarı, extra = siparişe ek ücret (₺), with = siparişte söyleniş
   milks: {

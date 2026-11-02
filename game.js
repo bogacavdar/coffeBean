@@ -161,8 +161,8 @@ function sceneInsets() { if (!SCENE.setInsets) return; const h = $("#hud"), r = 
 // §3 tarif açılımı: satılan toplam kahve sayısı (kümülatif artan eşikler) + gerekirse dükkan seviyesi
 const totalSold = () => Object.values(S.served || {}).reduce((a, b) => a + b, 0);
 // §6 çekirdek çeşitleri ve süt türleri
-const beanOpen = id => { const b = D.beans[id]; return b && (b.unlock || 1) <= shop().stars && totalSold() >= (b.cups || 0); };
-const openBeans = () => Object.keys(D.beans).filter(beanOpen);
+const beanOpen = id => { const b = D.beans[id]; return b && (b.unlock || 1) <= shop().stars && recipeProg() >= (b.cups || 0); };   // v0.35: 5 dükkana eşit dağılım; eşik tarif ilerlemesiyle (dükkan dolunca durur)
+const openBeans = () => Object.keys(D.beans).filter(beanOpen).sort((a, b) => (D.beans[a].unlock || 1) - (D.beans[b].unlock || 1) || (D.beans[a].cups || 0) - (D.beans[b].cups || 0));
 const openMilks = () => Object.keys(D.milks).filter(k => (S.rep || 0) >= D.milks[k].rep || k === "cow");
 const multiBeans = () => openBeans().length > 1, multiMilks = () => needsMilk() && openMilks().length > 1;
 const beanKg = id => S.beans[id || "brazil"]?.kg || 0;
@@ -939,10 +939,10 @@ function renderSupply() {
   const exZero = Object.keys(D.extras).filter(k => !(S.extras[k] > 0));            // §7 küçük malzemeler zorunlu değil: yalnızca uyarı
   if (exZero.length) html += `<div class="req" style="font-size:15px;margin-top:6px;background:#fff4d6;color:#8a6412">⚠ Biten küçük malzeme: ${exZero.map(k => D.extras[k].name).join(", ")}. Zorunlu değil; yoksa bahşiş azalır.</div>`;
   const beanLow = beanKg("brazil") < D.economy.minBeans, milkLow = needsMilk() && (S.milk || 0) < D.economy.minMilk;
-  const nextBean = Object.keys(D.beans).find(id => !beanOpen(id));                  // §6 sıradaki kilitli çekirdek ipucu
+  const nextBean = Object.keys(D.beans).sort((a, b) => (D.beans[a].unlock || 1) - (D.beans[b].unlock || 1) || (D.beans[a].cups || 0) - (D.beans[b].cups || 0)).find(id => !beanOpen(id));   // v0.35: dükkan + eşik sırasıyla                  // §6 sıradaki kilitli çekirdek ipucu
   html += `<div class="box ${beanLow ? "need" : ""}"><h4>Çekirdekler (₺/kg)</h4><p class="muted">Müşteri istediği çekirdek yoksa gider. Brezilya ev çekirdeği: en az ${String(D.economy.minBeans).replace(".", ",")} kg.</p><table>` + openBeans().map(id => { const b = D.beans[id], kg = beanKg(id);
     return `<tr><td>${th("sup:bean")}<b>${b.name}</b><br><span class="muted">stok ${kg.toFixed(2).replace(".", ",")} kg · satış ×${b.mult.toFixed(2).replace(".", ",")}</span><span class="muted pdesc"><br>${b.notes}</span></td><td>₺${tl(SP(b.price))}</td>
-      <td><button data-buy="${id}" ${S.money < SP(b.price) ? "disabled" : ""}>1 kg al</button></td></tr>`; }).join("") + `</table>${nextBean ? `<p class="muted">🔒 Sıradaki: ${D.beans[nextBean].name} — ${D.beans[nextBean].unlock}★ dükkan${D.beans[nextBean].cups ? ` ve toplam ${D.beans[nextBean].cups} kahve satışı (şu an ${totalSold()})` : ""}</p>` : ""}</div>`;
+      <td><button data-buy="${id}" ${S.money < SP(b.price) ? "disabled" : ""}>1 kg al</button></td></tr>`; }).join("") + `</table>${nextBean ? `<p class="muted">🔒 Sıradaki: ${D.beans[nextBean].name} — ${D.beans[nextBean].unlock}★ dükkan${D.beans[nextBean].cups ? ` ve tarif ilerlemesi ${D.beans[nextBean].cups} (şu an ${recipeProg()})` : ""}</p>` : ""}</div>`;
   if (needsMilk() || S.tools.milkKit) { const nextMilk = Object.keys(D.milks).find(k => !openMilks().includes(k));
     html += `<div class="box ${milkLow ? "need" : ""}"><h4>Sütler (₺/L)</h4><p class="muted">${S.equipment.fridge ? `Buzdolabıyla süt ${D.economy.milkShelfDays} gün dayanır.` : `Süt ${D.economy.milkShelfNoFridge} gün dayanır (buzdolabıyla ${D.economy.milkShelfDays}).`} Yeni süt alınca gün yenilenir. İnek sütü en az ${String(D.economy.minMilk).replace(".", ",")} L.</p><table>` +
       openMilks().map(k => { const m = D.milks[k], l = milkL(k); return `<tr><td>${th("sup:milk")}<b>${m.name}</b>${m.extra ? ` <span class="muted">· siparişe +₺${tl(m.extra)}</span>` : ""}<br><span class="muted">stok ${l.toFixed(1).replace(".", ",")} L</span></td><td>₺${tl(SP(m.price))}</td>

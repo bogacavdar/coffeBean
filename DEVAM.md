@@ -12,6 +12,7 @@ Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı i
 - **Tarif seçimi gruplu + alfabetik:** `D.drinkGroups` (Espresso bazlı, Türk ve geleneksel, Demleme ve filtre, Soğuk ve buzlu, Kahvesiz), `drinkGroupsOf()`; grup içinde `localeCompare(…, "tr")`. Listede olmayan yeni tarif "Diğer"e düşer.
 - **Dükkan sırasıyla açılım, sayaç durur:** `S.rp` (tarif ilerlemesi), `recipeProg()` / `recipeTick()`. Satışta yalnız sıradaki tarifin dükkanı yetiyorsa +1; `canUnlock`, HUD ve Defter `S.rp`'yi kullanır. Eski kayıtta durma noktasından başlar. Defter'de dükkan başına "n/N açık" satırları. Hile "Sıradaki tarifi aç" `S.rp`'yi eşiğe çeker.
 - Doküman: Claude Docs (rev 144) §3 "Dükkan sırasıyla açılım", §7 "Elle hazırlamada tarif seçimi", §8 otomasyon 100 puan; `Tasarim_Dokumani.html` aynı değişikliklerle güncellendi.
+- **Çekirdekler 5 dükkana eşit dağıtıldı** (kullanıcı isteği; 3·3·3·2·2): 1★ Brezilya, Kolombiya 20, Honduras 40 · 2★ Peru 70, Guatemala 85, Kafeinsiz 100 · 3★ Kosta Rika 140, Etiyopya 175, Kenya 210 · 4★ Sumatra 260, Yemen 320 · 5★ Jamaika 390, Geisha 415. `beanOpen` artık `recipeProg()` kullanıyor (dükkan dolunca durur), `openBeans`/sıradaki çekirdek dükkan+eşik sırasıyla. Doküman: Claude Docs rev 145 çekirdek tablosu (Kafeinsiz eksikti, ₺ değerleri ×9 ölçeğe çekildi) + HTML.
 - Test yapılmadı (Kural 7); yalnız sözdizimi kontrolü.
 
 ## v0.34 – YAYINLANDI (2 Kasım 2026; kullanıcı telefonda "Merhaba…" balonunun yanıp söndüğünü bildirdi)
