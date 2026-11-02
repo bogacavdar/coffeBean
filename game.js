@@ -1466,7 +1466,7 @@ if (MOTION.has() && !MOTION.needAsk()) MOTION.start();
 document.addEventListener("pointerdown", () => { if (MOTION.needAsk() && LSG("cb_motionok") === "1" && MOTION.on() && !MOTION.ok) MOTION.ask(); }, { once: true, capture: true });
 const cheatUnlocked = () => LSG("cb_cheatUnlocked") === "1", cheatOn = () => cheatUnlocked() && LSG("cb_cheat") === "1";
 function setCheat(on) { LSS("cb_cheat", on ? "1" : "0"); renderCheats(); refreshMenu(); toast(on ? "🧪 Hile modu açık" : "Hile modu kapalı"); }
-function unlockCheat() { LSS("cb_cheatUnlocked", "1"); setCheat(true); AUDIO.sfx("unlock"); }
+function unlockCheat() { if (cheatOn()) return setCheat(false); LSS("cb_cheatUnlocked", "1"); setCheat(true); AUDIO.sfx("unlock"); }   // v0.44: tekrar yazınca / 3 dokununca kapanır
 let cheatBuf = "", verTaps = [];
 document.addEventListener("keydown", e => { if ($("#menu").style.display === "none" || !e.key || e.key.length !== 1) return; cheatBuf = (cheatBuf + e.key.toLowerCase()).slice(-5); if (cheatBuf === "cheat") { cheatBuf = ""; unlockCheat(); } });
 // telefonda: ana menüde ekrana parmakla 3 kez hızlıca dokun (fareyle tıklama sayılmaz)

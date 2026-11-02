@@ -1,5 +1,8 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.44 – 2 Kasım 2026 (acil düzeltme: hile modu aç/kapa)
+- **Hile modu artık kapanabiliyor:** ana menüde "cheat" yazınca açılıyor, tekrar yazınca kapanıyor. Telefonda 3 hızlı dokunuş da aynı şekilde aç/kapa yapıyor. Ayarlar'daki "Hile modu" kutusu da çalışmaya devam ediyor.
+
 ## v0.43 – 2 Kasım 2026 (tarif görselleri, dükkan temaları, akış testi tikleri, dekor düzeltmesi)
 - **Her tarifin kendi bitiş görseli:** 82 tarifin hepsi değerlendirme ekranında kendi kabında, kendi rengi ve süslemesiyle çiziliyor (fincan, cezve, bardak, kupa, buzlu bardak…). Krema/köpük kaliteye göre değişiyor.
 - **Seçimde küçük resim:** sipariş seçerken her tarifin adının yanında küçük görseli var.

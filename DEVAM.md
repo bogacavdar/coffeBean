@@ -7,8 +7,11 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.43)
+## Bekleyen paket (son yayın: v0.44)
 - (boş)
+
+## v0.44 – YAYINLANDI (2 Kasım 2026, kullanıcı "acil bug": cheat tekrar yazınca kapanmalı)
+- `unlockCheat()` aç/kapa: `cheatOn()` ise `setCheat(false)`; klavye "cheat" ve telefonda 3 dokunuş ikisi de bunu çağırır. Belge rev 172 (Hile modu → Açılması) + HTML. Kural 7: yalnız sözdizimi.
 
 ## v0.43 – YAYINLANDI (2 Kasım 2026, kullanıcı "paket çık" dedi)
 - tasarım §16 (Claude Docs rev 170 + HTML). Yeni dosya `drinkart.js` (`DRINKART.render(ctx,id,{q,fit,bare,steam})`, `DRINKART.thumb(id,px)`, `LOOKS` 82 tarif – imzalar benzersiz, `V` kaplar, `SURF` yüzeyler, `brewer()`, `sideItem()`), `CLOSEUP.served(id,q)` değerlendirme ekranında `cupTop` yerine; seçim düğmelerinde `.dbtn` + `drinkThumb()` (THUMBS önbelleği); `scene.js` `THEMES[1..5]` (zemin planks/herring/checker/terrazzo, tuğla, metro karo, tabela `st.shopName`), `SCENE.draw` `shopName` alır; akış testi A24–A28 dükkanlar, A29 `showDrinkGallery()`. Sürüm 3 yerde 0.43; `drinkart.js` zip'te.
