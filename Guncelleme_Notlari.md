@@ -1,5 +1,12 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.35 – 2 Kasım 2026 (otomasyon, tarif seçimi, dükkan sıralı açılım)
+- **Otomatik aletler artık 100 puan veriyor** (önceden 85): otomatik öğütücü, tartılı öğütücü, otomatik temper, süper otomatik espresso makinesi, otomatik süt köpürtücü, Türk kahvesi makinesi, filtre kahve makinesi. Yardımcı baristanın kendi hazırladığı siparişler 85 puanda kaldı.
+- **Tarif seçimi gruplu ve alfabetik:** elle hazırlarken tarifler Espresso bazlı, Türk ve geleneksel, Demleme ve filtre, Soğuk ve buzlu, Kahvesiz gruplarında, her grup kendi içinde alfabetik görünüyor. Boş grup gösterilmiyor.
+- **Tarifler dükkan sırasıyla açılıyor:** tarif ilerlemesi sayacı bir dükkanın bütün tarifleri açılınca duruyor ("Yeni tarif için N★ dükkan"). Dükkan büyüyünce kaldığı yerden devam ediyor, tarifler büyük dükkana geçince toplu değil tek tek geliyor. Defter'de her dükkan için kaç tarifin açık olduğu yazıyor.
+- **Çekirdekler 5 dükkana eşit dağıtıldı (3·3·3·2·2):** 1★ Brezilya, Kolombiya, Honduras · 2★ Peru, Guatemala Antigua, Kafeinsiz Kolombiya · 3★ Kosta Rika Tarrazú, Etiyopya Yirgacheffe, Kenya AA · 4★ Sumatra Mandheling, Yemen Mocha · 5★ Jamaika Blue Mountain, Panama Geisha. Çekirdekler de aynı sayaçla, tek tek açılıyor.
+- Mevcut kayıtlarda sayaç, durduğu noktadan başlıyor.
+
 ## v0.34 – 2 Kasım 2026 (telefonda yanıp sönen konuşma balonu)
 - **Konuşma balonu telefonda artık yanıp sönmüyor.** Ekran kartıyla çizimde tuval "eşzamansız" moddaydı. Bu modda telefon kareyi çizim bitmeden ekrana basabiliyor.
 - Kareye en son çizilen konuşma balonları ve rozetler bu yüzden bazı karelerde eksik görünüp yanıp sönüyordu. Bu mod kaldırıldı; her kare tamamlandıktan sonra gösteriliyor.

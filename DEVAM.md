@@ -7,7 +7,10 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.34) – sonraki sürüm v0.35
+## Bekleyen paket (son yayın: v0.35)
+(boş)
+
+## v0.35 – YAYINLANDI (2 Kasım 2026, kullanıcı "paket çık" dedi)
 - **Otomatik aletler 100 puan** (kullanıcı isteği; önceden 85): `D.economy.autoScore` 100, ekipman açıklamaları ve hazırlama ekranı yazısı buna göre. Yardımcı barista 85'te kaldı (ayrı değer, `D.staff.assistant.score`).
 - **Tarif seçimi gruplu + alfabetik:** `D.drinkGroups` (Espresso bazlı, Türk ve geleneksel, Demleme ve filtre, Soğuk ve buzlu, Kahvesiz), `drinkGroupsOf()`; grup içinde `localeCompare(…, "tr")`. Listede olmayan yeni tarif "Diğer"e düşer.
 - **Dükkan sırasıyla açılım, sayaç durur:** `S.rp` (tarif ilerlemesi), `recipeProg()` / `recipeTick()`. Satışta yalnız sıradaki tarifin dükkanı yetiyorsa +1; `canUnlock`, HUD ve Defter `S.rp`'yi kullanır. Eski kayıtta durma noktasından başlar. Defter'de dükkan başına "n/N açık" satırları. Hile "Sıradaki tarifi aç" `S.rp`'yi eşiğe çeker.
