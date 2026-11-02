@@ -1,5 +1,15 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.43 – 2 Kasım 2026 (tarif görselleri, dükkan temaları, akış testi tikleri, dekor düzeltmesi)
+- **Her tarifin kendi bitiş görseli:** 82 tarifin hepsi değerlendirme ekranında kendi kabında, kendi rengi ve süslemesiyle çiziliyor (fincan, cezve, bardak, kupa, buzlu bardak…). Krema/köpük kaliteye göre değişiyor.
+- **Seçimde küçük resim:** sipariş seçerken her tarifin adının yanında küçük görseli var.
+- **Dükkan büyüyünce görünüm bariz değişiyor:** her yıldız seviyesinin kendi zemini (tahta, balıksırtı, dama, terrazzo), duvarı (tuğla, metro karo) ve renkleri var; üst dükkanlarda pencerenin üstünde dükkan tabelası.
+- **Dekor hatası düzeltildi:** dekorlar artık alındıkları dükkana ait; büyütülen dükkanda yeni dükkanın dekorları "alınmış" görünmüyor. Eski kayıtlarda hangi dükkanda alındığı bilinmeyen 2★ ve üstü dekorlar bir kez parası iade edilerek kaldırılıyor (kısa mesajla gösteriliyor); kendi dükkanında yeniden alınabiliyor.
+- **Akış testi:**
+  - Yeni testler: A24–A28 her dükkan seviyesinin görünümü, A29 tarif görselleri galerisi.
+  - Bir akış test edildiği anda "test edildi ✓" çıkıyor, listeye dönülüyor, o akış yeşil ✓ ile işaretleniyor; başta "x/y tamam" ve "Tikleri sıfırla" var.
+  - Kendiliğinden bitmeyen testler için hile panelinde "✓ Akış testi tamam" ve "↩ Akış test listesi".
+
 ## v0.42 – 2 Kasım 2026 (öğretici düzeltmesi + akış testi)
 - **Yıldız Teyze artık bütün ilk günü öğretiyor:**
   - **Açılış:** Sabah makineyi açmayı (Su → Isıt → Basınç) ve kalibrasyonu (hızlı akan shot → Daha ince) anlatıyor. Yanlışta açıklayıp tekrar sorduruyor.
