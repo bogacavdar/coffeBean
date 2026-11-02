@@ -308,7 +308,7 @@ window.DATA = {
   stockOutLines: ["{X} bile yok mu?!", "Nasıl {x} yok?!", "{X} yoksa ben de yokum!", "Bu dükkanda {x} bile yok!"],
 
 
-  // §8 – Ekipman + otomasyon (prototip). stars = gereken dükkan seviyesi; auto = otomatik yaptığı adımlar (sabit 85 puan).
+  // §8 – Ekipman + otomasyon (prototip). stars = gereken dükkan seviyesi; auto = otomatik yaptığı adımlar (sabit 100 puan, v0.35).
   equipment: {
     // hassasiyet: renkli hedef bölgeleri ×1,5 (widen); otomasyon için önce bunlar gerekir (requires)
     grindPrecise:  { name: "Mikro ayarlı öğütücü",       price: 150,  stars: 1, widen: "grind",   effect: "Öğütme hedef bölgeleri ×1,5 geniş" },
@@ -318,16 +318,16 @@ window.DATA = {
     thermoPitcher: { name: "Termometreli sürahi",        price: 140,  stars: 1, widen: "milk",    effect: "Süt hedef bölgeleri ×1,5 geniş" },
     steamWand:     { name: "Buhar çubuğu yükseltmesi",   price: 300,  stars: 1, effect: "Süt köpürtme hızlanır" },
     pourPitcher:   { name: "Profesyonel döküm sürahisi", price: 260,  stars: 3, widen: "art",     effect: "Latte art hedef bölgeleri ×1,5 geniş" },
-    // otomasyon (sabit 85 puan)
-    autoGrind:   { name: "Otomatik öğütücü",          price: 350,  stars: 1, auto: ["grind"], requires: ["grindPrecise"], effect: "Öğütme otomatik (85 puan)" },
-    scaleGrind:  { name: "Tartılı öğütücü",           price: 400,  stars: 1, auto: ["dose"],  requires: ["precScale"], effect: "Dozlama otomatik (85 puan)" },
-    autoTamp:    { name: "Otomatik temper",           price: 450,  stars: 2, auto: ["tamp"],  requires: ["scaleTamp"], effect: "Temperleme otomatik (85 puan)" },
+    // otomasyon (sabit 100 puan, v0.35)
+    autoGrind:   { name: "Otomatik öğütücü",          price: 350,  stars: 1, auto: ["grind"], requires: ["grindPrecise"], effect: "Öğütme otomatik (100 puan)" },
+    scaleGrind:  { name: "Tartılı öğütücü",           price: 400,  stars: 1, auto: ["dose"],  requires: ["precScale"], effect: "Dozlama otomatik (100 puan)" },
+    autoTamp:    { name: "Otomatik temper",           price: 450,  stars: 2, auto: ["tamp"],  requires: ["scaleTamp"], effect: "Temperleme otomatik (100 puan)" },
     dualGroup:   { name: "Çift gruplu makine",        price: 700,  stars: 2, effect: "2 paralel sipariş" },
     fridge:      { name: "Süt buzdolabı",             price: 400,  stars: 1, effect: "Süt 6 gün dayanır (buzdolabı yoksa 2 gün)" },
-    superAuto:   { name: "Süper otomatik espresso makinesi", price: 2500, stars: 3, auto: ["grind","dose","tamp","extract"], requires: ["pidGauge","autoGrind","scaleGrind","autoTamp"], effect: "Espressonun tüm adımları tek tuş (85 puan)" },
-    autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  requires: ["thermoPitcher"], effect: "Süt adımı otomatik (85 puan)" },
-    tkMachine:   { name: "Türk kahvesi makinesi",     price: 350,  stars: 1, auto: ["tkstir","tkfoam"], effect: "Türk kahvesinde karıştırma ve köpük otomatik (85 puan)" },
-    filterMachine: { name: "Filtre kahve makinesi",   price: 400,  stars: 2, auto: ["bloom","pourover"], effect: "Filtre kahvede ön ıslatma ve dökme otomatik (85 puan)" }
+    superAuto:   { name: "Süper otomatik espresso makinesi", price: 2500, stars: 3, auto: ["grind","dose","tamp","extract"], requires: ["pidGauge","autoGrind","scaleGrind","autoTamp"], effect: "Espressonun tüm adımları tek tuş (100 puan)" },
+    autoMilk:    { name: "Otomatik süt köpürtücü",    price: 900,  stars: 3, auto: ["milk"],  requires: ["thermoPitcher"], effect: "Süt adımı otomatik (100 puan)" },
+    tkMachine:   { name: "Türk kahvesi makinesi",     price: 350,  stars: 1, auto: ["tkstir","tkfoam"], effect: "Türk kahvesinde karıştırma ve köpük otomatik (100 puan)" },
+    filterMachine: { name: "Filtre kahve makinesi",   price: 400,  stars: 2, auto: ["bloom","pourover"], effect: "Filtre kahvede ön ıslatma ve dökme otomatik (100 puan)" }
   },
   // §4 renkli hedef çubuğu: bölge yarı genişlikleri (çubuğun %'si) ve puanları
   zones: { time: { perfect: 0.0267, good: 0.0667, ok: 0.133 } /* §4 eşit zorluk: sn; yarı genişlik % = ibre hızı × süre */, minPerfect: 0.3, widen: 1.5, score: { perfect: 100, good: 88, ok: 72 } },
@@ -471,10 +471,18 @@ window.DATA = {
 
 
   // §8 – Ekonomi
-  economy: { startMoney: 300, beanPerCup: 0.018 /* kg */, milkPrice: 15 /* ₺/L */, milkPerCup: 0.2 /* L */, minBeans: 0.3, minMilk: 1, milkShelfDays: 6, milkShelfNoFridge: 2, autoScore: 85, loanInterest: 0.10, loanDailyCut: 0.20,
+  economy: { startMoney: 300, beanPerCup: 0.018 /* kg */, milkPrice: 15 /* ₺/L */, milkPerCup: 0.2 /* L */, minBeans: 0.3, minMilk: 1, milkShelfDays: 6, milkShelfNoFridge: 2, autoScore: 100 /* v0.35: otomatik adım 100 puan (önceden 85) */, loanInterest: 0.10, loanDailyCut: 0.20,
     loans: [{ amount: 100, days: 5 }, { amount: 250, days: 8 }], rentLoanDays: 6, refuseBelow: 50, rentLoanStep: 50 },   // §7 ortalama < 50: müşteri almaz   // §2 kredi türleri ve vadeleri
 
   // §9 – Dükkan seviyeleri (MVP: 3). Prototip kalibrasyonu: günlük müşteri sayısı azaltıldı (gün kısa ve odaklı kalsın).
+  // §7 v0.35: elle hazırlamada tarif seçimi bu gruplarda, grup içinde alfabetik (tr) gösterilir. Listede olmayan yeni tarif "Diğer" grubuna düşer.
+  drinkGroups: [
+    { name: "Espresso bazlı", ids: ["espresso", "americano", "lungo", "ristretto", "macchiato", "cortado", "latte", "longblack", "conpanna", "romano", "flatwhite", "piccolo", "vanillalatte", "redeye", "mocha", "caramelmac", "saltcaramel", "affogato", "cubano", "bombon", "marocchino", "melange", "cappuccino", "latmac", "conleche", "gibraltar", "magic", "galao", "breve", "pumpkin", "gingerbread", "peppermint", "dirtychai", "einspanner", "cortadito", "bicerin"] },
+    { name: "Türk ve geleneksel", ids: ["turkish", "sutluturk", "menengic", "dibek", "damla", "kenger", "osmanli", "mirra", "kumda", "kopi", "cafezinho", "olla", "qahwa"] },
+    { name: "Demleme ve filtre", ids: ["frenchpress", "filter", "cafeaulait", "moka", "aeropress", "chemex", "siphon", "irish", "indianf", "eggcoffee", "kalitaw"] },
+    { name: "Soğuk ve buzlu", ids: ["icedamericano", "icedlatte", "dalgona", "espressotonic", "frappuccino", "mochafrappe", "greekfrappe", "coldbrew", "vietnam", "icedmocha", "nitro", "spanish", "freddoesp", "freddocap", "shakerato", "mazagran", "flashbrew", "coldfoamcb", "colddrip"] },
+    { name: "Kahvesiz", ids: ["hotchoc", "chai", "salep"] }
+  ],
   shopLevels: [
     { stars: 1, name: "Köşe büfesi",        money: 0,    rep: 0,   customersPerDay: 6, rent: 150, loanLimit: 600, maxQueue: 3, interval: 21.5, custStep: 2, tierCost: [120, 220, 350] },
     { stars: 2, name: "Mahalle kahvecisi",  money: 1500, rep: 100, customersPerDay: 9, rent: 350, loanLimit: 1500, maxQueue: 5, interval: 16, custStep: 3, tierCost: [300, 550, 850] },

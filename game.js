@@ -136,7 +136,7 @@ function renderHUD() {
   $("#hStreak").style.display = (S.streak || 0) >= 2 ? "" : "none"; $("#hStreak").innerHTML = "🔥 Seri " + S.streak + `<span class="hx"> · bahşiş ×${streakMult().toFixed(1).replace(".", ",")}</span>`;
   const nx = nextRecipe(), el = $("#hNext");                       // §3 "Yeni tarife X kahve daha"
   if (!nx) el.textContent = "Tüm tarifler açık ✓";
-  else { const d = D.drinks[nx], left = d.unlockCups - totalSold(); el.textContent = left > 0 ? `Yeni tarife ${left} kahve daha` : `Yeni tarif için ${d.shop}★ dükkan`; }
+  else { const d = D.drinks[nx], left = d.unlockCups - recipeProg(); el.textContent = (d.shop || 1) > shop().stars ? `Yeni tarif için ${d.shop}★ dükkan` : left > 0 ? `Yeni tarife ${left} kahve daha` : "Yeni tarif açılıyor"; }
   renderTask();
   $("#hClock").textContent = day ? clockStr(day.t / DAY_SECONDS) : (endCtx || dayFlow) && !firstSupply ? "Kapanış" : clockStr(0); lastClock = "";
   $("#hMoney").textContent = tl(S.money); $("#hRep").textContent = S.rep;
@@ -193,10 +193,18 @@ function checkBeanMilkUnlocks() {                                               
   modal(`<h3>${nb.length ? "Yeni çekirdek" + (nm.length ? " ve süt" : "") : "Yeni süt"}</h3>` + nb.map(id => `<p><b>☕ ${D.beans[id].name}</b> · satış fiyatı ×${D.beans[id].mult.toFixed(2).replace(".", ",")}<br><span class="muted">${D.beans[id].notes}</span></p>`).join("") +
     nm.map(k => `<p><b>🥛 ${D.milks[k].name}</b> · siparişe +₺${tl(D.milks[k].extra)}</p>`).join("") + `<p class="muted">Müşteriler artık bunları siparişlerinde isteyecek. Tedarik'ten stok almayı unutma; yoksa "… bile yok!" deyip giderler.</p>`);
 }
+// §3 v0.35 tarif ilerlemesi: satış başına +1, ama yalnız sıradaki tarif mevcut dükkanda açılabiliyorsa (dükkanın tüm tarifleri açılınca durur, büyüyünce devam eder)
+function recipeProg() {
+  if (S.rp == null) { const nx = nextRecipe(), ts = totalSold();                 // eski kayıt: durma noktasından başlat
+    if (nx && (D.drinks[nx].shop || 1) > shop().stars) S.rp = Math.min(ts, Math.max(0, ...S.unlocked.map(id => D.drinks[id].unlockCups || 0)));
+    else S.rp = ts; }
+  return S.rp;
+}
+function recipeTick() { const nx = nextRecipe(); recipeProg(); if (nx && (D.drinks[nx].shop || 1) <= shop().stars) S.rp++; }
 function nextRecipe() { return Object.keys(D.drinks).filter(id => !S.unlocked.includes(id)).sort((a, b) => D.drinks[a].unlockCups - D.drinks[b].unlockCups)[0]; }
 function canUnlock(id) {
   const d = D.drinks[id];
-  return totalSold() >= d.unlockCups && shop().stars >= (d.shop || 1) && !S.unlocked.includes(id);   // §9 dükkan büyüklüğü kilidi
+  return recipeProg() >= d.unlockCups && shop().stars >= (d.shop || 1) && !S.unlocked.includes(id);   // §9 dükkan büyüklüğü kilidi
 }
 function checkUnlocks() {
   const fresh = Object.keys(D.drinks).filter(canUnlock);
@@ -378,7 +386,7 @@ function prepareOrder(o, drink, size, bean, milk, sugar) {
   S.cups[SZ(size).cup] = Math.max(0, (S.cups[SZ(size).cup] || 0) - 1);
   const all = stepsFor(drink), auto = o.tutorial ? new Set() : autoSteps();      // öğretici her adımı elle öğretir
   o.all = all; o.auto = auto; o.steps = all.filter(st => !auto.has(st)); o.i = 0; o.scores = {}; o.phase = "ready"; o.v = 0; o.served = false;
-  all.forEach(st => { if (auto.has(st)) o.scores[st] = D.economy.autoScore; });   // §8 otomatik adım sabit 85
+  all.forEach(st => { if (auto.has(st)) o.scores[st] = D.economy.autoScore; });   // §8 otomatik adım sabit 100 (v0.35)
   o.autoRun = o.steps.length === 0;                                               // her adım otomatik: makine kendisi hazırlar
   save(); renderOrders();
 }
@@ -392,6 +400,13 @@ function wantHTML(o) {
   return `<div class="want"><div class="wname">${c.name} istiyor</div><div class="wdrink"><b>${D.drinks[c.drink].name}</b><span class="osize">${SZ(c.size).label}</span>${tags.map(([k, t]) => `<span class="otag ${k}">${t}</span>`).join("")}</div>${bad}${c.patienceMax ? '<div class="opat"><i id="wpat"></i></div>' : ""}</div>`;
 }
 const sheetX = o => o.tutorial ? "" : '<button class="shx" id="sheetX" aria-label="Kapat">✕</button>';   // telefonda hazırlama ekranını kapat (sipariş bekler)
+// §7 v0.35: menüdeki tarifler gruplara ayrılır (D.drinkGroups sırası), grup içinde Türkçe alfabetik; boş grup gösterilmez
+function drinkGroupsOf(ids) {
+  const byName = (a, b) => D.drinks[a].name.localeCompare(D.drinks[b].name, "tr"), seen = new Set();
+  const out = (D.drinkGroups || []).map(g => { const m = ids.filter(id => g.ids.includes(id)); m.forEach(id => seen.add(id)); return { name: g.name, ids: m.sort(byName) }; });
+  const rest = ids.filter(id => !seen.has(id)).sort(byName); if (rest.length) out.push({ name: "Diğer", ids: rest });
+  return out.filter(g => g.ids.length);
+}
 function renderSelect(o, tabs) {                                                  // §6/§7 sıra: çekirdek → tarif → boy → süt
   const menu = S.unlocked.filter(hasTools), sel = o.sel, sizes = sel.drink ? (D.drinks[sel.drink].sizes || ["single"]) : [];
   const showBean = multiBeans(), showMilk = sel.drink && isMilky(sel.drink) && multiMilks(), showSugar = sel.drink && D.drinks[sel.drink].sugar;
@@ -400,7 +415,7 @@ function renderSelect(o, tabs) {                                                
   $("#sheetBody").innerHTML = `${sheetX(o)}${tabs}${wantHTML(o)}<h3 class="ptitle">Siparişi hazırla</h3>
     <p class="muted" style="margin:2px 0 6px"><span class="dOnly">Siparişi sağ üstteki karttan oku. </span><span class="pOnly">İstenen sipariş yukarıda. </span>${showBean ? "Önce çekirdeği, sonra tarifi, boyu" : "Önce tarifi, sonra boyu"}${showMilk ? " ve sütü" : ""} seç. Yanlış seçersen müşteri almaz.</p>
     ${showBean ? box("1. Çekirdek", openBeans().map(id => { const kg = beanKg(id); return `<button data-sb="${id}" class="${sel.bean === id ? "pri" : ""}" ${kg > 0 ? "" : "disabled"}>${D.beans[id].name}<br><span style="font-size:11px">${kg.toFixed(2).replace(".", ",")} kg</span></button>`; }).join("")) : ""}
-    ${box((showBean ? "2. " : "") + "Tarif", menu.map(id => `<button data-sd="${id}" class="${sel.drink === id ? "pri" : ""}">${D.drinks[id].name}</button>`).join(""))}
+    ${box((showBean ? "2. " : "") + "Tarif", drinkGroupsOf(menu).map(g => `<div class="dgrp"><div class="dgname">${g.name}</div><div class="row" style="justify-content:flex-start">${g.ids.map(id => `<button data-sd="${id}" class="${sel.drink === id ? "pri" : ""}">${D.drinks[id].name}</button>`).join("")}</div></div>`).join(""))}
     ${box((showBean ? "3. " : "") + "Boy / bardak", (sizes.length ? "" : '<span class="muted">Önce tarifi seç</span>') + sizes.map(z => { const sz = SZ(z), n = S.cups[sz.cup] || 0;
       return `<button data-sz="${z}" class="${sel.size === z ? "pri" : ""}" ${n > 0 ? "" : "disabled"}>${sz.label}<br><span style="font-size:11px">${D.cups[sz.cup].name} · ${n} adet</span></button>`; }).join(""))}
     ${showMilk ? box((showBean ? "4. " : "") + "Süt", openMilks().map(k => { const l = milkL(k); return `<button data-sm="${k}" class="${sel.milk === k ? "pri" : ""}" ${l > 0 ? "" : "disabled"}>${D.milks[k].name}<br><span style="font-size:11px">${l.toFixed(1).replace(".", ",")} L</span></button>`; }).join("")) : ""}
@@ -549,7 +564,7 @@ function serve(o) {
   if (isMilky(o.drink)) useMilk(o.milk, milkUse(o.drink, o.size));   // §7 boya göre
   if (o.sugar) S.extras.sugar = Math.max(0, (S.extras.sugar || 0) - D.sugarLevels[o.sugar].n);   // §3 Türk kahvesi şekeri
   useSpecials(o.drink, o.size);                                                   // §3 şurup, sos, krema, dondurma…   // §8 süt sarfı
-  S.served[o.drink] = (S.served[o.drink] || 0) + 1;
+  S.served[o.drink] = (S.served[o.drink] || 0) + 1; recipeTick();
   let repGain = 0, msg;
   if (service >= 95) { S.perfect[o.drink] = (S.perfect[o.drink] || 0) + 1; repGain = 5; S.xp += 25; day.stats.perfect++; msg = "Mükemmel!"; SCENE.addFx(c, "★", "#c9962b", true); }
   else if (service >= 80) { repGain = 2; msg = "Güzel."; }
@@ -675,7 +690,7 @@ function renderBench() {
   const tabs = day.orders.length > 1 ? `<div class="tabs">${day.orders.map((x, i) => `<button class="${i === day.active ? "on" : ""}" data-i="${i}">${x.cust.name}</button>`).join("")}</div>` : "";
   const steps = `<div class="steps">${o.all.map(st => `<span class="${o.scores[st] != null ? "done" : st === s ? "now" : ""}">${o.auto.has(st) ? "⚙ " : ""}${D.minigames[st].name}${o.scores[st] != null ? " " + o.scores[st] : ""}</span>`).join("")}</div>`;
   if (o.autoRun) {
-    $("#sheetBody").innerHTML = `${sheetX(o)}${tabs}${wantHTML(o)}<h3 class="ptitle">${o.cust.name} için ${cap1(sizedName(o.drink, o.size))}</h3>${steps}<canvas id="closeup"></canvas><div class="hint">⚙ Makine hazırlıyor… (otomatik adımlar 85 puan)</div><div id="mgScore" class="score"></div>`;
+    $("#sheetBody").innerHTML = `${sheetX(o)}${tabs}${wantHTML(o)}<h3 class="ptitle">${o.cust.name} için ${cap1(sizedName(o.drink, o.size))}</h3>${steps}<canvas id="closeup"></canvas><div class="hint">⚙ Makine hazırlıyor… (otomatik adımlar ${D.economy.autoScore} puan)</div><div id="mgScore" class="score"></div>`;
     $("#sheet").classList.add("on"); bindSheetX(); updOrderBars(); drawCup = null; fitSheet(); CLOSEUP.init($("#closeup"));
     $("#sheetBody").querySelectorAll(".tabs button").forEach(b => b.onclick = () => { day.active = +b.dataset.i; renderBench(); });
     return;
@@ -1004,7 +1019,7 @@ function hubContent() {
     const staff = A.stars <= lv.stars ? `<tr><td>${th("staff")}<b>${A.name}</b><br><span class="muted">${A.effect} (${A.score} puan) · günlük maaş ₺${tl(A.wage)}</span></td><td></td><td>${S.staff.assistant ? `<button id="fire">Çıkar</button>` : `<button id="hire">İşe al</button>`}</td></tr>` : "";
     return sec("👥 Müşteri gelişi", `Sıra en fazla ${lv.maxQueue} kişi · günde ${dayCap()} müşteri · ~${arrivalEvery().toFixed(1).replace(".", ",")} sn'de bir. Kademeler bu dükkana özel.`, traffic)
       + sec("🎯 Kolaylaştırıcılar ve göstergeler", "Renkli hedef bölgelerini genişletir ya da adımı hızlandırır.", E.filter(([id, e]) => e.widen || id === "steamWand").map(([id, e]) => eqRow(id, e)).join(""))
-      + sec("⚙ Otomasyon", "Adımı atlar, sabit 85 puan verir; önce o adımın kolaylaştırıcısı gerekir.", E.filter(([, e]) => e.auto).map(([id, e]) => eqRow(id, e)).join(""))
+      + sec("⚙ Otomasyon", `Adımı atlar, sabit ${D.economy.autoScore} puan verir; önce o adımın kolaylaştırıcısı gerekir.`, E.filter(([, e]) => e.auto).map(([id, e]) => eqRow(id, e)).join(""))
       + sec("🏪 Kapasite ve personel", "", E.filter(([id]) => id === "dualGroup" || id === "fridge").map(([id, e]) => eqRow(id, e)).join("") + staff);
   }
   if (hubTab === "tools") {
@@ -1129,9 +1144,11 @@ function renderBook() {
   const lockedN = Object.keys(D.drinks).filter(id => !S.unlocked.includes(id)).length, nx = nextRecipe();   // v0.30: kilitli tarifler tek özet satırı
   html += `<div class="box"><h4>Tarif kartları</h4>` + Object.entries(D.drinks).filter(([id]) => S.unlocked.includes(id)).map(([id, d]) => {
     const open = S.unlocked.includes(id);
-    const left = Math.max(0, d.unlockCups - totalSold()), shOk = shop().stars >= (d.shop || 1);
+    const left = Math.max(0, d.unlockCups - recipeProg()), shOk = shop().stars >= (d.shop || 1);
     return `<div class="recipe ${open ? "" : "lock"}">${drinkIcon(id, !open)}<div><b>${open ? d.name : "???"}</b> <span class="muted">${open ? `· ${S.served[id] || 0} servis, ${S.perfect[id] || 0} mükemmel${d.art && shop().stars >= 3 ? " · latte art ✓" : ""}${d.season ? " · mevsimlik: " + d.season.map(i => D.seasons[i]).join(", ") + (inSeason(id) ? " (şu an istenir)" : " (mevsimi değil)") : ""}${d.noBean ? " · kahvesiz" : ""}${hasTools(id) ? "" : " · <b style='color:var(--kotu)'>Gerekli: " + (d.needs || []).filter(t => !S.tools[t]).map(t => D.tools[t].name).join(", ") + "</b>"}` : `· ${d.unlockCups} kahve satınca ${left ? `(${left} kahve daha)` : "✓"} · ${d.shop || 1}★ dükkan ${shOk ? "✓" : "🔒"}`}</span><br>${open ? d.card : '<span class="muted">Bu tarifi henüz öğrenmedin.</span>'}</div></div>`; }).join("") +
-    (lockedN ? `<div class="recipe lock">${drinkIcon("lock", true)}<div><b>???</b> <span style="font-weight:700;color:var(--soluk)">${lockedN} kilitli tarif</span><br><span class="muted">${nx ? (Math.max(0, D.drinks[nx].unlockCups - totalSold()) ? `Sıradaki: ${D.drinks[nx].unlockCups - totalSold()} kahve daha sat` : "Sıradaki tarif hazır") + ((D.drinks[nx].shop || 1) > shop().stars ? ` · ${D.drinks[nx].shop}★ dükkan gerekir` : "") : ""}</span></div></div>` : "") + `</div>`;
+    `<div class="recipe"><div><b>Dükkana göre tarifler</b><br>${D.shopLevels.map(l => { const ids = Object.keys(D.drinks).filter(id => (D.drinks[id].shop || 1) === l.stars), n = ids.filter(id => S.unlocked.includes(id)).length;
+      return `<span class="muted">${l.stars}★ ${l.name}: <b>${n}/${ids.length}</b> açık${n === ids.length ? " ✓" : l.stars > shop().stars ? " 🔒" : ""}</span>`; }).join("<br>")}</div></div>` +   // §3 v0.35
+    (lockedN ? `<div class="recipe lock">${drinkIcon("lock", true)}<div><b>???</b> <span style="font-weight:700;color:var(--soluk)">${lockedN} kilitli tarif</span><br><span class="muted">${nx ? ((D.drinks[nx].shop || 1) > shop().stars ? `Sıradaki tarif ${D.drinks[nx].shop}★ dükkanda açılır; o zamana kadar sayaç durur` : Math.max(0, D.drinks[nx].unlockCups - recipeProg()) ? `Sıradaki: ${D.drinks[nx].unlockCups - recipeProg()} kahve daha sat` : "Sıradaki tarif hazır") : ""}</span></div></div>` : "") + `</div>`;
   html += `<div class="box"><h4>Öğrenilen ipuçları</h4>${S.tipsLearned.length ? "<ul>" + S.tipsLearned.map(k => `<li>${D.tips[k]}</li>`).join("") + "</ul>" : '<p class="muted">Henüz yok. Her hata bir ders verir.</p>'}</div>`;
   html += `<div class="box"><h4>Menşe sayfaları</h4>` + Object.entries(D.beans).filter(([id]) => S.beans[id]).map(([id, b]) => `<p><b>${b.name}</b><br>${b.page}<br><span class="muted">${b.notes}</span></p>`).join("") + `</div>`;
   html += `<div class="box"><h4>Günlük</h4><p class="muted">${S.log.slice(-8).reverse().join("<br>") || "—"}</p></div>`;
@@ -1198,7 +1215,7 @@ const CHEATS = [
   ["☕ Siparişi kendisi yap", cheatAutoOrder], ["🚶 Müşteri getir", () => { if (!day) return toast("Önce günü başlat"); day.tutorialActive = false; spawnCustomer(); layout(); }],
   ["🌙 Günü bitir", cheatEndDay], ["🏠 Kira gününe atla", () => { if (day) return toast("Gün içinde değil, gün aralarında kullan"); S.day = Math.ceil(S.day / 7) * 7; }],
   ["📦 Stokları doldur", () => { openBeans().forEach(id => { S.beans[id] = { kg: beanKg(id) + 5, boughtDay: S.day }; }); S.milk = (S.milk || 0) + 10; S.milkAlt = S.milkAlt || {}; openMilks().forEach(k => { if (k !== "cow") S.milkAlt[k] = (S.milkAlt[k] || 0) + 10; }); S.milkDay = S.day; Object.keys(D.cups).forEach(k => S.cups[k] = (S.cups[k] || 0) + 50); Object.keys(D.extras).forEach(k => S.extras[k] = (S.extras[k] || 0) + 100); S.syr = S.syr || {}; Object.keys(D.specials).forEach(k => S.syr[k] = (S.syr[k] || 0) + D.specials[k].pack * 2); }],
-  ["☕ Sıradaki tarifi aç", () => { const id = nextRecipe(); if (!id) return toast("Tüm tarifler zaten açık"); S.unlocked.push(id); (S.unlockDay = S.unlockDay || {})[id] = S.day; S.perfect[id] = S.perfect[id] || 0; AUDIO.sfx("unlock"); toast("Yeni tarif açıldı: " + D.drinks[id].name); }],
+  ["☕ Sıradaki tarifi aç", () => { const id = nextRecipe(); if (!id) return toast("Tüm tarifler zaten açık"); S.rp = Math.max(recipeProg(), D.drinks[id].unlockCups); S.unlocked.push(id); (S.unlockDay = S.unlockDay || {})[id] = S.day; S.perfect[id] = S.perfect[id] || 0; AUDIO.sfx("unlock"); toast("Yeni tarif açıldı: " + D.drinks[id].name); }],
   ["📖 Tüm tarifler + aletler", () => { S.unlocked = Object.keys(D.drinks); Object.keys(D.tools).forEach(k => S.tools[k] = true); }],
   ["🧾 Tarif seçip müşteri getir", () => { if (!day) return toast("Önce günü başlat");
     modal(`<h3>Hangi tarifi istesin?</h3><div class="row" style="flex-wrap:wrap;gap:6px;max-height:50vh;overflow:auto">${S.unlocked.filter(hasTools).map(id => `<button data-tq="${id}" style="font-size:13px">${D.drinks[id].name}</button>`).join("")}</div>`, [{ label: "Kapat" }]);
