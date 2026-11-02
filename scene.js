@@ -80,8 +80,9 @@ window.SCENE = (() => {
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
     W = w; H = h; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (W >= H) {                                                                  // §11 yatay ekran: tüm dükkan kadrajda (vitrin, kapı, tabelalar, masalar)
-      TW = Math.min(84, W / 18.5, (H - 30) / 13.6); TH = TW / 2;
-      OX = W / 2 - TW * .6; OY = (H - 13.6 * TW) / 2 + 5.4 * TW + 20;          // üstte duvar (~z 200), altta zeminin ön köşesi
+      const DZ = window.matchMedia && matchMedia("(pointer: fine)").matches ? 1.25 : 1;   // v0.46 §17: bilgisayarda (fare) kahveciye %125 yakınlaşma, merkez sabit
+      const TW0 = Math.min(84, W / 18.5, (H - 30) / 13.6); TW = TW0 * DZ; TH = TW / 2;
+      OX = W / 2 - TW * .6; OY = (H - 13.6 * TW0) / 2 + 5.4 * TW0 + 20 - (DZ - 1) * TW0 * 1.4;   // üstte duvar (~z 200), altta zeminin ön köşesi; yakınlaşmada orta nokta yerinde kalır
     } else {                                                                       // dik telefon (v0.32): TÜM dükkan ekrana sığar (duvar tabelası, tezgâh, vitrin, kapı, masalar)
       // dükkanın ilgi kutusu (OX/OY'ye göre, TW biriminde): yatayda −8,4…+10,4 · dikeyde −3,7 (tabela tepesi) … +9,3 (ön masalar)
       const K = 0.6;                                                               // v0.37: dik ekranda kamera biraz daha yukarıdan bakar (TH/TW = 0,6)

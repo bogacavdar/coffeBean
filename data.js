@@ -255,9 +255,6 @@ window.DATA = {
   },
   // v0.39 §13
   specialChance: 0.06,
-  calibration: { drift: [["coarse", 0.4], ["fine", 0.4], ["ok", 0.2]], penalty: 0.8, xp: 5,
-    shot: { coarse: "Deneme shot'ı 19 saniyede aktı; ince ve ekşi.", fine: "Deneme shot'ı 36 saniyede damla damla aktı; acı ve yanık.", ok: "Deneme shot'ı 27 saniyede aktı; dengeli ve tatlı." },
-    answer: { coarse: "finer", fine: "coarser", ok: "keep" } },
   backflushPenalty: 0.85,
   mods: { extraChance: 0.15, takeawayChance: 0.2, extraPrice: 0.25, extraBean: 0.009, takeawayFee: 5, fromDay: 3 },
   loyalty: { need: 3, patience: 1.2, tip: 1.3 },
@@ -566,14 +563,8 @@ window.DATA = {
   // §10 – Yıldız Teyze metinleri (kısa): açılış dükkanın devrini, kahvelerin espressodan yapıldığını ve tarif defterini anlatır
   seasons: ["Sonbahar", "Kış", "İlkbahar", "Yaz"],   // v0.24 mevsimlik tarifler: 28 günlük mevsimler, oyun sonbaharda başlar
   tutorial: {
-    intro: "Hoş geldin evladım. Ben Yıldız Teyze. Bu dükkanı yıllardır işletiyorum ama artık yoruldum; bundan sonra dükkan senin. Bugün yanındayım: sana dükkanı açmayı, espresso yapmayı ve akşam kapatmayı öğreteceğim; sonra dükkan sana emanet. Tarif defterim de köşede duruyor.",
-    // v0.42 §15 açılış dersi (ilk gün, espressodan önce)
-    openIntro: "Her sabah önce makineyi açarız. Sırası önemli: önce <b>Su</b> (hazneyi doldur), sonra <b>Isıt</b>, en son <b>Basınç</b>.",
-    openWrong: "Olmadı evladım: önce Su, sonra Isıt, en son Basınç. Baştan dene.",
-    calIntro: "Şimdi bir deneme shot'ı çekip tadarız; buna <b>kalibrasyon</b> denir. Kahve <b>hızlı</b> (25 saniyeden önce) akıyorsa öğütümü <b>daha ince</b> yaparız, <b>yavaş</b> (30 saniyeden sonra) akıyorsa <b>daha kaba</b>; 25–30 saniyedeyse dokunmayız.",
-    calWrong: "Hızlı akan kahve için öğütümü <b>daha ince</b> yaparız evladım. Bir daha seç.",
-    openDone: "Makine hazır, ayar tamam; tabelayı çevirdim, dükkan açık. Her sabah bunları sen yapacaksın. Şimdi ilk espressoyu bana yap: hazır olunca <b>bana dokun</b>.",
-    openSay: "Önce dükkanı açalım evladım.",
+    intro: "Hoş geldin evladım. Ben Yıldız Teyze. Bu dükkanı yıllardır işletiyorum ama artık yoruldum; bundan sonra dükkan senin. Bugün yanındayım: sana espresso yapmayı ve akşam dükkanı kapatmayı öğreteceğim; sonra dükkan sana emanet. Tarif defterim de köşede duruyor.",
+    firstSay: "Hazırsan başlayabiliriz evladım, bana dokun.",   // v0.46 §17: açılış dersi kaldırıldı
     milk: "Sütü köpürtürken kâğıt yırtılır gibi hafif bir ses duyarsın. O ses doğru sestir.",
     // §10 ilk kahve öğreticisi: ilk müşteri Yıldız Teyze, adım adım
     first: "Yıldız Teyze tezgâhın önünde seni bekliyor. Hazır olunca ona dokun.",
@@ -603,14 +594,12 @@ window.DATA = {
     closeIntro: "Gün bitti evladım, kapanışı birlikte yapalım. Önce haftalık kiraya bakarız: kira her hafta ödenir, kaç gün kaldığı burada yazar. Şimdi ödeyebilir ya da kira gününe bırakabilirsin.",
     closeLedger: "Bu gün defteri: kaç kahve sattın, ne kazandın, kasada ne kaldı. Kapatmadan önce makineyi temizleriz: <b>Temizle</b>'ye dokun.",
     cleanHow: "Kör filtreyi taktım. <b>ÇALIŞTIR</b>'a bas, 1 saniye bekle; bunu 3 kez yap. Temizlemezsen yarın kahve kötü akar.",
-    done: "İşte bu kadar evladım. Artık sabah açmayı, espressoyu ve akşam kapatmayı biliyorsun. Şimdi Tedarik'ten yarının çekirdeğini, sütünü ve bardaklarını al. Ben gidiyorum; dükkan sana emanet. Yeni bir şeyle ilk karşılaştığında defterime yazdığım not çıkar, nasıl yapılacağını o anda gösterir."
+    done: "İşte bu kadar evladım. Artık espressoyu ve akşam kapatmayı biliyorsun. Şimdi Tedarik'ten yarının çekirdeğini, sütünü ve bardaklarını al. Ben gidiyorum; dükkan sana emanet. Yeni bir şeyle ilk karşılaştığında defterime yazdığım not çıkar, nasıl yapılacağını o anda gösterir."
   },
   // v0.42 §15 ilk kez karşılaşılan mekanikler: Yıldız Teyze'nin defterinden ders (bir kez; Anladım'a basınca başlar)
   lessons: {
     select:     { t: "Sipariş seçimi", h: "Müşterinin istediği üstteki kartta yazar. Önce <b>tarifi</b>, sonra <b>boyu</b> seç (istediyse çekirdeği, sütü, şekeri de) ve <b>Hazırlamaya başla</b>'ya bas. Yanlış seçersen müşteri almaz." },
     extras:     { t: "Ekstralar", h: "Bazı müşteriler <b>ekstra shot</b> ya da <b>paket servis</b> ister. Seçim ekranındaki <b>Ekstralar</b> kutusundan işaretle; unutursan sipariş yanlış sayılır." },
-    machineOn:  { t: "Sabah açılışı", h: "Her sabah makineyi açarsın: <b>Su → Isıt → Basınç</b> sırasıyla dokun. İlk denemede doğruysa +2 XP." },
-    calibration:{ t: "Sabah kalibrasyonu", h: "Deneme shot'ının kaç saniyede aktığına bak: <b>hızlı</b> (25 sn'den önce) aktıysa <b>Daha ince</b>, <b>yavaş</b> (30 sn'den sonra) aktıysa <b>Daha kaba</b>, 25–30 sn'deyse <b>Böyle kalsın</b>. Tutmazsa o gün öğütme hedefi kayar." },
     clean:      { t: "Gece temizliği", h: "Gün defterinde <b>Temizle</b>'ye dokun; açılan pencerede <b>ÇALIŞTIR</b>'a 3 kez bas, her seferinde 1 saniye bekle. Temizlemezsen ertesi gün ekstraksiyon zorlaşır." },
     dirty:      { t: "Kirli makine", h: "Makine dün temizlenmedi: bugün ekstraksiyonun renkli bölgeleri daha dar. Akşam gün defterinde <b>Temizle</b>'yi unutma." },
     weather:    { t: "Hava ve günler", h: "Hava dükkanı etkiler: yağmurda sıcak, sıcakta buzlu kahveler çok istenir; Cumartesi dükkan kalabalık olur. Günün havası saatin yanında simgeyle görünür." },

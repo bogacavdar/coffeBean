@@ -137,11 +137,7 @@ async function run(size) {
     await click('[data-diff="normal"]'); await check('giris_teyze');
     await clickText('Devral'); await sleep(900);
     const mbtn = async l => { await page.evaluate(l => { const b = [...document.querySelectorAll('#ovModal.on button')].find(x => x.textContent.trim() === l); if (b) b.click(); }, l); await sleep(350); };
-    // v0.42 açılış dersi: makineyi aç → kalibrasyon (önce yanlış) → hazır
-    await waitFor(() => document.querySelector('#ovModal').classList.contains('on')); await check('acilis_makine');
-    await mbtn('Isıt'); await check('acilis_makine_yanlis'); for (const l of ['Su', 'Isıt', 'Basınç']) await mbtn(l);
-    await check('acilis_kalibrasyon'); await mbtn('Böyle kalsın'); await check('acilis_kalibrasyon_yanlis'); await mbtn('Daha ince');
-    await check('acilis_hazir'); await mbtn('Tamam'); await sleep(400); await check('sahne_teyze');
+    await sleep(400); await check('sahne_teyze');   // v0.46: açılış dersi kaldırıldı
     if (!await tapCustomer()) throw new Error('Yıldız Teyze tıklanamadı');
     await sleep(400); await check('tut_ogut_anladim');
     // öğütme
@@ -234,7 +230,7 @@ async function run(size) {
     await click('#hubNext'); await check('fiyatlar');
     await click('[data-pu]'); await check('fiyatlar_arti');
     await click('#prNext'); await sleep(900);
-    for (const lb of ['Su', 'Isıt', 'Basınç', 'Böyle kalsın', 'Anladım', 'Anladım']) { await page.evaluate(l => { const b = [...document.querySelectorAll('#ovModal.on button')].find(x => x.textContent.trim() === l); if (b) b.click(); }, lb); await sleep(350); }   // v0.40 sabah açılışı + kalibrasyon
+    for (const lb of ['Anladım', 'Anladım']) { await page.evaluate(l => { const b = [...document.querySelectorAll('#ovModal.on button')].find(x => x.textContent.trim() === l); if (b) b.click(); }, lb); await sleep(350); }
     await check('gun2_sahne');
     await click('#icBook'); await check('defter'); await page.evaluate(() => { const c = document.querySelector('#bookCard'); c.scrollTop = c.scrollHeight; }); await check('defter_alt'); await page.evaluate(() => document.querySelector('#bookX').click()); await sleep(200);
     await click('#icSettings'); await check('ayarlar'); await page.evaluate(() => document.querySelector('#setX').click()); await sleep(200);

@@ -298,26 +298,6 @@ function rollWeather() {                                                        
   if (window.CB_TEST_WEATHER) { const w = window.CB_TEST_WEATHER; window.CB_TEST_WEATHER = null; return w === "none" ? null : w; }   // v0.42 akış testi
   if (S.day % 7 === 6) return "crowd"; const r = Math.random(), W = D.weather; return r < W.rain.p ? "rain" : r < W.rain.p + W.hot.p ? "hot" : null;
 }
-function showMachineOn(next, tut) {                                               // v0.40 §14 sabah açılışı: Su → Isıt → Basınç (v0.42: ilk gün Yıldız Teyze anlatır)
-  const ORDER = ["Su", "Isıt", "Basınç"], btns = ORDER.slice().sort(() => Math.random() - .5); let idx = 0, first = true;
-  const show = msg => modal(`<h3>⚙ Makineyi aç</h3>${tut ? `<div class="tutnote"><b>Yıldız Teyze:</b> ${D.tutorial.openIntro}</div>` : ""}<p>Sırayla dokun: <b>Su → Isıt → Basınç</b></p><p>${ORDER.map((x, i) => (i < idx ? "✅ " : "⬜ ") + x).join(" &nbsp; ")}</p>${msg ? `<p class="muted">${msg}</p>` : ""}`,
-    btns.map(b => ({ label: b, pri: false, fn: () => { if (!day) return; if (b === ORDER[idx]) { idx++; AUDIO.sfx("click"); if (idx >= ORDER.length) { if (first) { S.xp += 2; toast("Makine hazır ✓ · +2 XP"); } else toast("Makine hazır"); return next(); } show(""); } else { first = false; idx = 0; AUDIO.sfx("sad"); show(tut ? D.tutorial.openWrong : "Yanlış sıra; baştan."); } } })));
-  show("");
-}
-function showCalibration(next, tut) {                                             // §13 sabah kalibrasyonu (dial-in); v0.42: ilk gün Yıldız Teyze anlatır (kayma hep "hızlı", yanlışta tekrar)
-  const C = D.calibration, r = Math.random(); let acc = 0, drift = "ok"; for (const [k, p] of C.drift) { acc += p; if (r < acc) { drift = k; break; } }
-  if (tut) drift = "coarse";
-  day.calPenalty = false;
-  if (tut) { const ask = msg => modal(`<h3>☕ Sabah kalibrasyonu</h3><div class="tutnote"><b>Yıldız Teyze:</b> ${msg || D.tutorial.calIntro}</div><p>${C.shot[drift]}</p><p class="muted">Öğütücü ayarını ne yapalım?</p>`,
-      [{ label: "Daha kaba", fn: () => { AUDIO.sfx("sad"); ask(D.tutorial.calWrong); } }, { label: "Böyle kalsın", fn: () => { AUDIO.sfx("sad"); ask(D.tutorial.calWrong); } },
-       { label: "Daha ince", pri: true, fn: () => { if (!day) return; day.calShift = 0; S.xp += C.xp; toast("Ayar tuttu ✓ · +" + C.xp + " XP"); AUDIO.sfx("perfect"); renderHUD(); if (next) next(); } }]);
-    return ask(); }
-  const pickA = ans => { if (!day) return; const ok = ans === C.answer[drift]; day.calPenalty = false;
-    day.calShift = ok ? 0 : drift === "coarse" ? 8 : drift === "fine" ? -8 : ans === "finer" ? -8 : ans === "coarser" ? 8 : 0;   // v0.40 §14: tutmazsa öğütme hedefi kayar (daralma yok)
-    if (ok) { S.xp += C.xp; toast("Ayar tuttu ✓ · +" + C.xp + " XP"); AUDIO.sfx("perfect"); } else toast(day.calShift ? "Ayar tutmadı · bugün öğütme hedefi " + (day.calShift > 0 ? "ince" : "kaba") + " tarafa kaydı" : "Kalibrasyon atlandı"); renderHUD(); if (next) next(); };
-  modal(`<h3>☕ Sabah kalibrasyonu</h3><p>${C.shot[drift]}</p><p class="muted">Öğütücü ayarını ne yapalım? Doğru ayar bugünü kolaylaştırır; yanlışsa öğütme ve ekstraksiyon hedefleri daralır.</p>`,
-    [{ label: "Atla", fn: () => pickA("skip") }, { label: "Daha kaba", fn: () => pickA("coarser") }, { label: "Böyle kalsın", fn: () => pickA("keep") }, { label: "Daha ince", pri: true, fn: () => pickA("finer") }]);
-}
 const rushOn = () => !!(day && day.rush && day.rush.on && day.t < day.rush.at + day.rush.dur);
 const wIcon = () => (rushOn() ? "⏰ " : "") + (day && day.weather ? D.weather[day.weather].icon + " " : "");
 function startDay() {
@@ -341,16 +321,11 @@ function startDay() {
     if (day.dirty) msgs.push("🧽 Makine dün temizlenmedi: ekstraksiyon bugün daha zor");
     if (day.jury) msgs.push("🏆 Yarışma günü: ilk 3 müşteri jüri");
     if (msgs.length) toast(msgs.join(" · "));
-    const after = () => { if (!day) return; flowEvent("calib"); if (day.weather) lesson("weather"); if (day.dirty) lesson("dirty"); if (day.jury) lesson("jury"); };   // v0.42 §15
-    const skipOpen = window.CB_TEST_NOOPEN; window.CB_TEST_NOOPEN = false;   // akış testi: sabah açılışını atla
-    if (S.day >= 2 && !skipOpen) lesson("machineOn", () => showMachineOn(() => lesson("calibration", () => showCalibration(after)))); else after(); }, 350);
+    if (day.weather) lesson("weather"); if (day.dirty) lesson("dirty"); if (day.jury) lesson("jury"); }, 350);   // v0.46 §17: sabah açılışı ve kalibrasyon kaldırıldı
   if (firstTime) {
     day.tutorialActive = true;
     day.customers.push({ id: day.id++, type: "nejla", name: "Yıldız Teyze", drink: "espresso", size: "double", bean: "brazil", milk: null, patience: Infinity, patienceMax: 0,
-      pos: Object.assign({}, SCENE.queueSlot(0)), target: null, moving: false, say: D.tutorial.openSay });
-    day.opening = true;                                                          // v0.42 §15 açılış dersi: makineyi aç → kalibrasyon → espresso
-    setTimeout(() => { if (!day) return; showMachineOn(() => showCalibration(() => { if (!day) return; teach("L:machineOn", "L:calibration");
-      modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.openDone}</p>`, [{ label: "Tamam", pri: true, fn: () => { if (!day) return; day.opening = false; const y = day.customers.find(c => c.type === "nejla"); if (y) y.say = "Hazırsan başlayabiliriz evladım, bana dokun."; layout(); } }]); }, true), true); }, 400);   // §10 Yıldız Teyze zaten tezgâhın önünde (v0.30: aynı anda tek talimat – balon söyler, toast yok)
+      pos: Object.assign({}, SCENE.queueSlot(0)), target: null, moving: false, say: D.tutorial.firstSay });   // v0.46 §17: açılış dersi yok, doğrudan espresso   // §10 Yıldız Teyze zaten tezgâhın önünde (v0.30: aynı anda tek talimat – balon söyler, toast yok)
   }
   AUDIO.sfx("shopOpen");                                                            // §11 açılış sesi
   layout(); renderHUD(); renderBench(); lastT = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
@@ -454,7 +429,6 @@ function leave(c, cancelled) {
   toast(c.name + (cancelled ? " siparişi iptal etti · −5 itibar" : " vazgeçip gitti · −5 itibar")); renderOrders(); if (had) renderBench(); renderHUD();
 }
 function takeOrder(id) {
-  if (day && day.opening) return;                                                // v0.42 §15 açılış dersi bitmeden sipariş yok
   const c = day.customers.find(x => x.id === id && !x.ordered && !x.leaving); if (!c) return;
   if (c !== queueOf()[0]) { toast("Önce sıranın en önündeki müşteri"); return; }   // §7 yalnızca öndeki müşteri sipariş verir
   if (!c.say && c.type !== "nejla" && day.orders.length < slots()) { toast("Müşteri kasaya gelsin, siparişini söylesin"); return; }
@@ -914,7 +888,7 @@ const zFade = () => { if (LSG("cb_fullzones") === "1") return 1; const i = D.ran
 const applyFade = el => { const f = zFade(); if (f < 1) el.querySelectorAll(".zb").forEach(z => z.style.opacity = f); };
 const EXT_T = o => { const r = D.drinks[o.drink].ratio || 2; return r === 1.5 ? 20 : r === 3 ? 37.5 : 27.5; };
 const MG = {
-  grind:   { mode: "osc", speed: 85, btn: "ÖĞÜT", left: "kaba", right: "ince", target: o => clamp((D.beans[o.bean || "brazil"].grindT || 50) + ((D.drinks[o.drink].profile || {}).grind || 0) + (day && !o.tutorial ? day.calShift || 0 : 0), 10, 90),   /* v0.40 §14: kalibrasyon kayması */ sfx: "grind", tipLow: "grind_low", tipHigh: "grind_high",
+  grind:   { mode: "osc", speed: 85, btn: "ÖĞÜT", left: "kaba", right: "ince", target: o => clamp((D.beans[o.bean || "brazil"].grindT || 50) + ((D.drinks[o.drink].profile || {}).grind || 0), 10, 90),   /* v0.40 §14: kalibrasyon kayması */ sfx: "grind", tipLow: "grind_low", tipHigh: "grind_high",
              draw: (o, v) => { CLOSEUP.grind(v); ZM(o, v, "hedef öğütüm"); } },
   dose:    { mode: "hold", fill: "shake", speed: 9 * 100 / 24, btn: "BASILI TUT · dozla", left: "0 g", right: o => `${Math.round(SZ(o.size).dose * 4 / 3)} g`, target: () => 75, sfx: "dose", tipLow: "dose_low", tipHigh: "dose_high",
              onStart: () => AUDIO.sfx("dose"), draw: (o, v) => { CLOSEUP.dose(v * SZ(o.size).dose * 4 / 300, SZ(o.size).dose); ZM(o, v, "hedef " + SZ(o.size).dose + " g"); } },   // §7 double/büyük: 36 g
@@ -1496,7 +1470,7 @@ const CHEATS = [
 // ---------- v0.42 Akış testi (hile modunda ana menüde): her akış ve mini oyun ayrı bir deneme kaydında (yuva 0) açılır ----------
 function tsState(o = {}) {                                                       // deneyimli oyuncu: ilk gün bitmiş, stok dolu, tüm tarif ve aletler
   const x = newState("normal"); x.day = o.day || 4; x.money = 900000; x.rep = 60; x.xp = 400; x.shopLevel = o.lv ?? 2;
-  x.taught = ["intro", "first", "closing", "mg:grind", "mg:dose", "mg:tamp", "mg:extract", "mg:pregrind", "L:machineOn", "L:calibration", "L:clean", "L:select"].filter(k => !(o.untaught || []).includes(k));
+  x.taught = ["intro", "first", "closing", "mg:grind", "mg:dose", "mg:tamp", "mg:extract", "mg:pregrind", "L:clean", "L:select"].filter(k => !(o.untaught || []).includes(k));
   if (o.noMg) x.taught = x.taught.filter(k => !/^mg:/.test(k));
   x.unlocked = Object.keys(D.drinks); x.tools = Object.fromEntries(Object.keys(D.tools).map(k => [k, true])); x.cleanDay = x.day - 1; x.rentPaidWeek = Math.ceil(x.day / 7);
   x.beans = Object.fromEntries(Object.keys(D.beans).map(k => [k, { kg: 20, boughtDay: x.day }])); x.milk = 50; x.milkAlt = Object.fromEntries(Object.keys(D.milks).filter(k => k !== "cow").map(k => [k, 50])); x.milkDay = x.day;
@@ -1505,7 +1479,7 @@ function tsState(o = {}) {                                                      
   return Object.assign(x, o.set || {});
 }
 function tsBegin(x, after) { if (!window.CB_TEST_WEATHER) window.CB_TEST_WEATHER = "none"; curSlot = 0; window.CB_LESSON = false; lessonQ = []; begin(x); if (after) setTimeout(() => { if (S) after(); }, 500); }
-function tsDay(after, noOpen) { window.CB_TEST_NOOPEN = !!noOpen; startDay(); setTimeout(() => { if (day && after) after(); }, 700); }
+function tsDay(after) { startDay(); setTimeout(() => { if (day && after) after(); }, 700); }
 function tsCust(type, drink, size, extra) {                                      // sıraya belirli bir müşteri koy
   day.tutorialActive = false; spawnCustomer(); const c = day.customers[day.customers.length - 1]; if (!c) return null;
   const d = D.drinks[drink] || D.drinks.espresso; drink = D.drinks[drink] ? drink : "espresso";
@@ -1529,46 +1503,45 @@ function tsStep(stepKey, variant) {                                             
 }
 const stepsForLv = (id, lv) => { const d = D.drinks[id]; const st = d.steps.slice(); if (d.art && D.shopLevels[lv].stars >= 3) { if (st.includes("pour")) st[st.indexOf("pour")] = "art"; else st.splice(st.indexOf(st.includes("swirl") ? "swirl" : "milk") + 1, 0, "art"); } return st; };
 const FLOWS = [
-  ["A1", "İlk gün baştan: Yıldız Teyze (açılış → espresso → kapanış)", () => { curSlot = 0; window.CB_LESSON = false; begin(newState("normal")); }],
+  ["A1", "İlk gün baştan: Yıldız Teyze (espresso → kapanış)", () => { curSlot = 0; window.CB_LESSON = false; begin(newState("normal")); }],
   ["A2", "İlk günün kapanışı (kira, defter, temizlik, veda)", () => tsBegin(tsState({ day: 1, untaught: ["closing", "L:clean"] }), () => tsDay(() => cheatEndDay()))],
-  ["A3", "Sabah açılışı, ilk kez (makine + kalibrasyon dersi)", () => tsBegin(tsState({ day: 2, untaught: ["L:machineOn", "L:calibration"] }), () => tsDay())],
-  ["A4", "Sabah açılışı, bilinen (ders yok)", () => tsBegin(tsState({ day: 3 }), () => tsDay())],
-  ["A5", "Gün sonu: kira günü → defter → temizlik dersi → gazete → tedarik → dükkan → fiyatlar", () => tsBegin(tsState({ day: 7, untaught: ["L:clean"], set: { rentPaidWeek: 0 } }), () => tsDay(() => cheatEndDay(), true))],
-  ["A6", "Sipariş seçimi dersi (ilk normal müşteri)", () => tsBegin(tsState({ untaught: ["L:select"] }), () => tsDay(() => tsCust("regular", "latte", "M"), true))],
-  ["A7", "Ekstralar: ekstra shot + paket servis", () => tsBegin(tsState({ day: 5 }), () => tsDay(() => tsCust("business", "latte", "M", { mods: { extra: true, takeaway: true } }), true))],
-  ["A8", "Özel müşteri: Eleştirmen", () => tsBegin(tsState(), () => tsDay(() => tsCust("critic", "cappuccino", "M"), true))],
-  ["A9", "Özel müşteri: Turist", () => tsBegin(tsState(), () => tsDay(() => tsCust("tourist", "latte", "M"), true))],
-  ["A10", "Özel müşteri: Fenomen", () => tsBegin(tsState(), () => tsDay(() => tsCust("influencer", "espresso", "double"), true))],
-  ["A11", "Yarışma günü (3 jüri)", () => tsBegin(tsState({ lv: 4, set: { compDay: 4 } }), () => tsDay())],
-  ["A12", "Yoğun saat", () => tsBegin(tsState(), () => tsDay(() => { day.rush = { at: day.t + 3, dur: 30, on: false }; }, true))],
-  ["A13", "Kirli makine (dün temizlenmedi)", () => tsBegin(tsState({ set: { cleanDay: 0 } }), () => tsDay())],
-  ["A14", "Hava: yağmurlu gün", () => { window.CB_TEST_WEATHER = "rain"; tsBegin(tsState(), () => tsDay()); }],
-  ["A15", "Hava: sıcak gün", () => { window.CB_TEST_WEATHER = "hot"; tsBegin(tsState(), () => tsDay()); }],
-  ["A16", "Sadık müşteri (bir mükemmel servis daha)", () => tsBegin(tsState({ set: { loyal: { regular: 2 } } }), () => tsDay(() => tsCust("regular", "espresso", "double"), true))],
-  ["A17", "Çift grup: shot akarken öbür siparişe geç", () => tsStep("extract", "dual")],
-  ["A18", "Önden öğütme (Sonraki için de öğüt)", () => tsStep("grind", "pregrind")],
-  ["A19", "Dozlama: kaydırarak / telefonu sallayarak", () => tsStep("dose")],
-  ["A20", "Süt: iki aşama (hava al + ısıt)", () => tsStep("milk", "milk2")],
-  ["A21", "Süt: tek aşama (sıcak süt, ör. café au lait)", () => tsStep("milk", "hot")],
-  ["A22", "Latte art: dök + yukarı çizim", () => tsStep("art")],
-  ["A23", "Türk kahvesi köpüğü ölçeksiz (3 servisten sonra)", () => tsStep("tkfoam", "blind")]
+  ["A3", "Gün sonu: kira günü → defter → temizlik dersi → gazete → tedarik → dükkan → fiyatlar", () => tsBegin(tsState({ day: 7, untaught: ["L:clean"], set: { rentPaidWeek: 0 } }), () => tsDay(() => cheatEndDay()))],
+  ["A4", "Sipariş seçimi dersi (ilk normal müşteri)", () => tsBegin(tsState({ untaught: ["L:select"] }), () => tsDay(() => tsCust("regular", "latte", "M")))],
+  ["A5", "Ekstralar: ekstra shot + paket servis", () => tsBegin(tsState({ day: 5 }), () => tsDay(() => tsCust("business", "latte", "M", { mods: { extra: true, takeaway: true } })))],
+  ["A6", "Özel müşteri: Eleştirmen", () => tsBegin(tsState(), () => tsDay(() => tsCust("critic", "cappuccino", "M")))],
+  ["A7", "Özel müşteri: Turist", () => tsBegin(tsState(), () => tsDay(() => tsCust("tourist", "latte", "M")))],
+  ["A8", "Özel müşteri: Fenomen", () => tsBegin(tsState(), () => tsDay(() => tsCust("influencer", "espresso", "double")))],
+  ["A9", "Yarışma günü (3 jüri)", () => tsBegin(tsState({ lv: 4, set: { compDay: 4 } }), () => tsDay())],
+  ["A10", "Yoğun saat", () => tsBegin(tsState(), () => tsDay(() => { day.rush = { at: day.t + 3, dur: 30, on: false }; }))],
+  ["A11", "Kirli makine (dün temizlenmedi)", () => tsBegin(tsState({ set: { cleanDay: 0 } }), () => tsDay())],
+  ["A12", "Hava: yağmurlu gün", () => { window.CB_TEST_WEATHER = "rain"; tsBegin(tsState(), () => tsDay()); }],
+  ["A13", "Hava: sıcak gün", () => { window.CB_TEST_WEATHER = "hot"; tsBegin(tsState(), () => tsDay()); }],
+  ["A14", "Sadık müşteri (bir mükemmel servis daha)", () => tsBegin(tsState({ set: { loyal: { regular: 2 } } }), () => tsDay(() => tsCust("regular", "espresso", "double")))],
+  ["A15", "Çift grup: shot akarken öbür siparişe geç", () => tsStep("extract", "dual")],
+  ["A16", "Önden öğütme (Sonraki için de öğüt)", () => tsStep("grind", "pregrind")],
+  ["A17", "Dozlama: kaydırarak / telefonu sallayarak", () => tsStep("dose")],
+  ["A18", "Süt: iki aşama (hava al + ısıt)", () => tsStep("milk", "milk2")],
+  ["A19", "Süt: tek aşama (sıcak süt, ör. café au lait)", () => tsStep("milk", "hot")],
+  ["A20", "Latte art: dök + yukarı çizim", () => tsStep("art")],
+  ["A21", "Türk kahvesi köpüğü ölçeksiz (3 servisten sonra)", () => tsStep("tkfoam", "blind")]
 ,
-  ...[1, 2, 3, 4, 5].map(n => ["A" + (23 + n), `Dükkan görünümü ${"★".repeat(n)} ${D.shopLevels[n - 1].name}`, () => tsBegin(tsState({ lv: n - 1 }), () => tsDay(null, true))]),
-  ["A29", "Tarif görselleri galerisi (82 tarif)", () => showDrinkGallery()]
+  ...[1, 2, 3, 4, 5].map(n => ["A" + (21 + n), `Dükkan görünümü ${"★".repeat(n)} ${D.shopLevels[n - 1].name}`, () => tsBegin(tsState({ lv: n - 1 }), () => tsDay())]),
+  ["A27", "Tarif görselleri galerisi (82 tarif)", () => showDrinkGallery()]
 ];
 function showDrinkGallery() {                                                     // v0.43 §16 akış testi: tüm tariflerin bitiş görselleri
-  modal(`<h3>☕ Tarif görselleri</h3><p class="muted">Dokun: büyük görseli aç.</p><div class="ftgal">${Object.keys(D.drinks).map(id => `<button data-dg="${id}"><img src="${drinkThumb(id)}" alt=""><span>${D.drinks[id].name}</span></button>`).join("")}</div>`, [{ label: "Bitti ✓", pri: true, fn: () => { if (curFlow === "A29") flowDone(); } }]);
+  modal(`<h3>☕ Tarif görselleri</h3><p class="muted">Dokun: büyük görseli aç.</p><div class="ftgal">${Object.keys(D.drinks).map(id => `<button data-dg="${id}"><img src="${drinkThumb(id)}" alt=""><span>${D.drinks[id].name}</span></button>`).join("")}</div>`, [{ label: "Bitti ✓", pri: true, fn: () => { if (curFlow === "A27") flowDone(); } }]);
   document.querySelectorAll("[data-dg]").forEach(b => b.onclick = () => { const id = b.dataset.dg;
     modal(`<h3>${D.drinks[id].name}</h3><canvas id="dgCv" style="width:100%;aspect-ratio:480/250;border-radius:12px"></canvas>`, [{ label: "← Galeri", pri: true, fn: () => setTimeout(showDrinkGallery, 0) }]);
     setTimeout(() => { const cv = $("#dgCv"); if (!cv) return; CLOSEUP.init(cv); CLOSEUP.served(id, 92); }, 30); });
 }
 Object.keys(D.minigames).filter(k => Object.keys(D.drinks).some(id => stepsForLv(id, k === "pour" ? 0 : 2).includes(k))).forEach((k, i) => FLOWS.push(["M" + (i + 1), D.minigames[k].name + " (" + k + ")", () => tsStep(k), "step:" + k]));
 // v0.43 akış testi: test edilen akış bitince kendiliğinden tiklenir ve listeye dönülür (hile panelinde elle "tamam" da var)
-const FLOW_EV = { A1: "closing", A2: "closing", A3: "calib", A4: "calib", A5: "prices", A6: "prep", A7: (e, o) => e === "serve" && o && o.cust.mods && (o.cust.mods.extra || o.cust.mods.takeaway),
-  A8: (e, o) => e === "serve" && o && o.cust.type === "critic", A9: (e, o) => e === "serve" && o && o.cust.type === "tourist", A10: (e, o) => e === "serve" && o && o.cust.type === "influencer",
-  A11: "jury", A12: "lesson:rush", A13: "lesson:dirty", A14: "lesson:weather", A15: "lesson:weather", A16: "lesson:loyal",
-  A17: "step:extract", A18: "step:grind", A19: "step:dose", A20: "step:milk", A21: "step:milk", A22: "step:art", A23: "step:tkfoam" };
+const FLOW_EV = { A1: "closing", A2: "closing", A3: "prices", A4: "prep", A5: (e, o) => e === "serve" && o && o.cust.mods && (o.cust.mods.extra || o.cust.mods.takeaway),
+  A6: (e, o) => e === "serve" && o && o.cust.type === "critic", A7: (e, o) => e === "serve" && o && o.cust.type === "tourist", A8: (e, o) => e === "serve" && o && o.cust.type === "influencer",
+  A9: "jury", A10: "lesson:rush", A11: "lesson:dirty", A12: "lesson:weather", A13: "lesson:weather", A14: "lesson:loyal",
+  A15: "step:extract", A16: "step:grind", A17: "step:dose", A18: "step:milk", A19: "step:milk", A20: "step:art", A21: "step:tkfoam" };
 let curFlow = null, lastFlow = null;
+if (LSG("cb_flowV") !== "2") { try { const o = JSON.parse(LSG("cb_flowDone") || "[]"); LSS("cb_flowDone", JSON.stringify(o.filter(c => c !== "A3" && c !== "A4").map(c => { const m = /^A(\d+)$/.exec(c); return m && +m[1] >= 5 ? "A" + (m[1] - 2) : c; }))); } catch (e) {} LSS("cb_flowV", "2"); }   // v0.46 §17: A3/A4 kaldırıldı, kodlar 2 kaydı
 const flowDoneSet = () => { try { return new Set(JSON.parse(LSG("cb_flowDone") || "[]")); } catch (e) { return new Set(); } };
 function flowEvent(ev, data) { if (!curFlow) return; const f = FLOWS.find(x => x[0] === curFlow), want = FLOW_EV[curFlow] || (f && f[3]); if (!want) return;
   if (typeof want === "function" ? want(ev, data) : want === ev) flowDone(); }

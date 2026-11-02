@@ -7,8 +7,9 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.45)
-- (boş)
+## Bekleyen paket (son yayın: v0.45) – dal `bekleyen-v046`
+- **v0.46 adayı** (tasarım §17, Claude Docs rev 174 + HTML): kullanıcı "makineyi açı ve sabah kalibrasyonunu komple kaldır öğreticiden test modundan her şeyden". Silindi: `showMachineOn`, `showCalibration`, `day.calShift` (grind hedefi), `day.opening` + takeOrder engeli, `D.calibration`, `D.tutorial.openIntro/openWrong/calIntro/calWrong/openDone/openSay` (yerine `firstSay`), `D.lessons.machineOn/calibration`, `CB_TEST_NOOPEN` / `tsDay` noOpen, `flowEvent("calib")`. intro/done metinleri güncellendi. Akış testi A3/A4 silindi, A5–A29 → A3–A27 (`cb_flowV` "2" göçü tikleri kaydırır). `araclar/telefon-denetimi.js` açılış adımları çıkarıldı.
+- Bilgisayarda %125 kamera (§17): `scene.js` yatay dalında `DZ = matchMedia("(pointer: fine)") ? 1.25 : 1`, `TW = TW0·DZ`, `OY` orta sabit (`− (DZ−1)·TW0·1,4`). Kural 7: yalnız sözdizimi.
 
 ## v0.45 – YAYINLANDI (2 Kasım 2026, kullanıcı "acil bug": müzik 0'da çalıyor)
 - Sebep: `musicChain()` yankı kolu (`rs`) doğrudan `revSend`'e bağlıydı, `musicBus` seviyesini atlıyordu. Düzeltme: `musicRev` kazancı (müzik seviyesi) üzerinden; `setMusic` ikisini de ayarlar, 0'da kesin 0; müzik 0 iken notalar hiç planlanmaz. Belge rev 173 + HTML. Kural 7: yalnız sözdizimi.
