@@ -309,15 +309,16 @@ window.DATA = {
 
 
   // §8 – Ekipman + otomasyon (prototip). stars = gereken dükkan seviyesi; auto = otomatik yaptığı adımlar (sabit 100 puan, v0.35).
+  upgradeCost: [1, 1.3, 1.65],
   equipment: {
-    // hassasiyet: renkli hedef bölgeleri ×1,5 (widen); otomasyon için önce bunlar gerekir (requires)
-    grindPrecise:  { name: "Mikro ayarlı öğütücü",       price: 150,  stars: 1, widen: "grind",   effect: "Öğütme hedef bölgeleri ×1,5 geniş" },
-    precScale:     { name: "Hassas terazi",              price: 160,  stars: 1, widen: "dose",    effect: "Dozlama hedef bölgeleri ×1,5 geniş" },
-    scaleTamp:     { name: "Tartılı temper",             price: 180,  stars: 1, widen: "tamp",    effect: "Temperleme hedef bölgeleri ×1,5 geniş" },
-    pidGauge:      { name: "Sıcaklık kontrolcüsü (PID)",    price: 220,  stars: 1, widen: "extract", effect: "Ekstraksiyon hedef bölgeleri ×1,5 geniş" },
-    thermoPitcher: { name: "Termometreli sürahi",        price: 140,  stars: 1, widen: "milk",    effect: "Süt hedef bölgeleri ×1,5 geniş" },
+    // hassasiyet (v0.36): 3 kez geliştirilir, bölgeler ×1,2 → ×1,35 → ×1,5; fiyat kademe başına ×1 → ×1,3 → ×1,65 (D.upgradeCost). Otomasyon 3. kademeyi ister ve her zaman en pahalısıdır.
+    grindPrecise:  { name: "Mikro ayarlı öğütücü",       price: 150,  stars: 1, widen: "grind",   effect: "Öğütme hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)" },
+    precScale:     { name: "Hassas terazi",              price: 160,  stars: 1, widen: "dose",    effect: "Dozlama hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)" },
+    scaleTamp:     { name: "Tartılı temper",             price: 180,  stars: 1, widen: "tamp",    effect: "Temperleme hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)" },
+    pidGauge:      { name: "Sıcaklık kontrolcüsü (PID)",    price: 220,  stars: 1, widen: "extract", effect: "Ekstraksiyon hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)" },
+    thermoPitcher: { name: "Termometreli sürahi",        price: 140,  stars: 1, widen: "milk",    effect: "Süt hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)" },
     steamWand:     { name: "Buhar çubuğu yükseltmesi",   price: 300,  stars: 1, effect: "Süt köpürtme hızlanır" },
-    pourPitcher:   { name: "Profesyonel döküm sürahisi", price: 260,  stars: 3, widen: "art",     effect: "Latte art hedef bölgeleri ×1,5 geniş" },
+    pourPitcher:   { name: "Profesyonel döküm sürahisi", price: 260,  stars: 3, widen: "art",     effect: "Latte art hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)" },
     // otomasyon (sabit 100 puan, v0.35)
     autoGrind:   { name: "Otomatik öğütücü",          price: 350,  stars: 1, auto: ["grind"], requires: ["grindPrecise"], effect: "Öğütme otomatik (100 puan)" },
     scaleGrind:  { name: "Tartılı öğütücü",           price: 400,  stars: 1, auto: ["dose"],  requires: ["precScale"], effect: "Dozlama otomatik (100 puan)" },
@@ -330,7 +331,7 @@ window.DATA = {
     filterMachine: { name: "Filtre kahve makinesi",   price: 400,  stars: 2, auto: ["bloom","pourover"], effect: "Filtre kahvede ön ıslatma ve dökme otomatik (100 puan)" }
   },
   // §4 renkli hedef çubuğu: bölge yarı genişlikleri (çubuğun %'si) ve puanları
-  zones: { time: { perfect: 0.0267, good: 0.0667, ok: 0.133 } /* §4 eşit zorluk: sn; yarı genişlik % = ibre hızı × süre */, minPerfect: 0.3, widen: 1.5, score: { perfect: 100, good: 88, ok: 72 } },
+  zones: { time: { perfect: 0.0267, good: 0.0667, ok: 0.133 } /* §4 eşit zorluk: sn; yarı genişlik % = ibre hızı × süre */, minPerfect: 0.3, widen: 1.5, widenLevels: [1.2, 1.35, 1.5] /* v0.36: kolaylaştırıcı 3 kademe */, score: { perfect: 100, good: 88, ok: 72 } },
 
   // §3 – Tarife özel aletler ve makineler (Dükkan › Aletler & Makineler). step: getirdiği mini oyun (espressodan sonra)
   tools: {

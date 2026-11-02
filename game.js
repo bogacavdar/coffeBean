@@ -731,10 +731,15 @@ function setTut(html) { const t = $("#tut"); if (t) t.innerHTML = html; }   // �
 // ---------- §4 Renkli hedef çubuğu: tüm mini oyunlar ----------
 // Ortada koyu yeşil Mükemmel (100), yanında açık yeşil Güzel (88), en dışta sarı İyi (72); dışı Kaçtı.
 // Bölgeler rütbe toleransıyla daralır, ilgili hassasiyet yükseltmesiyle ×1,5 genişler (§8).
-const hasWiden = step => Object.keys(S.equipment).some(k => S.equipment[k] && D.equipment[k] && D.equipment[k].widen === step);
+// v0.36: kolaylaştırıcılar 3 kademe. Eski kayıtta alınmış olan (eski ×1,5) 3. kademe sayılır.
+const eqLevel = id => { const lv = (S.eqLv || {})[id]; return lv != null ? lv : (S.equipment[id] ? (D.equipment[id] && D.equipment[id].widen ? 3 : 1) : 0); };
+const eqMax = id => (D.equipment[id] && D.equipment[id].widen ? 3 : 1);
+const eqNextPrice = id => { const e = D.equipment[id], lv = eqLevel(id); if (!e.widen) return e.price; const v = e.price * (D.upgradeCost || [1, 1.3, 1.65])[Math.min(lv, 2)]; return Math.round(v / 10) * 10; };
+const reqOk = r => eqLevel(r) >= eqMax(r);
+const widenMult = step => { let m = 1; Object.keys(D.equipment).forEach(k => { const e = D.equipment[k], lv = eqLevel(k); if (e.widen === step && lv > 0) m = Math.max(m, (D.zones.widenLevels || [D.zones.widen])[Math.min(lv, 3) - 1] || D.zones.widen); }); return m; };
 const mgSpeed = c => typeof c.speed === "function" ? c.speed() : c.speed;
 function zoneSet(step, spd) {                                                     // §4 eşit zorluk: bölge genişliği ibre hızıyla orantılı (aynı zaman penceresi)
-  const Z = D.zones, T = Z.time, v = spd || mgSpeed(MG[step]) || 37.5, w = DF().zone * Math.min(1, tol()) * (hasWiden(step) ? Z.widen : 1) * v;
+  const Z = D.zones, T = Z.time, v = spd || mgSpeed(MG[step]) || 37.5, w = DF().zone * Math.min(1, tol()) * widenMult(step) * v;
   return { p: Math.max(Z.minPerfect, T.perfect * w), g: Math.max(Z.minPerfect * 2, T.good * w), k: Math.max(Z.minPerfect * 4, T.ok * w) }; }
 function zoneScore(v, t, z) {
   const d = Math.abs(v - t), sc = D.zones.score;
@@ -1023,9 +1028,11 @@ function openLoans(after) {
 
 // --- Dükkan yönetim ekranı (§2): sekmeler + Ana hedef ---
 function eqRow(id, e) {
-  const miss = (e.requires || []).filter(r => !S.equipment[r]);
-  const st = S.equipment[id] ? "✓ alındı" : miss.length ? `🔒 Önce: ${miss.map(r => D.equipment[r].name).join(", ")}` : `<button data-eq="${id}" ${S.money < e.price ? "disabled" : ""}>Satın al</button>`;
-  return `<tr class="${miss.length && !S.equipment[id] ? "lock" : ""}"><td>${th("eq:" + id)}<b>${e.auto ? "⚙ " : e.widen ? "🎯 " : ""}${e.name}</b><br><span class="muted">${e.effect}</span></td><td>₺${tl(e.price)}</td><td>${st}</td></tr>`;
+  const miss = (e.requires || []).filter(r => !reqOk(r)), lv = eqLevel(id), mx = eqMax(id), done = lv >= mx, price = eqNextPrice(id);
+  const reqTxt = r => D.equipment[r].name + (eqMax(r) > 1 ? ` (${eqLevel(r)}/${eqMax(r)} geliştirme)` : "");
+  const st = done ? (mx > 1 ? "✓ 3/3 tamam" : "✓ alındı") : miss.length ? `🔒 Önce: ${miss.map(reqTxt).join(", ")}` : `<button data-eq="${id}" ${S.money < price ? "disabled" : ""}>${mx > 1 ? (lv ? `Geliştir (${lv + 1}/3)` : "Satın al (1/3)") : "Satın al"}</button>`;   // v0.36
+  const lvTxt = mx > 1 ? ` <span class="eqlv">${"●".repeat(lv)}${"○".repeat(mx - lv)}</span>` : "";
+  return `<tr class="${miss.length && !done ? "lock" : ""}"><td>${th("eq:" + id)}<b>${e.auto ? "⚙ " : e.widen ? "🎯 " : ""}${e.name}</b>${lvTxt}<br><span class="muted">${e.effect}${mx > 1 && lv ? ` · şu an ×${String(D.zones.widenLevels[lv - 1]).replace(".", ",")}` : ""}</span></td><td>${done ? "" : "₺" + tl(price)}</td><td>${st}</td></tr>`;
 }
 function hubContent() {
   const lv = shop(), vis = e => (e.stars || 1) <= lv.stars;
@@ -1059,7 +1066,9 @@ function renderHub() {
   $("#hubCard").innerHTML = html;
   const R = $("#hubCard"), re = () => renderHub();
   R.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { hubTab = b.dataset.tab; AUDIO.sfx("click"); re(); });
-  R.querySelectorAll("[data-eq]").forEach(b => b.onclick = () => { const id = b.dataset.eq; if (S.money < D.equipment[id].price) return; buy(D.equipment[id].price, () => { S.equipment[id] = true; if (id === "fridge") { S.milkDay = S.day; S.fridgePaid = true; } }); re(); showPurchase("eq:" + id, D.equipment[id].name); });
+  R.querySelectorAll("[data-eq]").forEach(b => b.onclick = () => { const id = b.dataset.eq, price = eqNextPrice(id), lv = eqLevel(id); if (S.money < price || lv >= eqMax(id) || (D.equipment[id].requires || []).some(r => !reqOk(r))) return;
+    buy(price, () => { S.equipment[id] = true; (S.eqLv = S.eqLv || {})[id] = lv + 1; if (id === "fridge") { S.milkDay = S.day; S.fridgePaid = true; } }); re();   // v0.36: kademeli geliştirme
+    if (lv === 0) showPurchase("eq:" + id, D.equipment[id].name); else toast(`${D.equipment[id].name} geliştirildi (${lv + 1}/3)`); });
   R.querySelectorAll("[data-tool]").forEach(b => b.onclick = () => { const id = b.dataset.tool; if (S.money < D.tools[id].price) return; const before = new Set(S.unlocked.filter(hasTools));
     buy(D.tools[id].price, () => { S.tools[id] = true; S.log.push("Gün " + S.day + ": " + D.tools[id].name + " alındı"); }); re(); showPurchase("tool:" + id, D.tools[id].name);
     const now = S.unlocked.filter(x => hasTools(x) && !before.has(x)), need = supplyNeedsFor(now);   // v0.36: alet tarifi menüye aldıysa ve Tedarik'ten bir şey gerekiyorsa oraya yönlendir
