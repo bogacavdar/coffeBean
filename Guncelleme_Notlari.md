@@ -1,5 +1,10 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.38 – 2 Kasım 2026 (dik ekranda butonlar altta, dükkan ortada)
+- **Butonlar alta alındı:** telefon dik tutulunca Defter, Tedarik, Fiyatlar, Menü ve Ayarlar ekranın altında tam genişlikte tek sıra. İpucu şeridi, günlük görev, bekleyen sipariş kartı ve Günü başlat bu sıranın üstünde.
+- **Dükkan ortada ve daha yakın:** dükkan ekranın ortasında, öncekinden 1,3 kat yakın. Oyunu etkilemeyen kenarlar (boş duvar üstü, soldaki raf ve bitki, sağdaki askı) kırpılabiliyor; tezgâh, sıra, kapı ve masalar her zaman görünüyor.
+- Yatay ekran ve bilgisayar görünümü değişmedi.
+
 ## v0.37 – 2 Kasım 2026 (dik ekranda dükkan maketi)
 - **Telefon dik tutulunca dükkan artık bir maket gibi:** zemin ve duvarlar dükkanın kendi sınırında bitiyor, zeminin önünde kalınlık ve duvarların üstünde kesit var, dışı koyu kahverengi fon. Dükkan dev ve boş bir salon gibi görünmüyor.
 - Kamera biraz daha yukarıdan bakıyor; maket ekrana sığdırılıp boş alanın ortasına yerleşiyor, sağdaki düğmelerle çakışmıyor.
