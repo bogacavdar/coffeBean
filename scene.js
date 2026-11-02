@@ -368,6 +368,11 @@ window.SCENE = (() => {
     for (let i = 0; i < 16; i++) { ctx.fillStyle = i % 3 ? "#4f7a3a" : i % 2 ? "#77a656" : "#3e6630"; ctx.beginPath(); ctx.ellipse(px + Math.cos(i * 1.1) * TW * .32, py - 18 * h - Math.abs(Math.sin(i * 1.9)) * TW * .6 * h, TW * .17, TW * .42 * h, i * .7, 0, Math.PI * 2); ctx.fill(); } }
   function plant(x, y) { prism(x, y, .5, .5, 20, "#9c6b3f", "#6e4a2a", "#80573a"); const [px, py] = iso(x + .25, y + .25, 20);
     for (let i = 0; i < 10; i++) { ctx.fillStyle = i % 2 ? "#4f7a3a" : "#6b9a4b"; ctx.beginPath(); ctx.ellipse(px + Math.cos(i * 1.3) * TW * .22, py - 12 - Math.abs(Math.sin(i * 1.7)) * TW * .3, TW * .16, TW * .3, i * .9, 0, Math.PI * 2); ctx.fill(); } }
+  function flowerPot(x, y) { shadowE(x + .25, y + .25, TW * .35, TW * .15); cyl(x + .25, y + .25, .22, 18, "#b5533c", 0, "#8c3c2a"); const [px, py] = iso(x + .25, y + .25, 18), k = TW / 40;
+    for (let i = 0; i < 9; i++) { ctx.fillStyle = i % 2 ? "#4f7a3a" : "#6b9a4b"; ctx.beginPath(); ctx.ellipse(px + Math.cos(i * 1.4) * 9 * k, py - 8 * k - Math.abs(Math.sin(i * 1.9)) * 12 * k, 4 * k, 9 * k, i * .8 - .4, 0, Math.PI * 2); ctx.fill(); }
+    [["#f2a7c3", -8, -24], ["#ffd36b", 4, -30], ["#f6f1ea", 10, -20], ["#e86a6a", -2, -18], ["#f2a7c3", 7, -38], ["#b99be6", -9, -34]].forEach(([c, dx, dy]) => { const fx = px + dx * k, fy = py + dy * k;
+      ctx.fillStyle = c; for (let a = 0; a < 5; a++) { ctx.beginPath(); ctx.arc(fx + Math.cos(a * 1.257) * 2.6 * k, fy + Math.sin(a * 1.257) * 2.6 * k, 2.4 * k, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = "#e9b44c"; ctx.beginPath(); ctx.arc(fx, fy, 1.6 * k, 0, Math.PI * 2); ctx.fill(); }); }
   function frame(wall, u0, u1, z0, z1, inner, mat = "#3b2a20") { wallRect(wall, u0, u1, z0, z1, mat, "rgba(0,0,0,.3)"); wallRect(wall, u0 + .06, u1 - .06, z0 + 3, z1 - 3, inner); }
   const DECOR = {
     plant: () => bigPlant(4.9, 7.2),
@@ -418,16 +423,18 @@ window.SCENE = (() => {
 
   function table(x, y, kind) {
     shadowE(x + .4, y + .45, TW * .9, TW * .45);
-    const chair = kind === 1 ? (cx, cy) => { cyl(cx + .17, cy + .17, .02, 18, "#3a3a3f"); cyl(cx + .17, cy + .17, .16, 3, "#5c3f28", 18, "#7a5536"); }
-      : kind === 2 ? (cx, cy) => { prism(cx, cy, .36, .36, 18, "#5c3f28", "#3f2a1a", "#4e3522"); prism(cx + (cx < x ? 0 : .28), cy, .08, .36, 40, "#5c3f28", "#3f2a1a", "#4e3522"); }
-      : (cx, cy) => { prism(cx, cy, .4, .4, 20, "#6b2f22", "#4a1f16", "#5a271c"); prism(cx + (cx < x ? 0 : .3), cy, .1, .4, 38, "#7a3628", "#4a1f16", "#5a271c"); };
-    chair(x - .5, y + .15);
+    const C = kind === 2 ? ["#6f4d31", "#3f2a1a", "#55391f"] : ["#7a3628", "#4a1f16", "#5a271c"];   // v0.46: düzgün sandalyeler – masanın iki yanında, masaya dönük, ortalı
+    const chair = (cx, cy, sd) => { if (kind === 1) { cyl(cx, cy, .025, 17, "#3a3a3f"); cyl(cx, cy, .16, 3, "#5c3f28", 17, "#7a5536"); return; }
+      const back = () => prism(sd < 0 ? cx - .18 : cx + .14, cy - .18, .04, .36, 22, C[0], C[1], C[2], 18);
+      if (sd < 0) back(); [[-.16, -.16], [.12, -.16], [-.16, .12], [.12, .12]].forEach(([a, b]) => prism(cx + a, cy + b, .04, .04, 16, "#2b2117", "#1a130e", "#221a14"));
+      prism(cx - .18, cy - .18, .36, .36, 3, C[0], C[1], C[2], 15); if (sd > 0) back(); };
+    chair(x + .4 - .8, y + .4, -1);
     if (kind === 1) { cyl(x + .4, y + .4, .04, 28, "#2b2117"); const [tx, ty, rx, ry] = cyl(x + .4, y + .4, .38, 2, "#a3784f", 28, PAL.oak[0]); ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.beginPath(); ctx.ellipse(tx - 4, ty - 2, rx * .5, ry * .4, 0, 0, Math.PI * 2); ctx.fill(); }
     else if (kind === 2) { prism(x + .33, y + .33, .14, .14, 28, "#3d2a1f", "#2e1f17", "#3d2a1f"); prism(x, y, .8, .8, 3, "#a3784f", "#7a5536", "#8d6440", 28); }
     else { prism(x + .33, y + .33, .14, .14, 28, "#2b2b30", "#121214", "#3a3a40"); const [tx, ty, rx, ry] = cyl(x + .4, y + .4, .42, 2, "#e9e4dc", 28, "#f3efe8");
       ctx.strokeStyle = "rgba(150,140,130,.35)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(tx - rx * .6, ty); ctx.quadraticCurveTo(tx, ty - ry * .6, tx + rx * .5, ty + ry * .3); ctx.stroke(); }
     const [vx, vy] = iso(x + .4, y + .4, 31); ctx.fillStyle = "#fdfcf9"; ctx.beginPath(); ctx.ellipse(vx - 5, vy - 1, 3 * TW / 40, 1.6 * TW / 40, 0, 0, Math.PI * 2); ctx.fill();   // masada fincan/şekerlik
-    chair(x + .95, y + .15);
+    chair(x + .4 + .8, y + .4, 1);
   }
   const TABLES = {
     1: [[6.0, 2.6], [7.6, 4.6], [5.4, 5.6]],
@@ -440,18 +447,18 @@ window.SCENE = (() => {
     if (f.superAuto) superAuto(1.1, 1.25); else machine(1.05, 1.25, f);
     if (slots > 1) machine(1.05, 2.75, f);
     grinder(f); counterTools(f);
-    cupStacks(st.cups || {}, 5.55);
-    if (CL >= 6) { pastryCase(6.15); register(1.5, 7.05 - (CL === 6 ? .1 : 0)); } else register(1.85, 5.95);
+    cupStacks(st.cups || {}, CL === 6 ? 5.25 : 5.55);
+    if (CL >= 7) { pastryCase(6.15); register(1.5, 7.05); } else if (CL === 6) { pastryCase(5.8); register(1.5, 6.58); } else register(1.88, 5.5);   // v0.46: kasa tezgâhın üstünde (taşmıyor)
     if (CL >= 7) { prism(1.3, 7.6, .5, .3, 12, "#d9cbb4", "#a8977c", "#bfae92", 40); cyl(1.55, 7.75, .08, 10, "#5f8a4b", 52); }   // bahşiş kavanozu + küçük saksı
     // zemin halısı + masalar
-    if (Q.fx > 0) { ctx.save(); ctx.globalAlpha = .55; poly([iso(5.2, 3.6), iso(8.8, 3.6), iso(8.8, 6.4), iso(5.2, 6.4)], level >= 3 ? "#5a2e3a" : "#7a4a32"); ctx.globalAlpha = .4; poly([iso(5.4, 3.8), iso(8.6, 3.8), iso(8.6, 6.2), iso(5.4, 6.2)], level >= 3 ? "#8a5a3a" : "#a86a42"); ctx.restore(); }
+    { const T = TABLES[Math.min(3, level)].concat(level >= 3 ? [[6.6, 7.0], [8.2, 7.0]] : []), x0 = Math.min(...T.map(t => t[0])) - .9, x1 = Math.max(...T.map(t => t[0])) + 1.7, y0 = Math.min(...T.map(t => t[1])) - .5, y1 = Math.max(...T.map(t => t[1])) + 1.3;   // v0.46: halı bütün masaların altında
+      ctx.save(); ctx.globalAlpha = .55; poly([iso(x0, y0), iso(x1, y0), iso(x1, y1), iso(x0, y1)], level >= 3 ? "#5a2e3a" : "#7a4a32"); ctx.globalAlpha = .4; poly([iso(x0 + .2, y0 + .2), iso(x1 - .2, y0 + .2), iso(x1 - .2, y1 - .2), iso(x0 + .2, y1 - .2)], level >= 3 ? "#8a5a3a" : "#a86a42"); ctx.restore(); }
     TABLES[Math.min(3, level)].forEach(([x, y]) => table(x, y, Math.min(3, level)));
     if (level >= 3) { const x = 6.6, y = 7.0; shadowE(x + 1, y + .35, TW * 1.6, TW * .5); prism(x + .1, y + .2, .1, .3, 28, "#2b2117", "#1a130e", "#221a14"); prism(x + 1.8, y + .2, .1, .3, 28, "#2b2117", "#1a130e", "#221a14");   // uzun ortak masa
       prism(x, y, 2.0, .7, 3, "#8d6440", "#5c3f28", "#6f4d31", 28); for (let i = 0; i < 4; i++) cyl(x + .3 + i * .5, y + 1.0, .14, 4, "#5c3f28", 18, "#7a5536"); }
-    // temel eşyalar: çöp kutusu, askılık, raflar
+    // temel eşyalar: çöp kutusu, çiçekli saksı, raflar
     coldStation(st, CL); cyl(.6, 1 + CL + .5, .16, 22, "#3a3a3f", 0, "#2b2b30");
-    { const [ax, ay] = iso(10.2, .5, 0), [bx, by] = iso(10.2, .5, 120); ctx.strokeStyle = "#2b2117"; ctx.lineWidth = 3 * TW / 40; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); shadowE(10.2, .5, TW * .3, TW * .12);
-      ctx.fillStyle = "#3b6ea8"; rr(bx - 7 * TW / 40, by + 6, 10 * TW / 40, 30 * TW / 40, 4); ctx.fill(); ctx.fillStyle = "#c9772b"; rr(bx + 1, by + 4, 8 * TW / 40, 22 * TW / 40, 4); ctx.fill(); }
+    flowerPot(9.95, .3);                                                          // v0.46: askılık yerine çiçekli saksı
     if (level >= 2) { prism(9.0, 0, 2.0, .35, 3, "#7a5536", "#55391f", "#664629", 92); for (let i = 0; i < 6; i++) cyl(9.2 + i * .3, .17, .08, 12, ["#c9a46a", "#b5533c", "#e9e4dc"][i % 3], 95, "#5c3f28"); }
     plant(.5, 7.6); if (level >= 2) plant(9.2, 7.0); if (level >= 3) { plant(9.6, 1.4); plant(3.7, 7.9); }
     extrasStand(st.extras);
@@ -580,6 +587,31 @@ window.SCENE = (() => {
   }
 
   // ---- müşteriler ----
+  const HAIRC = ["#3a2a22", "#2a1d17", "#6b4a2a", "#8a5a2b", "#c9a46a", "#a3472e", "#1c1714"];
+  function head(c, hx, hy, s, back) {                                               // v0.46 §17 müşteri başı: saç modeli ve rengi kişiye göre sabit
+    const id = c.id || 0, hs = (id * 7 + (c.type || "").length * 3) % 4, old = c.type === "nejla" || c.type === "elder", hc = old ? "#d9d4cc" : c.type === "student" ? "#6b4a2a" : HAIRC[(id * 5 + 1) % HAIRC.length];
+    const R = 9.5 * s, P = Math.PI;
+    if (hs === 2 || old && c.type === "nejla") { ctx.fillStyle = hc; ctx.beginPath(); ctx.arc(hx, hy - R * 1.05, R * .45, 0, P * 2); ctx.fill(); }   // topuz
+    if (hs === 1) { ctx.fillStyle = hc; rr(hx - R * 1.08, hy - R * .4, R * 2.16, R * 1.7, R * .6); ctx.fill(); }   // uzun saç (arka)
+    const hg = ctx.createRadialGradient(hx - 3 * s, hy - 2 * s, 2, hx, hy, R); hg.addColorStop(0, "#f3cfae"); hg.addColorStop(1, "#c48a62");
+    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, R, 0, P * 2); ctx.fill();
+    ctx.fillStyle = hc;
+    if (back) {                                                                       // arkadan: başın çoğu saç, ense görünür
+      ctx.beginPath(); ctx.arc(hx, hy - .5 * s, R * 1.02, P * .92, P * 2.08); ctx.lineTo(hx + R * .7, hy + R * .55); ctx.quadraticCurveTo(hx, hy + R * .8, hx - R * .7, hy + R * .55); ctx.closePath(); ctx.fill();
+      if (hs === 1) { rr(hx - R * 1.05, hy, R * 2.1, R * 1.3, R * .5); ctx.fill(); }
+      if (hs === 3 && !old) for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.arc(hx + Math.cos(i * .9) * R * .8, hy - R * .2 + Math.sin(i * .9) * R * .7, R * .32, 0, P * 2); ctx.fill(); }
+      return; }
+    // önden: saç üstte + perçem, yüz
+    ctx.beginPath(); ctx.arc(hx, hy - 1 * s, R * 1.03, P * 1.02, P * 1.98); ctx.quadraticCurveTo(hx + R * .5, hy - R * .55, hx, hy - R * .45); ctx.quadraticCurveTo(hx - R * .6, hy - R * .3, hx - R * 1.0, hy - R * .1); ctx.closePath(); ctx.fill();
+    if (hs === 1) { rr(hx - R * 1.1, hy - R * .5, R * .35, R * 1.5, R * .17); ctx.fill(); rr(hx + R * .75, hy - R * .5, R * .35, R * 1.5, R * .17); ctx.fill(); }
+    if (hs === 3 && !old) for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(hx - R * .8 + i * R * .4, hy - R * .8, R * .3, 0, P * 2); ctx.fill(); }
+    ctx.fillStyle = "#2b1d16"; ctx.beginPath(); ctx.ellipse(hx - R * .36, hy + R * .1, 1.3 * s, 1.7 * s, 0, 0, P * 2); ctx.ellipse(hx + R * .36, hy + R * .1, 1.3 * s, 1.7 * s, 0, 0, P * 2); ctx.fill();   // gözler
+    ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.beginPath(); ctx.arc(hx - R * .32, hy + R * .02, .5 * s, 0, P * 2); ctx.arc(hx + R * .4, hy + R * .02, .5 * s, 0, P * 2); ctx.fill();
+    ctx.fillStyle = "rgba(230,120,110,.35)"; ctx.beginPath(); ctx.ellipse(hx - R * .6, hy + R * .42, 2 * s, 1.2 * s, 0, 0, P * 2); ctx.ellipse(hx + R * .6, hy + R * .42, 2 * s, 1.2 * s, 0, 0, P * 2); ctx.fill();   // yanak
+    ctx.strokeStyle = "#7a3b2a"; ctx.lineWidth = Math.max(1, 1.1 * s); ctx.lineCap = "round"; ctx.beginPath(); const mood = c.angry ? -1 : 1;
+    ctx.moveTo(hx - R * .25, hy + R * .5 - mood * .5 * s); ctx.quadraticCurveTo(hx, hy + R * .5 + mood * 2.2 * s, hx + R * .25, hy + R * .5 - mood * .5 * s); ctx.stroke();   // ağız (kızgınsa ters)
+    if (old) { ctx.strokeStyle = "#6a5a4a"; ctx.lineWidth = Math.max(1, .9 * s); ctx.beginPath(); ctx.arc(hx - R * .36, hy + R * .1, 2.8 * s, 0, P * 2); ctx.moveTo(hx + R * .36 + 2.8 * s, hy + R * .1); ctx.arc(hx + R * .36, hy + R * .1, 2.8 * s, 0, P * 2); ctx.stroke(); }   // gözlük
+  }
   function person(c, active) {
     const [sx, sy] = iso(c.pos.x, c.pos.y); const [c1, c2] = TYPE_COLOR[c.type] || ["#777", "#444"]; const s = TW / 40;
     const walk = c.moving ? Math.sin(time * 14) * 2 * s : 0;
@@ -593,11 +625,9 @@ window.SCENE = (() => {
     rr(sx - 15 * s, sy - 47 * s + sw * .3, 5 * s, 24 * s, 2.5 * s); ctx.fill(); rr(sx + 10 * s, sy - 47 * s - sw * .3, 5 * s, 24 * s, 2.5 * s); ctx.fill();
     ctx.fillStyle = "#e0b08c"; ctx.beginPath(); ctx.arc(sx - 12.5 * s, sy - 22 * s + sw, 2.6 * s, 0, Math.PI * 2); ctx.arc(sx + 12.5 * s, sy - 22 * s - sw, 2.6 * s, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "rgba(0,0,0,.12)"; rr(sx - 12 * s, sy - 26 * s, 24 * s, 6 * s, 3 * s); ctx.fill();   // kumaş gölgesi
-    if (c.type === "business") { ctx.fillStyle = "#f2efe8"; ctx.beginPath(); ctx.moveTo(sx - 5 * s, sy - 50 * s); ctx.lineTo(sx + 5 * s, sy - 50 * s); ctx.lineTo(sx, sy - 42 * s); ctx.fill(); ctx.fillStyle = "#a33a2e"; ctx.beginPath(); ctx.moveTo(sx - 2 * s, sy - 46 * s); ctx.lineTo(sx + 2 * s, sy - 46 * s); ctx.lineTo(sx + 3 * s, sy - 30 * s); ctx.lineTo(sx, sy - 27 * s); ctx.lineTo(sx - 3 * s, sy - 30 * s); ctx.fill(); }
+    if (c.type === "business" && c.leaving) { ctx.fillStyle = "#f2efe8"; ctx.beginPath(); ctx.moveTo(sx - 5 * s, sy - 50 * s); ctx.lineTo(sx + 5 * s, sy - 50 * s); ctx.lineTo(sx, sy - 42 * s); ctx.fill(); ctx.fillStyle = "#a33a2e"; ctx.beginPath(); ctx.moveTo(sx - 2 * s, sy - 46 * s); ctx.lineTo(sx + 2 * s, sy - 46 * s); ctx.lineTo(sx + 3 * s, sy - 30 * s); ctx.lineTo(sx, sy - 27 * s); ctx.lineTo(sx - 3 * s, sy - 30 * s); ctx.fill(); }
     if (c.type === "student") { ctx.fillStyle = "#c9962b"; rr(sx + 8 * s, sy - 48 * s, 7 * s, 22 * s, 3 * s); ctx.fill(); }
-    const hg = ctx.createRadialGradient(sx - 3 * s, sy - 60 * s, 2, sx, sy - 58 * s, 10 * s); hg.addColorStop(0, "#f3cfae"); hg.addColorStop(1, "#c48a62");
-    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(sx, sy - 58 * s, 9.5 * s, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = (c.type === "nejla" || c.type === "elder") ? "#d9d4cc" : c.type === "student" ? "#6b4a2a" : "#3a2a22"; ctx.beginPath(); ctx.arc(sx, sy - 61 * s, 9.5 * s, Math.PI, Math.PI * 2); ctx.fill();
+    head(c, sx, sy - 58 * s, s, !c.leaving);                                          // v0.46: yüz/göz/saç; gelirken ve kasada sırtı dönük, giderken yüzü görünür
     if (active) { ctx.strokeStyle = "#ffd89a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(sx, sy + 2, 19 * s, 9 * s, 0, 0, Math.PI * 2); ctx.stroke(); }
     // v0.30 §7 konuşma baloncuğu / sipariş rozeti / ad etiketi: hemen çizilmez, kare sonunda çakışmasız yerleştirilir (layoutOverlays)
     const tnow = performance.now(); if (c.moving || c._stillT == null) c._stillT = tnow; const still = !c.moving && tnow - c._stillT > 350;   // v0.31: yürüyen müşterinin rozeti/adı gösterilmez (sıra ilerlerken yanıp sönmesin), durunca belirir

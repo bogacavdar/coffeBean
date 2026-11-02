@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.45",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.46",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -255,7 +255,6 @@ window.DATA = {
   },
   // v0.39 §13
   specialChance: 0.06,
-  backflushPenalty: 0.85,
   mods: { extraChance: 0.15, takeawayChance: 0.2, extraPrice: 0.25, extraBean: 0.009, takeawayFee: 5, fromDay: 3 },
   loyalty: { need: 3, patience: 1.2, tip: 1.3 },
   weather: { saturdayCrowd: 1.3, rain: { p: 0.25, hot: 1.5, iced: 0.3, icon: "🌧", name: "Yağmurlu" }, hot: { p: 0.25, iced: 2.5, icon: "☀️", name: "Sıcak" }, crowd: { icon: "👥", name: "Kalabalık" } },
@@ -592,16 +591,13 @@ window.DATA = {
     midday: "Eline sağlık evladım, mis gibi olmuş! İlk espressonu yaptın, ilk paranı da kazandın. Şimdi müşteriler gelecek; her kahveyi sen hazırla. Ben biraz çarşıya çıkıyorum; akşam kapanışta yine yanındayım, onu da birlikte yapacağız.",
     // v0.42 §15 kapanış dersi (ilk gün sonu)
     closeIntro: "Gün bitti evladım, kapanışı birlikte yapalım. Önce haftalık kiraya bakarız: kira her hafta ödenir, kaç gün kaldığı burada yazar. Şimdi ödeyebilir ya da kira gününe bırakabilirsin.",
-    closeLedger: "Bu gün defteri: kaç kahve sattın, ne kazandın, kasada ne kaldı. Kapatmadan önce makineyi temizleriz: <b>Temizle</b>'ye dokun.",
-    cleanHow: "Kör filtreyi taktım. <b>ÇALIŞTIR</b>'a bas, 1 saniye bekle; bunu 3 kez yap. Temizlemezsen yarın kahve kötü akar.",
+    closeLedger: "Bu gün defteri: kaç kahve sattın, ne kazandın, kasada ne kaldı. Her şey yolundaysa <b>Devam</b>'a bas.",
     done: "İşte bu kadar evladım. Artık espressoyu ve akşam kapatmayı biliyorsun. Şimdi Tedarik'ten yarının çekirdeğini, sütünü ve bardaklarını al. Ben gidiyorum; dükkan sana emanet. Yeni bir şeyle ilk karşılaştığında defterime yazdığım not çıkar, nasıl yapılacağını o anda gösterir."
   },
   // v0.42 §15 ilk kez karşılaşılan mekanikler: Yıldız Teyze'nin defterinden ders (bir kez; Anladım'a basınca başlar)
   lessons: {
     select:     { t: "Sipariş seçimi", h: "Müşterinin istediği üstteki kartta yazar. Önce <b>tarifi</b>, sonra <b>boyu</b> seç (istediyse çekirdeği, sütü, şekeri de) ve <b>Hazırlamaya başla</b>'ya bas. Yanlış seçersen müşteri almaz." },
     extras:     { t: "Ekstralar", h: "Bazı müşteriler <b>ekstra shot</b> ya da <b>paket servis</b> ister. Seçim ekranındaki <b>Ekstralar</b> kutusundan işaretle; unutursan sipariş yanlış sayılır." },
-    clean:      { t: "Gece temizliği", h: "Gün defterinde <b>Temizle</b>'ye dokun; açılan pencerede <b>ÇALIŞTIR</b>'a 3 kez bas, her seferinde 1 saniye bekle. Temizlemezsen ertesi gün ekstraksiyon zorlaşır." },
-    dirty:      { t: "Kirli makine", h: "Makine dün temizlenmedi: bugün ekstraksiyonun renkli bölgeleri daha dar. Akşam gün defterinde <b>Temizle</b>'yi unutma." },
     weather:    { t: "Hava ve günler", h: "Hava dükkanı etkiler: yağmurda sıcak, sıcakta buzlu kahveler çok istenir; Cumartesi dükkan kalabalık olur. Günün havası saatin yanında simgeyle görünür." },
     rush:       { t: "Yoğun saat", h: "30 saniye boyunca müşteriler üç kat sık gelir ve her bahşiş ×1,5 olur. Sıra dolarsa yeni gelen kapıdan döner; en öndekinden başlayıp hızlı çalış." },
     critic:     { t: "Eleştirmen", h: "Kahvesi mükemmel olursa itibarın <b>+20</b> artar, kötü olursa <b>−20</b> düşer. Her adımda koyu yeşile odaklan." },

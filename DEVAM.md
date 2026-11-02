@@ -7,9 +7,15 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.45) – dal `bekleyen-v046`
+## Bekleyen paket (son yayın: v0.46)
+- (boş)
+
+## v0.46 – YAYINLANDI (2 Kasım 2026, kullanıcı "hepsini yap paket çık")
 - **v0.46 adayı** (tasarım §17, Claude Docs rev 174 + HTML): kullanıcı "makineyi açı ve sabah kalibrasyonunu komple kaldır öğreticiden test modundan her şeyden". Silindi: `showMachineOn`, `showCalibration`, `day.calShift` (grind hedefi), `day.opening` + takeOrder engeli, `D.calibration`, `D.tutorial.openIntro/openWrong/calIntro/calWrong/openDone/openSay` (yerine `firstSay`), `D.lessons.machineOn/calibration`, `CB_TEST_NOOPEN` / `tsDay` noOpen, `flowEvent("calib")`. intro/done metinleri güncellendi. Akış testi A3/A4 silindi, A5–A29 → A3–A27 (`cb_flowV` "2" göçü tikleri kaydırır). `araclar/telefon-denetimi.js` açılış adımları çıkarıldı.
 - Bilgisayarda %125 kamera (§17): `scene.js` yatay dalında `DZ = matchMedia("(pointer: fine)") ? 1.25 : 1`, `TW = TW0·DZ`, `OY` orta sabit (`− (DZ−1)·TW0·1,4`). Kural 7: yalnız sözdizimi.
+- Gece temizliği kaldırıldı (§17, Claude Docs rev 175): `day.dirty`, `S.cleanDay`, `#cleanBtn` + backflush modalı, `D.backflushPenalty`, `D.lessons.clean/dirty`, `D.tutorial.cleanHow`, `closeLedger` metni; `dayZoneMult` artık 1. Akış A11 (kirli makine) silindi, A12+ → bir eksik (`cb_flowV` "3" göçü). Denetim betiğinden temizlik adımları çıktı.
+- Sahne (kullanıcı ekran görüntüleriyle bildirdi): kasa `register(1.88, 5.5)` (CL5) / `pastryCase(5.8)+register(1.5, 6.58)` + bardaklar 5.25 (CL6); halı masaların sınır kutusundan; `table()` sandalyeleri `chair(cx, cy, ±1)` masa ortasına hizalı (tabure / 4 ayak + arkalık); askılık → `flowerPot(9.95, .3)`; `head(c, hx, hy, s, back)` (saç modeli `id`'den, yüz önden, `back = !c.leaving`), iş adamı kravatı yalnız önden.
+- Kontrol: telefon denetimi 375×667 67 ekran 0 ihlal; masaüstü 1280×800 1/2/3/5★ ekran görüntüsü, giden müşteri yüzü.
 
 ## v0.45 – YAYINLANDI (2 Kasım 2026, kullanıcı "acil bug": müzik 0'da çalıyor)
 - Sebep: `musicChain()` yankı kolu (`rs`) doğrudan `revSend`'e bağlıydı, `musicBus` seviyesini atlıyordu. Düzeltme: `musicRev` kazancı (müzik seviyesi) üzerinden; `setMusic` ikisini de ayarlar, 0'da kesin 0; müzik 0 iken notalar hiç planlanmaz. Belge rev 173 + HTML. Kural 7: yalnız sözdizimi.

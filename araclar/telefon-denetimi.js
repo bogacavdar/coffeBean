@@ -214,10 +214,6 @@ async function run(size) {
     await check('kira');
     await click('#rentNext'); await check('kapanis');
     await page.evaluate(() => { const c = document.querySelector('#ledgerCard'); c.scrollTop = c.scrollHeight; }); await check('kapanis_alt');
-    if (!await page.evaluate(() => document.querySelector('#ledgerOk').disabled)) throw new Error('ilk gün temizlemeden Devam açık');
-    await click('#cleanBtn'); await check('temizlik_teyze');
-    for (let j = 0; j < 3; j++) { await page.evaluate(() => document.querySelector('#bfGo').click()); await sleep(1150); }
-    await page.evaluate(() => { const c = document.querySelector('#ledgerCard'); c.scrollTop = c.scrollHeight; }); await check('kapanis_temiz');
     await click('#ledgerOk'); await sleep(300); await check('teyze_veda_aksam'); await mbtn('Devam'); await sleep(300);
     if (await page.evaluate(() => document.querySelector('#ovModal').classList.contains('on'))) { await check('gazete'); await clickText('Devam'); }
     await check('tedarik');

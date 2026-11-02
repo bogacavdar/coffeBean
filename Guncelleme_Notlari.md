@@ -1,5 +1,12 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.46 – 2 Kasım 2026 (sadeleşme + sahne düzeltmeleri)
+- **Kaldırıldı:** sabah makineyi açma, sabah kalibrasyonu ve gece temizliği (kirli makine dahil) oyundan, öğreticiden ve akış testlerinden tamamen çıktı. Gün doğrudan açılıyor; Yıldız Teyze ilk gün espressoyu ve kapanışı (kira + defter) öğretiyor.
+- **Akış testi numaraları değişti:** A1 ilk gün, A2 ilk kapanış, A3 gün sonu … dükkan görünümleri A21–A25, tarif galerisi A26. Attığın tikler yeni numaralarına taşınıyor.
+- **Bilgisayarda kamera %125 yakın** (dokunmatik cihazlarda değişiklik yok).
+- **Dükkan:** kasa artık tezgâhın üstünde (boşta değil); halı bütün masaların altında; sandalyeler masanın iki yanında, düzgün ve masaya dönük (2★ ve üstünde ayaklı, arkalıklı); kapı yanındaki askılık yerine çiçekli saksı.
+- **Müşterilerin yüzü ve saçı var:** gözler, yanaklar, gülümseme (kızgınken asık surat), farklı saç modelleri ve renkleri, yaşlılarda gözlük. Gelirken ve kasada sırtları dönük, giderken yüzleri görünüyor.
+
 ## v0.45 – 2 Kasım 2026 (acil düzeltme: müzik 0'da susmuyordu)
 - **Müzik seviyesi 0'a çekilince müzik tamamen susuyor.** Önceden müziğin yankısı ses seviyesinden bağımsız çaldığı için kısık da olsa duyuluyordu.
 
