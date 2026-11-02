@@ -13,6 +13,7 @@ Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı i
 - **Açılış sırası kolaydan zora:** 82 tarifin `unlockCups` ve `shop` değerleri yeniden dizildi (1★ 20, 2★ 23, 3★ 23, 4★ 14, 5★ 2). Alet yıldızı alt sınırı korunuyor. Taşınanlar: Sütlü Türk, Salep, Einspänner → 1★; Kopi, Mırra, Melange, Bombón, Irish, Bicerin, Piccolo, Gibraltar, Latte macchiato → 2★; şuruplu/soslu latteler (zencefilli, dirty chai, balkabaklı, naneli mocha, tuzlu karamel, caramel macchiato) ve Yunan frappé → 3★. Eski kayıtlarda eşiği geçilmiş ama açılmamış tarifler bir sonraki kontrolde açılabilir.
 - Doküman: Claude Docs rev 147 (§3 tablo + üç paragraf) ve HTML.
 - **Kolaylaştırıcılar 3 kademe:** `S.eqLv[id]`, `eqLevel/eqMax/eqNextPrice/reqOk/widenMult`; bölge çarpanı `D.zones.widenLevels` [1,2; 1,35; 1,5], fiyat `D.upgradeCost` [1; 1,3; 1,65] (10'a yuvarlı). Otomasyon `requires` artık 3/3 ister; her otomatikleştirici kendi kolaylaştırıcısının 3. kademesinden pahalı (doğrulandı). Eski kayıtta alınmış kolaylaştırıcı = 3. kademe. Dükkan satırında ●●○ kademe göstergesi, "Geliştir (2/3)". Doküman: Claude Docs rev 148 §8 paragraf + tablo, HTML.
+- **Türkçe adlar:** 23 tarifin `name`'i Türkçe karşılığına çevrildi (liste: Claude Docs rev 149 "Türkçe adlar" tablosu, HTML'de de). Cold brew → "Soğuk demleme" (malzeme, alet, mini oyun, buton ve kart metinleri dahil). Kimlikler (id) değişmedi, kayıtlar etkilenmez.
 - Test yapılmadı (Kural 7); yalnız sözdizimi kontrolü.
 
 ## v0.35 – YAYINLANDI (2 Kasım 2026, kullanıcı "paket çık" dedi)

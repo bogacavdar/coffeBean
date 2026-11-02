@@ -803,7 +803,7 @@ const MG = {
   coldwater:{ mode: "act", act: "hold", speed: 40, btn: "BASILI TUT · soğuk su dök", draw: (o, v) => CLOSEUP.kit("coldwater", v, { run: o.phase === "run" }) },
   coldmilk:{ mode: "act", act: "hold", speed: 40, btn: "BASILI TUT · soğuk süt dök", draw: (o, v) => CLOSEUP.kit("coldmilk", v, { run: o.phase === "run" }) },
   tonic:   { mode: "act", act: "hold", speed: 25, btn: "BASILI TUT · toniği yavaşça dök", draw: (o, v) => CLOSEUP.kit("tonic", v, { run: o.phase === "run" }) },
-  coldpour:{ mode: "act", act: "hold", speed: 40, btn: "BASILI TUT · cold brew dök", draw: (o, v) => CLOSEUP.kit("coldpour", v, { run: o.phase === "run" }) },
+  coldpour:{ mode: "act", act: "hold", speed: 40, btn: "BASILI TUT · soğuk demlemeyi dök", draw: (o, v) => CLOSEUP.kit("coldpour", v, { run: o.phase === "run" }) },
   whisk:   { mode: "act", act: "circle", need: 5, btn: "Kasede daire çizerek çırp", draw: (o, v) => CLOSEUP.kit("whisk", v, { ang: o.ang, N: 5, bowl: DR(o).whiskBowl }) },
   spoontop:{ mode: "act", act: "hold", speed: 40, btn: "BASILI TUT · köpüğü kaşıkla koy", draw: (o, v) => CLOSEUP.kit("spoontop", v) },
   blend:   { mode: "sweep", dial: true, speed: 22, btn0: "ÇALIŞTIR", btn: "DURDUR", target: () => 72, onStart: () => AUDIO.loop("extract", true), onStop: () => AUDIO.loop("extract", false), draw: (o, v) => CLOSEUP.kit("blend", v, { run: o.phase === "run", Z: { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k } }) },
@@ -989,7 +989,7 @@ function renderSupply() {
   $("#shopCard").querySelectorAll("[data-milk]").forEach(b => b.onclick = () => { const k = b.dataset.milk; buy(SP(D.milks[k].price), () => { if (k === "cow") S.milk = (S.milk || 0) + 1; else { S.milkAlt = S.milkAlt || {}; S.milkAlt[k] = (S.milkAlt[k] || 0) + 1; } S.milkDay = S.day; }); re(); });
   $("#shopCard").querySelectorAll("[data-cup]").forEach(b => b.onclick = () => { const k = b.dataset.cup; buy(SP(D.cups[k].price), () => { S.cups[k] = (S.cups[k] || 0) + D.cups[k].pack; }); re(); });
   $("#shopCard").querySelectorAll("[data-sp]").forEach(b => b.onclick = () => { const k = b.dataset.sp; buy(SP(D.specials[k].price), () => { S.syr = S.syr || {}; S.syr[k] = (S.syr[k] || 0) + D.specials[k].pack; }); re(); });
-  const cbb = $("#shopCard [data-cb]"); if (cbb) cbb.onclick = () => { if (beanKg("brazil") < .2) return; useBean("brazil", .2); S.cbBrewing = (S.cbBrewing || 0) + D.specials.coldbrew.pack; toast("Cold brew demlenmeye kondu; yarın sabah hazır"); AUDIO.sfx("click"); save(); re(); };
+  const cbb = $("#shopCard [data-cb]"); if (cbb) cbb.onclick = () => { if (beanKg("brazil") < .2) return; useBean("brazil", .2); S.cbBrewing = (S.cbBrewing || 0) + D.specials.coldbrew.pack; toast("Soğuk demleme kahve demlenmeye kondu; yarın sabah hazır"); AUDIO.sfx("click"); save(); re(); };
   $("#shopCard").querySelectorAll("[data-ex]").forEach(b => b.onclick = () => { const k = b.dataset.ex; buy(SP(D.extras[k].price), () => { S.extras[k] = (S.extras[k] || 0) + D.extras[k].pack; }); re(); });
   $("#supLoan").onclick = () => openLoans(re);
   const sx = $("#supX"); if (sx) sx.onclick = closeSupplyAside;
