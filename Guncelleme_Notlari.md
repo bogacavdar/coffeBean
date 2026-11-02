@@ -1,5 +1,8 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.45 – 2 Kasım 2026 (acil düzeltme: müzik 0'da susmuyordu)
+- **Müzik seviyesi 0'a çekilince müzik tamamen susuyor.** Önceden müziğin yankısı ses seviyesinden bağımsız çaldığı için kısık da olsa duyuluyordu.
+
 ## v0.44 – 2 Kasım 2026 (acil düzeltme: hile modu aç/kapa)
 - **Hile modu artık kapanabiliyor:** ana menüde "cheat" yazınca açılıyor, tekrar yazınca kapanıyor. Telefonda 3 hızlı dokunuş da aynı şekilde aç/kapa yapıyor. Ayarlar'daki "Hile modu" kutusu da çalışmaya devam ediyor.
 

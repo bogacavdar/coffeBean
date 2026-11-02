@@ -7,8 +7,11 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.44)
+## Bekleyen paket (son yayın: v0.45)
 - (boş)
+
+## v0.45 – YAYINLANDI (2 Kasım 2026, kullanıcı "acil bug": müzik 0'da çalıyor)
+- Sebep: `musicChain()` yankı kolu (`rs`) doğrudan `revSend`'e bağlıydı, `musicBus` seviyesini atlıyordu. Düzeltme: `musicRev` kazancı (müzik seviyesi) üzerinden; `setMusic` ikisini de ayarlar, 0'da kesin 0; müzik 0 iken notalar hiç planlanmaz. Belge rev 173 + HTML. Kural 7: yalnız sözdizimi.
 
 ## v0.44 – YAYINLANDI (2 Kasım 2026, kullanıcı "acil bug": cheat tekrar yazınca kapanmalı)
 - `unlockCheat()` aç/kapa: `cheatOn()` ise `setCheat(false)`; klavye "cheat" ve telefonda 3 dokunuş ikisi de bunu çağırır. Belge rev 172 (Hile modu → Açılması) + HTML. Kural 7: yalnız sözdizimi.

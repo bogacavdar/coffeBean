@@ -6,7 +6,7 @@ window.AUDIO = (() => {
   const KEY = "cekirdek_audio";
   let settings = { music: 0.6, sfx: 0.8, muted: false };
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) Object.assign(settings, s); } catch (e) {}
-  let ctx, master, musicBus, sfxBus, reverb, revSend, noiseBuf, started = false, sched = null;
+  let ctx, master, musicBus, musicRev, sfxBus, reverb, revSend, noiseBuf, started = false, sched = null;
   const loops = {};
 
   function ensureCtx() {
@@ -21,11 +21,12 @@ window.AUDIO = (() => {
     // müzik: sıcak, yumuşak (yüksekler kısık)
     const warm = ctx.createBiquadFilter(); warm.type = "lowpass"; warm.frequency.value = 2400; warm.connect(master);
     musicBus = ctx.createGain(); musicBus.gain.value = settings.music; musicBus.connect(warm); musicBus.connect(revSend);
+    musicRev = ctx.createGain(); musicRev.gain.value = settings.music; musicRev.connect(revSend);   // v0.44: müzik yankısı da müzik seviyesine bağlı (0 = sessiz)
     sfxBus = ctx.createGain(); sfxBus.gain.value = settings.sfx; sfxBus.connect(master);
     const n = ctx.sampleRate * 2; noiseBuf = ctx.createBuffer(1, n, ctx.sampleRate); const nd = noiseBuf.getChannelData(0); for (let i = 0; i < n; i++) nd[i] = Math.random() * 2 - 1;
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(settings)); } catch (e) {} }
-  function setMusic(v) { settings.music = v; if (musicBus) musicBus.gain.setTargetAtTime(v, ctx.currentTime, .05); save(); }
+  function setMusic(v) { settings.music = v; if (musicBus) [musicBus, musicRev].forEach(n => { n.gain.cancelScheduledValues(ctx.currentTime); n.gain.setTargetAtTime(v, ctx.currentTime, .05); if (v <= 0) n.gain.setValueAtTime(0, ctx.currentTime + .3); }); save(); }
   function setSfx(v) { settings.sfx = v; if (sfxBus) sfxBus.gain.setTargetAtTime(v, ctx.currentTime, .05); save(); }
   function setMuted(b) { settings.muted = b; if (master) master.gain.setTargetAtTime(b ? 0 : 1, ctx.currentTime, .05); save(); }
   function get() { return Object.assign({}, settings); }
@@ -144,7 +145,7 @@ window.AUDIO = (() => {
     if (musicOut) return musicOut;
     const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1300; lp.Q.value = .3;
     const g = ctx.createGain(); g.gain.value = .9; lp.connect(g); g.connect(musicBus);
-    const rs = ctx.createGain(); rs.gain.value = .55; lp.connect(rs); rs.connect(revSend);
+    const rs = ctx.createGain(); rs.gain.value = .55; lp.connect(rs); rs.connect(musicRev);
     return (musicOut = lp);
   }
   function feltPiano(m, t, vel) {                    // yumuşak, boğuk keçe piyano: sinüs + zayıf harmonikler, yavaş sönüm
@@ -185,7 +186,7 @@ window.AUDIO = (() => {
     if (!started || ctx.state !== "running") return;
     while (nextT < ctx.currentTime + .3) {
       if (step % (8 * PROG.length) === 0 && wantTrack !== curTrack) { applyTrack(wantTrack); step = 0; }   // parça değişimi döngü başında
-      scheduleStep(step, nextT); step++; nextT += E8; }
+      if (settings.music > 0) scheduleStep(step, nextT); step++; nextT += E8; }
   }
   function startMusic(track) {
     if (track && TRACKS[track]) { wantTrack = track; if (started && curTrack !== track) { applyTrack(track); step = 0; } }   // §11 menü ↔ oyun müziği
@@ -200,7 +201,7 @@ window.AUDIO = (() => {
   let resumeMusic = false;
   function shutdown() {
     if (!ctx) return; resumeMusic = started || resumeMusic; stopLoops(); stopMusic();
-    const c = ctx; ctx = null; master = musicBus = sfxBus = reverb = revSend = noiseBuf = musicOut = null;
+    const c = ctx; ctx = null; master = musicBus = musicRev = sfxBus = reverb = revSend = noiseBuf = musicOut = null;
     try { c.close(); } catch (e) {}
   }
   document.addEventListener("visibilitychange", () => { if (document.hidden) shutdown(); else if (resumeMusic) { resumeMusic = false; startMusic(wantTrack); } });
