@@ -787,9 +787,11 @@ window.CLOSEUP = (() => {
     if (heart) { heartShape(240, 122, 34, "#fffaf2"); heartShape(240, 122, 22, "rgba(233,214,190,.6)"); }
     ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; if (!small) ctx.fillText("Kalite " + quality, 240, 235);
   }
+  function served(id, quality) { quality = num(quality); bg(); if (window.DRINKART) DRINKART.render(ctx, id, { q: quality });   // v0.43 §16 tarifin kendi bitiş görseli
+    ctx.fillStyle = "#2b2117"; ctx.font = "700 18px system-ui"; ctx.textAlign = "center"; if (!small) ctx.fillText("Kalite " + quality, 400, 40); }
   // v0.24: hiçbir çizim çağrısı hata fırlatmasın; çizim durumu her çağrıdan sonra geri yüklenir
   const safe = fn => function () { if (!ctx) return; ctx.save(); try { return fn.apply(null, arguments); } catch (e) { try { console.warn("CLOSEUP." + fn.name, e); } catch (_) {} } finally { try { ctx.restore(); } catch (_) {} } };
-  const D = { zmeter, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, shake, stir, swirl, pour, tkdose, cezveStir, cezveFoam, press, v60, kit, cupTop };
+  const D = { zmeter, grind, dose, tamp, extract, milk, art, water, pressure, cocoa, shake, stir, swirl, pour, tkdose, cezveStir, cezveFoam, press, v60, kit, cupTop, served };
   const out = { init, setQuality }; Object.keys(D).forEach(k => { out[k] = safe(D[k]); });
   return out;
 })();

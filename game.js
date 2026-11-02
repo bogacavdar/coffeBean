@@ -409,7 +409,7 @@ function showPurchase(key, name) {                                              
 function flushNewFx() { pendingNew.forEach((k, i) => SCENE.highlight(k, .3 + i * 1.6)); pendingNew = []; }   // ürünün yerinde parlayan halka + ok, sırayla
 function renderScene(dt) {
   if (day) day.customers = day.customers.filter(c => !c.gone);
-  SCENE.draw({ customers: day ? day.customers : [], orders: day ? day.orders : [], t: day ? day.t / DAY_SECONDS : 0.3, level: shop().stars, slots: slots(),
+  SCENE.draw({ customers: day ? day.customers : [], orders: day ? day.orders : [], t: day ? day.t / DAY_SECONDS : 0.3, level: shop().stars, shopName: shop().name, slots: slots(),
     decor: activeDecor(), equipment: S.equipment || {}, tools: S.tools || {}, traffic: tr(), cups: S.cups || {}, extras: S.extras || {}, assistant: !!(S.staff && S.staff.assistant), asstBusy: !!(day && day.asst), superAuto: !!S.equipment.superAuto,
     baristaBusy: !!(day && day.orders.length) }, dt || 0);
   const hint = !day ? (canOpenDay() ? "Dükkan kapalı · Günü başlat'a dokun" : "") : day.tutorialActive ? "" : `Sıra ${queueOf().length}/${shop().maxQueue} · ` + (queueOf().length ? "Öndeki müşteriye dokun" : day.orders.length ? "Sipariş hazırlanıyor" : day.toSpawn > 0 ? "Müşteri bekleniyor…" : "Bugünkü müşteriler bitti");
@@ -516,6 +516,8 @@ function drinkGroupsOf(ids) {
   const rest = ids.filter(id => !seen.has(id)).sort(byName); if (rest.length) out.push({ name: "Diğer", ids: rest });
   return out.filter(g => g.ids.length);
 }
+const THUMBS = {};                                                               // v0.43 §16 seçim listesi küçük resimleri (bir kez çizilir)
+const drinkThumb = id => THUMBS[id] || (THUMBS[id] = (window.DRINKART ? DRINKART.thumb(id, 34) : ""));
 function renderSelect(o, tabs) {                                                  // §6/§7 sıra: çekirdek → tarif → boy → süt
   if (!o.tutorial) { setTimeout(() => { lesson("select"); const wm = o.cust.mods || {}; if (wm.extra || wm.takeaway) lesson("extras"); }, 150); }   // v0.42 §15
   const menu = S.unlocked.filter(hasTools), sel = o.sel, sizes = sel.drink ? (D.drinks[sel.drink].sizes || ["single"]) : [];
@@ -525,7 +527,7 @@ function renderSelect(o, tabs) {                                                
   $("#sheetBody").innerHTML = `${sheetX(o)}${tabs}${wantHTML(o)}<h3 class="ptitle">Siparişi hazırla</h3>
     <p class="muted" style="margin:2px 0 6px"><span class="dOnly">Siparişi sağ üstteki karttan oku. </span><span class="pOnly">İstenen sipariş yukarıda. </span>${showBean ? "Önce çekirdeği, sonra tarifi, boyu" : "Önce tarifi, sonra boyu"}${showMilk ? " ve sütü" : ""} seç. Yanlış seçersen müşteri almaz.</p>
     ${showBean ? box("1. Çekirdek", openBeans().map(id => { const kg = beanKg(id); return `<button data-sb="${id}" class="${sel.bean === id ? "pri" : ""}" ${kg > 0 ? "" : "disabled"}>${D.beans[id].name}<br><span style="font-size:11px">${kg.toFixed(2).replace(".", ",")} kg</span></button>`; }).join("")) : ""}
-    ${box((showBean ? "2. " : "") + "Tarif", drinkGroupsOf(menu).map(g => `<div class="dgrp"><div class="dgname">${g.name}</div><div class="row" style="justify-content:flex-start">${g.ids.map(id => `<button data-sd="${id}" class="${sel.drink === id ? "pri" : ""}">${D.drinks[id].name}</button>`).join("")}</div></div>`).join(""))}
+    ${box((showBean ? "2. " : "") + "Tarif", drinkGroupsOf(menu).map(g => `<div class="dgrp"><div class="dgname">${g.name}</div><div class="row" style="justify-content:flex-start">${g.ids.map(id => `<button data-sd="${id}" class="dbtn ${sel.drink === id ? "pri" : ""}"><img class="dthumb" alt="" src="${drinkThumb(id)}">${D.drinks[id].name}</button>`).join("")}</div></div>`).join(""))}
     ${box((showBean ? "3. " : "") + "Boy / bardak", (sizes.length ? "" : '<span class="muted">Önce tarifi seç</span>') + sizes.map(z => { const sz = SZ(z), n = S.cups[sz.cup] || 0;
       return `<button data-sz="${z}" class="${sel.size === z ? "pri" : ""}" ${n > 0 ? "" : "disabled"}>${sz.label}<br><span style="font-size:11px">${D.cups[sz.cup].name} · ${n} adet</span></button>`; }).join(""))}
     ${showMilk ? box((showBean ? "4. " : "") + "Süt", openMilks().map(k => { const l = milkL(k); return `<button data-sm="${k}" class="${sel.milk === k ? "pri" : ""}" ${l > 0 ? "" : "disabled"}>${D.milks[k].name}<br><span style="font-size:11px">${l.toFixed(1).replace(".", ",")} L</span></button>`; }).join("")) : ""}
@@ -638,7 +640,7 @@ function renderReview(o, tabs) {
     <div class="zres ${rv.cls} rvq">%${q} · ${rv.label}</div><p class="muted rvavg" style="margin:2px 0 0">Tüm adımların ortalaması</p>
     <div class="row rvrow" style="justify-content:center">${mis ? redo + give : give + redo}</div>`;
   $("#sheet").classList.add("on"); bindSheetX(); updOrderBars();
-  drawCup = () => { CLOSEUP.init($("#closeup")); CLOSEUP.cupTop(q, d.steps.includes("milk"), o.scores.art != null && o.scores.art >= 70); };
+  drawCup = () => { CLOSEUP.init($("#closeup")); CLOSEUP.served(o.drink, q); };   // v0.43 §16 her tarifin kendi bitiş görseli
   fitSheet(); drawCup();
   $("#rvServe").onclick = () => { o.reviewing = false; serve(o); };
   const rd = $("#rvRedo"); if (rd) rd.onclick = () => {                         // §4 yeniden yap: bu fincanın malzemesi tekrar harcanır
@@ -1548,7 +1550,16 @@ const FLOWS = [
   ["A21", "Süt: tek aşama (sıcak süt, ör. café au lait)", () => tsStep("milk", "hot")],
   ["A22", "Latte art: dök + yukarı çizim", () => tsStep("art")],
   ["A23", "Türk kahvesi köpüğü ölçeksiz (3 servisten sonra)", () => tsStep("tkfoam", "blind")]
+,
+  ...[1, 2, 3, 4, 5].map(n => ["A" + (23 + n), `Dükkan görünümü ${"★".repeat(n)} ${D.shopLevels[n - 1].name}`, () => tsBegin(tsState({ lv: n - 1 }), () => tsDay(null, true))]),
+  ["A29", "Tarif görselleri galerisi (82 tarif)", () => showDrinkGallery()]
 ];
+function showDrinkGallery() {                                                     // v0.43 §16 akış testi: tüm tariflerin bitiş görselleri
+  modal(`<h3>☕ Tarif görselleri</h3><p class="muted">Dokun: büyük görseli aç.</p><div class="ftgal">${Object.keys(D.drinks).map(id => `<button data-dg="${id}"><img src="${drinkThumb(id)}" alt=""><span>${D.drinks[id].name}</span></button>`).join("")}</div>`, [{ label: "Kapat" }]);
+  document.querySelectorAll("[data-dg]").forEach(b => b.onclick = () => { const id = b.dataset.dg;
+    modal(`<h3>${D.drinks[id].name}</h3><canvas id="dgCv" style="width:100%;aspect-ratio:480/250;border-radius:12px"></canvas>`, [{ label: "← Galeri", pri: true, fn: () => setTimeout(showDrinkGallery, 0) }]);
+    setTimeout(() => { const cv = $("#dgCv"); if (!cv) return; CLOSEUP.init(cv); CLOSEUP.served(id, 92); }, 30); });
+}
 Object.keys(D.minigames).filter(k => Object.keys(D.drinks).some(id => stepsForLv(id, k === "pour" ? 0 : 2).includes(k))).forEach((k, i) => FLOWS.push(["M" + (i + 1), D.minigames[k].name + " (" + k + ")", () => tsStep(k)]));
 function showFlowTests() {
   modal(`<h3>🧪 Akış testi</h3><p class="muted">Her test ayrı bir deneme kaydında açılır; gerçek yuvaların değişmez. Bitince Çıkış → Ana menüye dön. Kodu (A3, M12…) yazarak geri bildirim ver.</p>

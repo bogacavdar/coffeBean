@@ -2,6 +2,15 @@
 // Sahne durumu: müşteriler iso koordinatta yürür (pos → target), uçuşan yazılar (fx) burada çizilir.
 window.SCENE = (() => {
   const PAL = { wall: "#e6dccb", wallDark: "#c8bca8", oak: ["#a3784f", "#8d6440", "#7a5536"], counterTop: "#2f2219", counterFront: "#5b4231", steel: "#c9ccd0", steelDark: "#7d8187", shadow: "rgba(25,15,8,.38)" };
+  // v0.43 §16 her dükkan seviyesinin kendi görünüşü: zemin, duvar, lambri, tezgâh ve tabela belirgin değişir
+  const THEMES = {
+    1: { floor: "planks", oak: ["#c99e6c", "#b98c5b", "#a97d4e"], wall: "#efe6d4", wallDark: "#d8cdb8", wainL: "#a8845f", wainR: "#b8936c", railL: "#7e5c3c", railR: "#8d6a48", counterTop: "#8a6644", counterFront: "#a37a52", counterSide: "#7c5b3c", sign: { bg: "#f4ecdc", fg: "#5a3a22", rim: "#8d6a48" } },
+    2: { floor: "planks", oak: ["#a3784f", "#8d6440", "#7a5536"], wall: "#d3dcc4", wallDark: "#b6c1a6", wainL: "#4b6646", wainR: "#587752", railL: "#34482f", railR: "#3e5538", counterTop: "#2f2219", counterFront: "#4f6a4a", counterSide: "#3b5236", sign: { bg: "#2f4a2b", fg: "#f3e7c8", rim: "#c9a46a" } },
+    3: { floor: "herring", oak: ["#6e4a2e", "#5c3d25", "#80573a"], wall: "#ecd9c6", wallDark: "#d3bca7", wainL: "#6a2c33", wainR: "#7b363e", railL: "#4a1d22", railR: "#56232a", counterTop: "#ebe7e0", counterFront: "#6e2f36", counterSide: "#57242a", sign: { bg: "#6a2c33", fg: "#f6e6c4", rim: "#d9b36a" } },
+    4: { floor: "checker", oak: ["#ebe7df", "#2b2a2a", "#dcd7cd"], wall: "#33435c", wallDark: "#28364b", wainL: "#e9e8e2", wainR: "#f3f2ed", railL: "#b08a3e", railR: "#c9a24a", counterTop: "#f1efea", counterFront: "#2a3850", counterSide: "#1f2b3e", tiles: true, sign: { bg: "#1b2433", fg: "#e9c46a", rim: "#c9a24a" } },
+    5: { floor: "terrazzo", oak: ["#5d5853", "#544f4a", "#66615b"], wall: "#9c4f37", wallDark: "#86412d", wainL: "#1f1d1c", wainR: "#2a2826", railL: "#a8802f", railR: "#c9a24a", counterTop: "#1b1a19", counterFront: "#5a3a26", counterSide: "#3f2819", brick: true, sign: { bg: "#151413", fg: "#ffb04a", rim: "#c9a24a", neon: "#ff9a2e" } }
+  };
+  let THM = THEMES[1];
   const TYPE_COLOR = { business: ["#2e3442", "#1a1e28"], elder: ["#9a7f9a", "#6b566b"], student: ["#6f8a4a", "#4a6130"], geek: ["#8a5a3a", "#5a3a22"], regular: ["#a0493c", "#6c2f27"], nejla: ["#7a4f7a", "#4e2f4e"],
     critic: ["#1f1f24", "#0e0e12"], tourist: ["#2f86a6", "#1d5a72"], influencer: ["#d0508a", "#93305e"], jury: ["#c9a24a", "#8a6a2a"] };   // v0.39 özel müşteriler
   let cv, ctx, W, H, hits = [], TW = 40, TH = 20, OX = 0, OY = 0, time = 0;
@@ -123,11 +132,16 @@ window.SCENE = (() => {
   function room(L, st = {}) {
     const PT = W < H, lv = st.level || 1, EX = PT ? 0 : 10;   // v0.37: dik ekranda dükkan bir maket gibi: zemin ve duvarlar dükkanın kendi sınırında biter, dışı koyu fon
     for (let y = 0; y < ROWS + EX; y++) for (let x = 0; x < COLS + EX; x++) {   // meşe tahtalar
-      const c = PAL.oak[(x * 3 + y * 5) % 3]; const dark = 1 - Math.min(1, (x + y) / (COLS + ROWS)) * .22 - (x >= COLS || y >= ROWS ? .06 : 0);
+      const dark = 1 - Math.min(1, (x + y) / (COLS + ROWS)) * .22 - (x >= COLS || y >= ROWS ? .06 : 0), F = THM.floor;
+      if (F === "checker") { poly([iso(x, y), iso(x + 1, y), iso(x + 1, y + 1), iso(x, y + 1)], shade((x + y) % 2 ? PAL.oak[1] : PAL.oak[0], dark)); continue; }
+      if (F === "herring") { const a = (x + y) % 2, c1 = shade(PAL.oak[a], dark), c2 = shade(PAL.oak[2 - a], dark);   // balıksırtı: her karo iki üçgen, yön sırayla döner
+        if (a) { poly([iso(x, y), iso(x + 1, y), iso(x + 1, y + 1)], c1); poly([iso(x, y), iso(x + 1, y + 1), iso(x, y + 1)], c2); } else { poly([iso(x, y), iso(x + 1, y), iso(x, y + 1)], c1); poly([iso(x + 1, y), iso(x + 1, y + 1), iso(x, y + 1)], c2); } continue; }
+      const c = PAL.oak[(x * 3 + y * 5) % 3];
       poly([iso(x, y), iso(x + 1, y), iso(x + 1, y + 1), iso(x, y + 1)], shade(c, dark));
+      if (F === "terrazzo") { for (let k = 0; k < 5; k++) { const u = ((x * 7 + y * 13 + k * 5) % 10) / 10, v = ((x * 11 + y * 3 + k * 7) % 10) / 10, [sx, sy] = iso(x + u, y + v); ctx.fillStyle = ["#d9d2c5", "#8a8178", "#c9a24a", "#3b3632", "#efe9de"][k]; ctx.fillRect(sx, sy, 1.6 * TW / 40, 1.2 * TW / 40); } }
     }
     ctx.strokeStyle = "rgba(60,35,15,.22)"; ctx.lineWidth = 1;
-    if (Q.fx > 0) { for (let y = 0; y <= ROWS + EX; y += .5) { const a = iso(0, y), b = iso(COLS + EX, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+    if (Q.fx > 0 && (THM.floor === "planks" || THM.floor === "terrazzo")) { for (let y = 0; y <= ROWS + EX; y += (THM.floor === "terrazzo" ? 2 : .5)) { const a = iso(0, y), b = iso(COLS + EX, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
       ctx.strokeStyle = "rgba(255,240,210,.05)"; for (let y = .25; y <= ROWS + EX; y += .5) { const a = iso(0, y), b = iso(COLS + EX, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); } }
     const WH = 170, WTOP = PT ? 215 : 1400;
     const wl = [iso(0, 0), iso(0, ROWS + EX), iso(0, ROWS + EX, WTOP), iso(0, 0, WTOP)], wr = [iso(0, 0), iso(COLS + EX, 0), iso(COLS + EX, 0, WTOP), iso(0, 0, WTOP)];
@@ -137,10 +151,18 @@ window.SCENE = (() => {
       poly([iso(0, 0, WTOP), iso(0, ROWS, WTOP), iso(-.18, ROWS + .18, WTOP), iso(-.18, -.18, WTOP)], "#cbbba2"); poly([iso(0, 0, WTOP), iso(COLS, 0, WTOP), iso(COLS + .18, -.18, WTOP), iso(-.18, -.18, WTOP)], "#d9cab2");
       poly([iso(0, ROWS), iso(0, ROWS, WTOP), iso(-.18, ROWS + .18, WTOP), iso(-.18, ROWS + .18)], "#6d5440"); poly([iso(COLS, 0), iso(COLS, 0, WTOP), iso(COLS + .18, -.18, WTOP), iso(COLS + .18, -.18)], "#7d6249"); }
     // lambri (alt duvar paneli) + üst ray
-    wallRect("L", 0, ROWS + EX, 0, 62, "#7e5a3c"); wallRect("R", 0, COLS + EX, 0, 62, "#93694a");
-    ctx.strokeStyle = "rgba(0,0,0,.16)"; for (let u = .5; u < COLS + EX; u += .7) { const a = iso(u, 0, 4), b = iso(u, 0, 58); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
-    for (let u = .5; u < ROWS + EX; u += .7) { const a = iso(0, u, 4), b = iso(0, u, 58); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
-    wallRect("L", 0, ROWS + EX, 60, 66, "#5c3f28"); wallRect("R", 0, COLS + EX, 60, 66, "#6f4d31");
+    if (THM.brick) { ctx.strokeStyle = "rgba(225,205,185,.38)"; ctx.lineWidth = 1;     // 5★ çıplak tuğla duvar
+      for (let z = 72, r = 0; z < WH + 24; z += 9, r++) { [["R", COLS + EX], ["L", ROWS + EX]].forEach(([w, n]) => { const P = w === "R" ? (u, zz) => iso(u, 0, zz) : (u, zz) => iso(0, u, zz);
+        let a = P(0, z), b = P(n, z); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+        for (let u = (r % 2) * .35; u < n; u += .7) { a = P(u, z); b = P(u, z + 9); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); } }); } }
+    wallRect("L", 0, ROWS + EX, 0, 62, THM.wainL); wallRect("R", 0, COLS + EX, 0, 62, THM.wainR);
+    if (THM.tiles) { ctx.strokeStyle = "rgba(120,130,140,.45)"; ctx.lineWidth = 1;   // 4★ beyaz metro karo
+      for (let z = 8; z < 60; z += 8) { [["R", COLS + EX], ["L", ROWS + EX]].forEach(([w, n]) => { const P = w === "R" ? (u, zz) => iso(u, 0, zz) : (u, zz) => iso(0, u, zz); let a = P(0, z), b = P(n, z); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }); }
+      for (let u = .3; u < COLS + EX; u += .6) { const a = iso(u, 0, 0), b = iso(u, 0, 58); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+      for (let u = .3; u < ROWS + EX; u += .6) { const a = iso(0, u, 0), b = iso(0, u, 58); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); } }
+    else { ctx.strokeStyle = "rgba(0,0,0,.16)"; for (let u = .5; u < COLS + EX; u += .7) { const a = iso(u, 0, 4), b = iso(u, 0, 58); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+      for (let u = .5; u < ROWS + EX; u += .7) { const a = iso(0, u, 4), b = iso(0, u, 58); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); } }
+    wallRect("L", 0, ROWS + EX, 60, 66, THM.railL); wallRect("R", 0, COLS + EX, 60, 66, THM.railR);
     poly([iso(0, 0, WH + 26), iso(COLS + EX, 0, WH + 26), iso(COLS + EX, 0, WH + 34), iso(0, 0, WH + 34)], "#8d6440");
     poly([iso(0, 0, WH + 26), iso(0, ROWS + EX, WH + 26), iso(0, ROWS + EX, WH + 34), iso(0, 0, WH + 34)], "#6f4d31");
     // köşe ve duvar dibi gölgesi (ambient occlusion)
@@ -154,6 +176,9 @@ window.SCENE = (() => {
     if (Q.fx > 0) { ctx.save(); ctx.globalAlpha = .18; for (let i = 0; i < 3; i++) poly([iso(wx0 + .4 + i * 1.3, 0, 136), iso(wx0 + .9 + i * 1.3, 0, 136), iso(wx0 + .3 + i * 1.3, 0, 46), iso(wx0 - .2 + i * 1.3, 0, 46)], "#fff"); ctx.restore(); }   // cam yansıması
     wallRect("R", 4.46, 4.54, 46, 136, "#3b2a20"); wallRect("R", wx0, wx1, 90, 93, "#3b2a20");
     wallRect("R", wx0 - .2, wx1 + .2, 38, 44, "#5c3f28");                              // pencere pervazı
+    if (st.shopName) { const G = THM.sign; wallRect("R", wx0 - .1, wx1 + .1, 146, 170, G.rim); wallRect("R", wx0, wx1, 148, 168, G.bg);   // v0.43 §16 dükkan tabelası (seviyeye göre)
+      wallText("R", (wx0 + wx1) / 2, 158, st.shopName.toLocaleUpperCase("tr"), st.shopName.length > 16 ? 7.5 : 9, G.fg, G.neon || null);
+      wallText("R", (wx0 + wx1) / 2, 150.5, "★".repeat(lv), 5, G.neon || G.rim, G.neon || null, "400"); }
     if (Q.fx >= 2) { ctx.save(); ctx.globalAlpha = .12 + .22 * L.k; const g = ctx.createLinearGradient(...iso(4.5, 0, 90), ...iso(4.5, 5, 0)); g.addColorStop(0, "#fff4d6"); g.addColorStop(1, "rgba(255,244,214,0)");
       poly([iso(wx0, 0, 46), iso(wx1, 0, 46), iso(wx1 + 1.6, 5.2, 0), iso(wx0 + 1.6, 5.2, 0)], g); ctx.restore(); }
     // kapı
@@ -174,7 +199,7 @@ window.SCENE = (() => {
     // ön tezgâh (dükkanla uzar)
     const CL = CLEN(lv);
     shadowE(1.7, 1 + CL * .55, TW * (1.8 + CL * .12), TW * 1.1);
-    prism(1, 1, 1.3, CL, 40, PAL.counterTop, PAL.counterFront, "#4a3327");
+    prism(1, 1, 1.3, CL, 40, PAL.counterTop, PAL.counterFront, THM.counterSide);
     if (Q.fx > 0) { ctx.save(); ctx.globalAlpha = .16; poly([iso(1, 1, 40), iso(2.3, 1, 40), iso(2.3, 1 + CL, 40), iso(1, 1 + CL, 40)], "#fff"); ctx.restore(); }
     prism(2.25, 1, .1, CL, 4, "#3a2a1f", "#2a1d14", "#33251b", 36);                     // tezgâh kenar pervazı
     ctx.strokeStyle = "rgba(0,0,0,.2)"; for (let i = 0; i < CL * 2.4; i++) { const a = iso(2.3, 1 + i * .42, 3), b = iso(2.3, 1 + i * .42, 34); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
@@ -643,6 +668,7 @@ window.SCENE = (() => {
     acc += dt; if (Q.fps && acc < 1 / Q.fps && dt > 0) return; dt = acc; acc = 0;   // düşük kalite: 30 kare/sn
     size(); time += dt; hits = []; bubbles = []; over = []; placed = []; heads = [];
     const { customers = [], orders = [], t = .3, level = 1, slots = 1 } = state; const L = daylight(t);
+    THM = THEMES[Math.max(1, Math.min(5, level))]; ["oak", "wall", "wallDark", "counterTop", "counterFront"].forEach(k => PAL[k] = THM[k]);   // v0.43 §16
     if (W < H) { const bg = ctx.createRadialGradient(W / 2, H * .42, 10, W / 2, H * .42, Math.max(W, H) * .75); bg.addColorStop(0, "#4a3424"); bg.addColorStop(1, "#1f150e"); ctx.fillStyle = bg; } else ctx.fillStyle = PAL.wall;   // v0.37: dik ekranda maketin arkası koyu
     ctx.fillRect(0, 0, W, H);
     room(L, state); furniture(level, slots, state);
