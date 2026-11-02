@@ -150,8 +150,8 @@ async function run(size) {
     await sleep(800);
     // temperleme
     await waitFor(() => !!document.querySelector('#tutOk')); await check('tut_temper_anladim'); await click('#tutOk');
-    await waitFor(() => { const b = document.querySelector('#zB'); return b && !b.disabled && /Tam şimdi/.test((document.querySelector('#zRes') || {}).textContent || ''); });
-    await check('tut_temper_tamsimdi'); await page.locator(zB).dispatchEvent('pointerdown'); await sleep(800);
+    { const b = await page.locator(zB).boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down();   // v0.40: temper basılı tut
+      await waitFor(() => /Şimdi bırak/.test((document.querySelector('#tut') || {}).textContent || '')); await check('tut_temper_tamsimdi'); await page.mouse.up(); await sleep(800); }
     // çekme
     await waitFor(() => !!document.querySelector('#tutOk')); await check('tut_cek_anladim'); await click('#tutOk');
     await click(zB); await sleep(300); await check('tut_cek_akiyor');
@@ -182,6 +182,8 @@ async function run(size) {
         const t = await page.evaluate(() => (document.querySelector('#zB') || {}).textContent || '');
         if (/ÖĞÜT|BASTIR/.test(t)) { await page.locator(zB).dispatchEvent('pointerdown'); }
         else if (/BASILI/.test(t)) { const b = await page.locator(zB).boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await sleep(1400); await check(tagp + '_doz_basili'); await page.mouse.up(); }
+        else if (/^TAMAM/.test(t)) { const cb = await page.locator('#closeup').boundingBox(); await page.mouse.move(cb.x + cb.width * .3, cb.y + cb.height / 2); await page.mouse.down();   // v0.40 dozlama: sallayarak doldur
+          for (let j = 0; j < 16; j++) { await page.mouse.move(cb.x + cb.width * (j % 2 ? .3 : .7), cb.y + cb.height / 2, { steps: 4 }); } await page.mouse.up(); await click(zB); }
         else if (/BAŞLAT/.test(t)) { await click(zB); await sleep(3200); await check(tagp + '_cek'); await click(zB); }
         await sleep(900);
         const t2 = await page.evaluate(() => (document.querySelector('#zB') || {}).textContent || '');
@@ -217,7 +219,9 @@ async function run(size) {
     await click('#goalBtn'); await check('ana_hedef'); await page.evaluate(() => document.querySelector('#goalX').click()); await sleep(200);
     await click('#hubNext'); await check('fiyatlar');
     await click('[data-pu]'); await check('fiyatlar_arti');
-    await click('#prNext'); await sleep(800); await check('gun2_sahne');
+    await click('#prNext'); await sleep(900);
+    for (const lb of ['Su', 'Isıt', 'Basınç', 'Böyle kalsın']) { await page.evaluate(l => { const b = [...document.querySelectorAll('#ovModal.on button')].find(x => x.textContent.trim() === l); if (b) b.click(); }, lb); await sleep(350); }   // v0.40 sabah açılışı + kalibrasyon
+    await check('gun2_sahne');
     await click('#icBook'); await check('defter'); await page.evaluate(() => { const c = document.querySelector('#bookCard'); c.scrollTop = c.scrollHeight; }); await check('defter_alt'); await page.evaluate(() => document.querySelector('#bookX').click()); await sleep(200);
     await click('#icSettings'); await check('ayarlar'); await page.evaluate(() => document.querySelector('#setX').click()); await sleep(200);
     await click('#icMenu'); await check('menu_oyunici'); await click('#gmMenu'); await check('menu_onay'); await page.locator('#modalCard .mrow button.pri').click(); await sleep(600);

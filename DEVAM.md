@@ -7,8 +7,12 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.39)
+## Bekleyen paket (son yayın: v0.40)
 (boş)
+
+## v0.40 – YAYINLANDI (2 Kasım 2026, kullanıcı "hepsini yap paket çık" dedi)
+- Mini oyun yenilemesi, tasarım §14 (Claude Docs rev 167 + HTML). Kod: tamp `hold`; dose `fill: "shake"` (uiZone'da kaydırma, `o.phase = "shake"`, bindZone'da TAMAM); süt `o.milkStage` 1/2 + `o.airScore`; `artDraw()` (çizim puanı); tkfoam `blind` (3 servisten sonra); `CLOSEUP.extract` akış rengi `bl` + `hideTime`; stepTick `rhy` (hedeften uzakta ±%35); `day.calShift` (kalibrasyon cezası artık kayma, `calPenalty` kaldırıldı); `o.grindDev` → ekstraksiyon `o.spd` 0,75–1,3 (Kural 9: bölgeler hızla ölçeklenir); `bgExtract` (çift grup); `day.pregrind`; `zFade/applyFade` + Ayarlar `cb_fullzones`; `showMachineOn`; `day.rush` + `rushOn()`; gece temizliği penceresi; `CLOSEUP.cupTop` kaliteye göre krema; `D.tutorial.releaseTamp`.
+- Kontrol: kullanıcı onayıyla değil, hata yakalamak için telefon denetimi bir kez çalıştırıldı (375×667 ve 320×568, 62 ekran, 0 ihlal); bulunan iki hata düzeltildi (TAMAM bağlanmıyordu, temper öğretici metni). Denetim betiği yeni adımlara uyarlandı.
 
 ## v0.39 – YAYINLANDI (2 Kasım 2026, kullanıcı "hepsini ekle paket çık" dedi)
 - 13 öneri: §13 (Claude Docs rev 157–166 + HTML). Kod: `showCalibration`, `dayZoneMult` (kalibrasyon ×0,8, kirli makine ×0,85), `c.mods`/`o.extra`/`o.takeaway` (seçimde "Ekstralar", yanlışsa mismatch), özel tipler `critic/tourist/influencer/jury` (`D.customers[*].special`, `D.specialChance`), `S.buzz`, `S.cleanDay` + kapanışta Temizle, `S.loyal`, `rollWeather` + `wIcon`, yarışma `S.compDay/compWeek` + `juryScore`, `ach/checkAch` + `D.achievements`, titreşim (`cb_haptic`), portrede tarif grupları yatay kaydırma, `wallShelf2` (sağ duvar rafı) + TH_ITEMS, `araclar/telefon-denetimi.js`.

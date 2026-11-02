@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.39",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.40",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -176,8 +176,8 @@ window.DATA = {
   // §4 – Mini oyunlar (MVP: 5 adet). Aralıklar: Çırak rütbesinde geniş, yükseldikçe daralır.
   minigames: {
     grind:   { name: "Öğütme",       hint: "Siyah ibre hızla gidip geliyor: koyu yeşilde ÖĞÜT'e bas." },
-    dose:    { name: "Dozlama",      hint: "Basılı tut, kahve dolsun; ibre 18 g'da (koyu yeşil) iken bırak." },
-    tamp:    { name: "Temperleme",      hint: "Daire büyüyüp küçülüyor: kenarı koyu yeşil halkadayken dokun." },
+    dose:    { name: "Dozlama",      hint: "Yakın planı sağa-sola kaydırarak kahve düşür; terazi koyu yeşilde (hedef gram) iken TAMAM." },
+    tamp:    { name: "Temperleme",      hint: "Basılı tut: basınç arttıkça siyah kenar büyür; koyu yeşil halkadayken bırak." },
     extract: { name: "Ekstraksiyon", hint: "BAŞLAT'a bas; terazide hedef gram ve 25–30 sn gelince DURDUR." },
     milk:    { name: "Süt köpürtme", hint: "Basılı tut, süt ısınır; ibre koyu yeşildeyken bırak (60–65 °C)." },
     water:   { name: "Sıcak su",     hint: "Basılı tut, makinenin sıcak su musluğundan su ver; seviye koyu yeşildeyken bırak." },
@@ -575,7 +575,7 @@ window.DATA = {
     steps: {
       grind:   "<b>1. Öğüt.</b> İbre <b>koyu yeşile</b> gelince <b>ÖĞÜT</b>'e bas.",
       dose:    "<b>2. Dozla.</b> 18 gram koyacağız. <b>Basılı tut</b>, ibre <b>koyu yeşile</b> gelince bırak.",
-      tamp:    "<b>3. Sıkıştır.</b> Siyah kenar <b>koyu yeşil halkaya</b> gelince <b>BASTIR</b>'a dokun.",
+      tamp:    "<b>3. Sıkıştır.</b> <b>BASILI TUT</b>: basınç artar. Siyah kenar <b>koyu yeşil halkaya</b> gelince bırak.",
       extract: "<b>4. Çek.</b> <b>BAŞLAT</b>'a bas. 36 gram yaklaşık 27 saniyede akar; ibre <b>koyu yeşilde</b> <b>DURDUR</b>.",
       milk:    "<b>Süt.</b> Basılı tut; ibre <b>koyu yeşildeyken</b> (60–65 °C) bırak.",
       art:     "<b>Latte art.</b> Basılı tut, koyu yeşilde bırak; sonra koyu yeşilde <b>KES</b>."
@@ -584,6 +584,7 @@ window.DATA = {
     extractEarly: "Erken durdurdun evladım. Kahvenin akmasını bekle; yine <b>BAŞLAT</b>'a bas.",
     tooEarly:   "Acele etme evladım. İbre <b>koyu yeşile</b> gelsin, öyle bas.",
     release:    "<b>Şimdi bırak!</b> Tam 18 gram oldu.",
+    releaseTamp: "<b>Şimdi bırak!</b> Siyah kenar koyu yeşil halkada; baskı tam yerinde.",   // v0.40 temper basılı tut
     holdRetry:  "Erken bıraktın. Baştan: <b>koyu yeşile</b> gelene kadar <b>basılı tut</b>.",
     extractRun: "Kahve akıyor: önce koyu bal rengi, sonra karamel krema. <b>Koyu yeşilde</b> durdur.",
     stopNow:    "<b>Şimdi durdur!</b> 36 gram, 27 saniye: tam kıvamında.",

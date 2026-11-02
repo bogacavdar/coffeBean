@@ -266,14 +266,23 @@ function juryScore(sv) {                                                        
 function rollWeather() {                                                          // §13 hava: Cumartesi kalabalık; diğer günler %25 yağmur, %25 sıcak
   if (S.day % 7 === 6) return "crowd"; const r = Math.random(), W = D.weather; return r < W.rain.p ? "rain" : r < W.rain.p + W.hot.p ? "hot" : null;
 }
+function showMachineOn(next) {                                                    // v0.40 §14 sabah açılışı: Su → Isıt → Basınç
+  const ORDER = ["Su", "Isıt", "Basınç"], btns = ORDER.slice().sort(() => Math.random() - .5); let idx = 0, first = true;
+  const show = msg => modal(`<h3>⚙ Makineyi aç</h3><p>Sırayla dokun: <b>Su → Isıt → Basınç</b></p><p>${ORDER.map((x, i) => (i < idx ? "✅ " : "⬜ ") + x).join(" &nbsp; ")}</p>${msg ? `<p class="muted">${msg}</p>` : ""}`,
+    btns.map(b => ({ label: b, pri: false, fn: () => { if (!day) return; if (b === ORDER[idx]) { idx++; AUDIO.sfx("click"); if (idx >= ORDER.length) { if (first) { S.xp += 2; toast("Makine hazır ✓ · +2 XP"); } else toast("Makine hazır"); return next(); } show(""); } else { first = false; idx = 0; AUDIO.sfx("sad"); show("Yanlış sıra; baştan."); } } })));
+  show("");
+}
 function showCalibration() {                                                      // §13 sabah kalibrasyonu (dial-in)
   const C = D.calibration, r = Math.random(); let acc = 0, drift = "ok"; for (const [k, p] of C.drift) { acc += p; if (r < acc) { drift = k; break; } }
-  day.calPenalty = true;                                                           // seçim yapılana kadar ceza (atlanırsa kalır)
-  const pickA = ans => { if (!day) return; const ok = ans === C.answer[drift]; day.calPenalty = !ok; if (ok) { S.xp += C.xp; toast("Ayar tuttu ✓ · +" + C.xp + " XP"); AUDIO.sfx("perfect"); } else toast(ans === "skip" ? "Kalibrasyon atlandı · bugün öğütme ve ekstraksiyon zor" : "Ayar tutmadı · bugün öğütme ve ekstraksiyon zor"); renderHUD(); };
+  day.calPenalty = false;
+  const pickA = ans => { if (!day) return; const ok = ans === C.answer[drift]; day.calPenalty = false;
+    day.calShift = ok ? 0 : drift === "coarse" ? 8 : drift === "fine" ? -8 : ans === "finer" ? -8 : ans === "coarser" ? 8 : 0;   // v0.40 §14: tutmazsa öğütme hedefi kayar (daralma yok)
+    if (ok) { S.xp += C.xp; toast("Ayar tuttu ✓ · +" + C.xp + " XP"); AUDIO.sfx("perfect"); } else toast(day.calShift ? "Ayar tutmadı · bugün öğütme hedefi " + (day.calShift > 0 ? "ince" : "kaba") + " tarafa kaydı" : "Kalibrasyon atlandı"); renderHUD(); };
   modal(`<h3>☕ Sabah kalibrasyonu</h3><p>${C.shot[drift]}</p><p class="muted">Öğütücü ayarını ne yapalım? Doğru ayar bugünü kolaylaştırır; yanlışsa öğütme ve ekstraksiyon hedefleri daralır.</p>`,
     [{ label: "Atla", fn: () => pickA("skip") }, { label: "Daha kaba", fn: () => pickA("coarser") }, { label: "Böyle kalsın", fn: () => pickA("keep") }, { label: "Daha ince", pri: true, fn: () => pickA("finer") }]);
 }
-const wIcon = () => day && day.weather ? D.weather[day.weather].icon + " " : "";
+const rushOn = () => !!(day && day.rush && day.rush.on && day.t < day.rush.at + day.rush.dur);
+const wIcon = () => (rushOn() ? "⏰ " : "") + (day && day.weather ? D.weather[day.weather].icon + " " : "");
 function startDay() {
   endCtx = null; if (S) delete S.endPending;
   if (S.cbBrewing) { S.syr = S.syr || {}; S.syr.coldbrew = (S.syr.coldbrew || 0) + S.cbBrewing; S.cbBrewing = 0; }   // v0.24: gece demlenen cold brew sabah hazır
@@ -285,6 +294,7 @@ function startDay() {
   day = { t: 0, toSpawn: n, spawnEvery: arrivalEvery(), nextSpawn: firstTime ? 99999 : 1, customers: [], orders: [], active: 0,
           stats: { served: 0, perfect: 0, income: 0, tips: 0, left: 0, bounced: 0, pricey: 0, repStart: S.rep }, id: 1, tutorialActive: false, asst: null };
   if (!firstTime) day.task = makeTask();
+  if (!firstTime && Math.random() < .25) day.rush = { at: rnd(20, DAY_SECONDS * .6), dur: 30, on: false };   // v0.40 §14 yoğun saat
   day.weather = weather; day.dirty = !firstTime && S.day >= 3 && S.cleanDay !== S.day - 1;   // §13 dün makine temizlenmediyse
   if (!firstTime && S.compDay === S.day) { day.jury = D.competition.drinks.length; day.juryScores = []; }
   if (!firstTime) setTimeout(() => { if (!day) return; const msgs = [];
@@ -292,7 +302,7 @@ function startDay() {
     if (buzz > 0) msgs.push("📱 Fenomen paylaştı: bugün +" + buzz + " müşteri"); if (buzz < 0) msgs.push("📱 Fenomen kötü yazdı: bugün " + buzz + " müşteri");
     if (day.dirty) msgs.push("🧽 Makine dün temizlenmedi: ekstraksiyon bugün daha zor");
     if (day.jury) msgs.push("🏆 Yarışma günü: ilk 3 müşteri jüri");
-    if (msgs.length) toast(msgs.join(" · ")); if (S.day >= 2) showCalibration(); }, 350);
+    if (msgs.length) toast(msgs.join(" · ")); if (S.day >= 2) showMachineOn(showCalibration); }, 350);
   if (firstTime) {
     day.tutorialActive = true;
     day.customers.push({ id: day.id++, type: "nejla", name: "Yıldız Teyze", drink: "espresso", size: "double", bean: "brazil", milk: null, patience: Infinity, patienceMax: 0,
@@ -325,17 +335,18 @@ function tick(now) {
     if (!day.tutorialActive && !paused) {
       day.t += dt;
       if (day.t >= DAY_SECONDS) day.toSpawn = 0;                                   // §9 20:00: gün biter, gelemeyen gelmez
+      if (day.rush && !day.rush.on && day.t >= day.rush.at) { day.rush.on = true; day.toSpawn += 3; day.nextSpawn = Math.min(day.nextSpawn, day.t + 1); toast("⏰ Yoğun saat! 30 saniye boyunca müşteri akını · bahşiş ×1,5"); AUDIO.sfx("shopOpen"); }
       if (day.toSpawn > 0 && day.t >= day.nextSpawn) {
         if (queueOf().length >= shop().maxQueue) day.stats.bounced++;                  // §9 sıra dolu: kapıdan döner
         else spawnCustomer();
-        day.toSpawn--; day.nextSpawn += day.spawnEvery * rnd(0.6, 1.4);
+        day.toSpawn--; day.nextSpawn += day.spawnEvery * rnd(0.6, 1.4) * (rushOn() ? 1 / 3 : 1);
       }
       queueOf().forEach(c => { if (c.patienceMax) c.patience -= dt; });
       day.orders.slice().forEach(o => { const c = o.cust; if (!c.patienceMax || c.leaving) return; c.patience -= dt; if (c.patience <= 0) leave(c, true); });   // §7 hazırlarken de sabır azalır; biterse sipariş iptal
       updOrderBars();
       queueOf().filter(c => c.patienceMax && c.patience <= 0).forEach(leave);
     }
-    day.orders.forEach((o, i) => { if (o.selecting || o.hidden) return; if (o.autoRun) autoTick(o, dt, i === day.active); else if (i === day.active) stepTick(o, dt); });
+    day.orders.forEach((o, i) => { if (o.selecting || o.hidden) return; if (o.autoRun) autoTick(o, dt, i === day.active); else if (i === day.active) stepTick(o, dt); else if (o.phase === "run" && o.steps[o.i] === "extract" && o.z) bgExtract(o, dt); });   // v0.40 §14 çift grup: shot arka planda akar
     if (S.staff && S.staff.assistant && !day.tutorialActive && !paused) assistantTick(dt);
     layout();
   }
@@ -437,6 +448,8 @@ function prepareOrder(o, drink, size, bean, milk, sugar) {
   const all = stepsFor(drink), auto = o.tutorial ? new Set() : autoSteps();      // öğretici her adımı elle öğretir
   o.all = all; o.auto = auto; o.steps = all.filter(st => !auto.has(st)); o.i = 0; o.scores = {}; o.phase = "ready"; o.v = 0; o.served = false;
   all.forEach(st => { if (auto.has(st)) o.scores[st] = D.economy.autoScore; });   // §8 otomatik adım sabit 100 (v0.35)
+  if (!o.tutorial && day && day.pregrind && o.steps.includes("grind")) {            // v0.40 §14 önden öğütülmüş doz: öğütme atlanır, tazelik düşer
+    const pg = day.pregrind; day.pregrind = null; o.scores.grind = Math.max(0, pg.score - Math.floor((day.t - pg.t) / 10) * 3); o.grindDev = 0; o.steps = o.steps.filter(x => x !== "grind"); toast("Önden öğütülmüş doz kullanıldı · " + o.scores.grind); }
   o.autoRun = o.steps.length === 0;                                               // her adım otomatik: makine kendisi hazırlar
   save(); renderOrders();
 }
@@ -519,17 +532,23 @@ function stepTick(o, dt) {                                  // §4 renkli hedef 
   if (o.phase === "run" && o.tutorial && o.frozen) { setNeedle(o.v); if ($("#closeup")) c.draw(o, o.v); return; }   // §4 ilk sipariş: mükemmel noktada bekler
   const v0 = o.v;
   if (o.phase === "run") {
-    if ((o.mode || c.mode) === "osc") { o.v += o.dir * c.speed * dt; if (o.v > 100) { o.v = 100; o.dir = -1; o.bounces = (o.bounces || 0) + 1; } if (o.v < 0) { o.v = 0; o.dir = 1; o.bounces = (o.bounces || 0) + 1; } }
-    else { o.v += (typeof c.speed === "function" ? c.speed() : c.speed) * (o.spd || 1) * dt; if (o.v >= 100) { o.v = 100; stopZone(o, s); return; } }
+    const rhy = !o.tutorial && (s === "grind" || s === "extract") && o.z && Math.abs(o.v - o.tgt) > o.z.k * 1.6 ? 1 + .35 * Math.sin(performance.now() / 260) : 1;   // v0.40 §14: hedeften uzakta ritim değişir; hedefte normal hız (Kural 9)
+    if (s === "grind" && navigator.vibrate && LSG("cb_haptic") !== "0") { o.vibT = (o.vibT || 0) + dt; if (o.vibT > .3) { o.vibT = 0; try { navigator.vibrate(6); } catch (e) {} } }
+    if ((o.mode || c.mode) === "osc") { o.v += o.dir * c.speed * rhy * dt; if (o.v > 100) { o.v = 100; o.dir = -1; o.bounces = (o.bounces || 0) + 1; } if (o.v < 0) { o.v = 0; o.dir = 1; o.bounces = (o.bounces || 0) + 1; } }
+    else if (o.phase === "run") { o.v += (typeof c.speed === "function" ? c.speed() : c.speed) * (o.spd || 1) * rhy * dt; if (o.v >= 100) { o.v = 100; stopZone(o, s); return; } }
     if (o.blond && !o.blond.done && !o.blond.warned && o.v > o.blond.t - o.z.k * 2.5) { o.blond.warned = true; const r = $("#zRes"); if (r) { r.className = "zres ok"; r.textContent = "Renk açılıyor! Akışı yumuşat 💧"; } }
     if (o.blond && !o.blond.done && o.v > o.blond.t + o.z.k) { o.blond.done = true; o.blond.score = 0; const r = $("#zRes"); if (r) { r.className = "zres miss"; r.textContent = "Rengi kaçırdın · 0"; } const b2 = $("#zB2"); if (b2) b2.disabled = true; }
     if (c.onTick) c.onTick(o);
     const mode = o.mode || c.mode;
     if (o.tutorial && o.phase === "run" && (mode !== "osc" || (o.bounces || 0) >= 2) && (v0 - o.tgt) * (o.v - o.tgt) <= 0) { o.v = o.tgt; o.frozen = true; if (s === "extract" || s === "milk") AUDIO.stopLoops();
-      setTut(mode === "hold" ? D.tutorial.release : mode === "sweep" ? D.tutorial.stopNow : D.tutorial.pressNow);
+      setTut(mode === "hold" ? (s === "tamp" ? D.tutorial.releaseTamp : D.tutorial.release) : mode === "sweep" ? D.tutorial.stopNow : D.tutorial.pressNow);
       if (mode === "osc") { const b = $("#zB"); if (b) { b.disabled = false; b.classList.add("pulse"); } const r = $("#zRes"); if (r) { r.className = "zres perfect"; r.style.fontSize = "30px"; r.textContent = "Tam şimdi!"; } AUDIO.sfx("click"); } }   // §10 1–2 tur sonra yeşilde sabitlenir
   }
   setNeedle(o.v); if ($("#closeup")) c.draw(o, o.v);
+}
+function bgExtract(o, dt) {
+  const c = MG.extract; o.v += mgSpeed(c) * (o.spd || 1) * dt;
+  if (o.v >= 100) { o.v = 100; o.phase = "done"; AUDIO.loop("extract", false); toast(o.cust.name + ": shot taştı (45 sn) · Kaçtı"); finishStep(o, 0, c.tipHigh); }
 }
 function finishStep(o, score, tipKey) {
   AUDIO.stopLoops();
@@ -614,6 +633,7 @@ function serve(o) {
   let tip = 0; if (quality >= 80) tip = Math.round(price * 0.25 * ((quality - 70) / 30) * speedMult * ct.tip * rank().tipMult * sm * decorMult("tip"));
   tip = Math.round(tip * D.extraTip[Math.min(2, missing.length)]);
   if ((S.loyal || {})[c.type] >= D.loyalty.need) tip = Math.round(tip * D.loyalty.tip);   // §13 sadık tip
+  if (rushOn()) tip = Math.round(tip * 1.5);                                      // v0.40 §14 yoğun saat
   if (!o.assist) S.streak = service >= 95 ? (S.streak || 0) + 1 : 0;
   S.money += price + tip; day.stats.income += price; day.stats.tips += tip; day.stats.served++;
   useBean(o.bean, beanUse(o.drink, o.size) + (o.extra ? D.mods.extraBean : 0));
@@ -725,7 +745,7 @@ function showLedger(dayNum, st, L, repDelta) {
       ${L.plant ? `<tr><td>Dekorasyon</td><td class="num">+${L.plant} itibar</td></tr>` : ""}
       ${L.spoiled ? `<tr><td>Kalan süt bozuldu</td><td class="num">0 L</td></tr>` : ""}
       ${st.dishes ? `<tr><td>Yıkanan fincan (bulaşık)</td><td class="num">${st.dishes}</td></tr>` : ""}
-      <tr><td>🧽 Makine temizliği (backflush)</td><td class="num">${S.cleanDay === dayNum ? "✓ yapıldı" : '<button id="cleanBtn" class="sec">Temizle</button>'}</td></tr>
+      <tr><td>🧽 Makine temizliği</td><td class="num">${S.cleanDay === dayNum ? "✓ yapıldı" : '<button id="cleanBtn" class="sec" style="padding:4px 10px;font-size:13px;min-height:0">Temizle</button>'}</td></tr>
       <tr><td>İtibar değişimi</td><td class="num">${repDelta >= 0 ? "+" : ""}${repDelta}</td></tr>
       <tr class="total"><td>Kasa</td><td class="num">₺${tl(S.money)}</td></tr>
       ${(S.loans || []).map(l => `<tr><td>Kredi #${l.id} (₺${tl(l.amount)} → ₺${tl(l.owe)}) · vade</td><td class="num">₺${tl(l.rem)} kaldı · ${l.due - dayNum <= 0 ? "bugün" : (l.due - dayNum) + " gün"}</td></tr>`).join("")}
@@ -735,7 +755,11 @@ function showLedger(dayNum, st, L, repDelta) {
     <div class="row">${endCtx ? '<button id="ledgerBack">← Geri</button>' : ""}<button class="pri" id="ledgerOk">${short ? "Bankadan ₺" + tl(need) + " kredi çek" : (L.news ? "Gazeteye bak →" : "Devam →")}</button></div>`;
   openOverlay("#ovLedger");
   const lbk = $("#ledgerBack"); if (lbk) lbk.onclick = () => backToRent();
-  const cb = $("#cleanBtn"); if (cb) cb.onclick = () => { S.cleanDay = dayNum; AUDIO.sfx("click"); toast("Makine temizlendi ✓ · yarın ekstraksiyon normal"); save(); showLedger(dayNum, st, L, repDelta); };   // §13
+  const cb = $("#cleanBtn"); if (cb) cb.onclick = () => {                         // v0.40 §14 gece temizliği ritmi: ÇALIŞTIR × 3, aralarda 1 sn bekle
+    let n = 0; modal(`<h3>🧽 Gece temizliği (backflush)</h3><p>Kör filtreyle makineyi 3 kez çalıştır; her seferinde 1 saniye bekle.</p><p id="bfN" style="font-size:20px">⬜ ⬜ ⬜</p><button class="hold big pri" id="bfGo">ÇALIŞTIR</button>`, [{ label: "Vazgeç" }]);
+    const g = $("#bfGo"); g.onclick = () => { if (g.disabled) return; n++; AUDIO.sfx("extractStop"); $("#bfN").textContent = "✅ ".repeat(n) + "⬜ ".repeat(3 - n);
+      if (n >= 3) { $("#ovModal").classList.remove("on"); S.cleanDay = dayNum; toast("Makine temizlendi ✓ · yarın ekstraksiyon normal"); save(); showLedger(dayNum, st, L, repDelta); return; }
+      g.disabled = true; g.textContent = "Bekle…"; setTimeout(() => { g.disabled = false; g.textContent = "ÇALIŞTIR"; }, 1000); }; };
   $("#ledgerOk").onclick = () => { if (short) { takeLoan(need, D.economy.rentLoanDays); showLedger(dayNum, st, L, repDelta); return; } $("#ovLedger").classList.remove("on"); if (L.news) showNews(weekNo(dayNum), L.news, openRestock, backToLedger); else openRestock(); };
 }
 // §7 ilk günden önce tedarik: bardak ve küçük malzemeleri oyuncu alır; Günü başlat ilk günü açar
@@ -801,7 +825,7 @@ const reqOk = r => eqLevel(r) >= eqMax(r);
 const widenMult = step => { let m = 1; Object.keys(D.equipment).forEach(k => { const e = D.equipment[k], lv = eqLevel(k); if (e.widen === step && lv > 0) m = Math.max(m, (D.zones.widenLevels || [D.zones.widen])[Math.min(lv, 3) - 1] || D.zones.widen); }); return m; };
 const mgSpeed = c => typeof c.speed === "function" ? c.speed() : c.speed;
 // v0.39 §13: günlük bölge çarpanları (sabah kalibrasyonu tutmadıysa öğütme+ekstraksiyon, makine kirliyse ekstraksiyon)
-const dayZoneMult = step => { let m = 1; if (day && day.calPenalty && (step === "grind" || step === "extract")) m *= D.calibration.penalty; if (day && day.dirty && step === "extract") m *= D.backflushPenalty; return m; };
+const dayZoneMult = step => { let m = 1; if (day && day.dirty && step === "extract") m *= D.backflushPenalty; return m; };
 function zoneSet(step, spd) {                                                     // §4 eşit zorluk: bölge genişliği ibre hızıyla orantılı (aynı zaman penceresi)
   const Z = D.zones, T = Z.time, v = spd || mgSpeed(MG[step]) || 37.5, w = DF().zone * Math.min(1, tol()) * widenMult(step) * dayZoneMult(step) * v;
   return { p: Math.max(Z.minPerfect, T.perfect * w), g: Math.max(Z.minPerfect * 2, T.good * w), k: Math.max(Z.minPerfect * 4, T.ok * w) }; }
@@ -816,28 +840,35 @@ function zoneBar(t, z, left, right, t2) {
     <div class="zends"><span>${left}</span><span class="zleg"><i class="perf"></i>Mükemmel <i class="good"></i>Güzel <i class="ok"></i>İyi</span><span>${right}</span></div>`;
 }
 function setNeedle(v) { const n = $("#zN"); if (n) n.style.left = v + "%"; }
-function showZone(zone, sc) { if (navigator.vibrate && LSG("cb_haptic") !== "0") { try { navigator.vibrate(zone === "perfect" ? 25 : zone === "miss" ? [50, 40, 50] : 10); } catch (e) {} }   // §13 titreşim
+function showZone(zone, sc) { if (zone === "perfect") AUDIO.sfx("perfect");   // v0.40 §14
+  if (navigator.vibrate && LSG("cb_haptic") !== "0") { try { navigator.vibrate(zone === "perfect" ? 25 : zone === "miss" ? [50, 40, 50] : 10); } catch (e) {} }   // §13 titreşim
   const r = $("#zRes"); if (!r) return; r.className = "zres " + zone; r.textContent = ({ perfect: "MÜKEMMEL!", good: "Güzel", ok: "İyi", miss: "Kaçtı" })[zone] + " · " + sc; }
 const DR = o => D.drinks[o.drink];                                               // v0.24 çizim seçenekleri tariften
 const CZ = o => DR(o).cezve || {};
 const BR = o => DR(o).brewer || "v60";
 const before = (o, a, b) => { const A = o.all || o.steps, i = A.indexOf(a), j = A.indexOf(b); return i >= 0 && (j < 0 || i < j); };   // a adımı b'den önce mi
 const iced = o => /^ice/.test(SZ(o.size).cup);
-const ZM = (o, v, label, pos) => { if (o && o.z && o.tgt != null) CLOSEUP.zmeter(v, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }, Object.assign({ label }, pos || {})); };   // v0.29: tuval içinde de renkli hedef göstergesi
+const ZM = (o, v, label, pos) => { if (o && o.z && o.tgt != null && (o.tutorial || zFade() > .25)) CLOSEUP.zmeter(v, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }, Object.assign({ label }, pos || {})); };   // v0.29: tuval içinde de renkli hedef göstergesi
+// v0.40 §14: ustalaştıkça renkli bölgeler soluklaşır (Barista %55, Kıdemli %20); Ayarlar'dan hep tam gösterilebilir
+const zFade = () => { if (LSG("cb_fullzones") === "1") return 1; const i = D.ranks.indexOf(rank()); return i >= 2 ? .2 : i === 1 ? .55 : 1; };
+const applyFade = el => { const f = zFade(); if (f < 1) el.querySelectorAll(".zb").forEach(z => z.style.opacity = f); };
 const EXT_T = o => { const r = D.drinks[o.drink].ratio || 2; return r === 1.5 ? 20 : r === 3 ? 37.5 : 27.5; };
 const MG = {
-  grind:   { mode: "osc", speed: 85, btn: "ÖĞÜT", left: "kaba", right: "ince", target: o => clamp((D.beans[o.bean || "brazil"].grindT || 50) + ((D.drinks[o.drink].profile || {}).grind || 0), 10, 90), sfx: "grind", tipLow: "grind_low", tipHigh: "grind_high",
+  grind:   { mode: "osc", speed: 85, btn: "ÖĞÜT", left: "kaba", right: "ince", target: o => clamp((D.beans[o.bean || "brazil"].grindT || 50) + ((D.drinks[o.drink].profile || {}).grind || 0) + (day && !o.tutorial ? day.calShift || 0 : 0), 10, 90),   /* v0.40 §14: kalibrasyon kayması */ sfx: "grind", tipLow: "grind_low", tipHigh: "grind_high",
              draw: (o, v) => { CLOSEUP.grind(v); ZM(o, v, "hedef öğütüm"); } },
-  dose:    { mode: "hold", speed: 9 * 100 / 24, btn: "BASILI TUT · dozla", left: "0 g", right: o => `${Math.round(SZ(o.size).dose * 4 / 3)} g`, target: () => 75, sfx: "dose", tipLow: "dose_low", tipHigh: "dose_high",
+  dose:    { mode: "hold", fill: "shake", speed: 9 * 100 / 24, btn: "BASILI TUT · dozla", left: "0 g", right: o => `${Math.round(SZ(o.size).dose * 4 / 3)} g`, target: () => 75, sfx: "dose", tipLow: "dose_low", tipHigh: "dose_high",
              onStart: () => AUDIO.sfx("dose"), draw: (o, v) => { CLOSEUP.dose(v * SZ(o.size).dose * 4 / 300, SZ(o.size).dose); ZM(o, v, "hedef " + SZ(o.size).dose + " g"); } },   // §7 double/büyük: 36 g
-  tamp:    { mode: "osc", ring: true, speed: 65, btn: "BASTIR", target: () => 58, sfx: "tamp", tipLow: "tamp_low", tipHigh: "tamp_high",
+  tamp:    { mode: "hold", ring: true, speed: 40, btn: "BASILI TUT · bastır", target: () => 58, /* v0.40 §14: bastır ve tut */ sfx: "tamp", tipLow: "tamp_low", tipHigh: "tamp_high",
              draw: (o, v) => CLOSEUP.tamp(v / 100, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }) },
   extract: { mode: "sweep", speed: EXTRACT_SPEED * 100 / 45, btn0: "BAŞLAT", btn: "DURDUR", left: "0 sn", right: "45 sn", target: o => EXT_T(o) / 45 * 100, tipLow: "extract_low", tipHigh: "extract_high",
              onStart: () => AUDIO.loop("extract", true), onStop: () => { AUDIO.loop("extract", false); AUDIO.sfx("extractStop"); },
-             draw: (o, v) => { const t = v * .45, tT = EXT_T(o), tg = Math.round(SZ(o.size).dose * (D.drinks[o.drink].ratio || 2)); CLOSEUP.extract(t, Math.max(0, (t - 6) * tg / (tT - 6)), tg, o.phase === "run", tT, 2.5, { tWin: o.z ? [+(tT - o.z.k * .45).toFixed(1), +(tT + o.z.k * .45).toFixed(1)] : [tT - 2.5, tT + 2.5], Z: o.z ? { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k } : null }); } },   // ön ıslatma 6 sn, sonra verim (g); gösterilen pencere renkli bölgelerin gerçek genişliği
-  milk:    { mode: "hold", speed: () => (S.equipment.steamWand ? 24 : 16) * 100 / 65, btn: "BASILI TUT · ısıt", left: "20 °C", right: "85 °C", target: () => (62.5 - 20) / 65 * 100, tipLow: "milk_low", tipHigh: "milk_high",
+             draw: (o, v) => { const t = v * .45, tT = EXT_T(o), tg = Math.round(SZ(o.size).dose * (D.drinks[o.drink].ratio || 2)); CLOSEUP.extract(t, Math.max(0, (t - 6) * tg / (tT - 6)), tg, o.phase === "run", tT, 2.5, { tWin: o.z ? [+(tT - o.z.k * .45).toFixed(1), +(tT + o.z.k * .45).toFixed(1)] : [tT - 2.5, tT + 2.5], Z: o.z && zFade() > .25 ? { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k } : null, hideTime: zFade() <= .25 }); } },   // v0.40 §14: usta görünümünde saniye gizli, renk sarışınlaşır · ön ıslatma 6 sn, sonra verim (g); gösterilen pencere renkli bölgelerin gerçek genişliği
+  milk:    { mode: "hold", speed: () => (S.equipment.steamWand ? 24 : 16) * 100 / 65, btn: "BASILI TUT · ısıt", left: o => o.milkStage === 1 ? "az köpük" : "20 °C", right: o => o.milkStage === 1 ? "çok köpük" : "85 °C", target: o => o.milkStage === 1 ? 45 : (62.5 - 20) / 65 * 100, /* v0.40 §14: 1. hava al, 2. ısıt */ tipLow: "milk_low", tipHigh: "milk_high",
              onStart: () => { AUDIO.loop("milk", true); AUDIO.milkAir(true); }, onTick: o => AUDIO.milkAir(20 + o.v * .65 < 45),
-             draw: (o, v) => { const temp = 20 + v * .65, tt = { dollop: 1.2, foam: 1.8, micro: .8, hot: .2 }[D.drinks[o.drink].milk] || 1; CLOSEUP.milk(temp, tt * clamp(v / (o.tgt || 65), 0, 1.3), tt, o.phase === "run" && temp < 45 && DR(o).milk !== "hot", o.phase === "run", { liquid: DR(o).milkLiquid || "milk" }); ZM(o, v, "hedef 60–65 °C", { x: 30 }); } },
+             draw: (o, v) => { const tt = { dollop: 1.2, foam: 1.8, micro: .8, hot: .2 }[D.drinks[o.drink].milk] || 1;
+               if (o.milkStage === 1) { CLOSEUP.milk(20 + v * .15, tt * clamp(v / (o.tgt || 45), 0, 1.4), tt, o.phase === "run", o.phase === "run", { liquid: DR(o).milkLiquid || "milk" }); ZM(o, v, "hedef köpük hacmi", { x: 30 }); return; }
+               const temp = 20 + v * .65, tex = o.airScore != null ? tt * Math.max(.3, o.airScore / 100) : tt * clamp(v / (o.tgt || 65), 0, 1.3);
+               CLOSEUP.milk(temp, tex, tt, o.phase === "run" && o.airScore == null && temp < 45 && DR(o).milk !== "hot", o.phase === "run", { liquid: DR(o).milkLiquid || "milk" }); ZM(o, v, "hedef 60–65 °C", { x: 30 }); } },
   // §3 aletlerin mini oyunları (espressodan sonra; her biri farklı biçim)
   water:   { mode: "hold", speed: 28, btn: "BASILI TUT · sıcak su", left: "boş", right: "taşar", target: () => 72, tipLow: "water_low", tipHigh: "water_high",
              onStart: () => AUDIO.loop("extract", true), onStop: () => AUDIO.loop("extract", false), draw: (o, v) => { CLOSEUP.water(v, o.phase === "run", { empty: before(o, "water", "extract") }); ZM(o, v, "hedef seviye"); } },   // v0.24 long black: su önce, bardak boş
@@ -846,7 +877,7 @@ const MG = {
   // §3 espresso dışı kahveler: Türk kahvesi (cezve), French press, filtre (V60)
   tkdose:  { mode: "hold", dial: true, speed: 40, btn: "BASILI TUT · kahve koy", left: "0 g", right: "10 g", target: () => 70, sfx: "dose", draw: (o, v) => CLOSEUP.tkdose(v / 100, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }, CZ(o)) },
   tkstir:  { mode: "act", act: "circle", need: 3, btn: "Cezvenin içinde parmağınla daire çiz", draw: (o, v) => CLOSEUP.cezveStir(v, o.ang || 0, CZ(o)) },
-  tkfoam:  { mode: "sweep", dial: true, speed: 30, btn0: "OCAĞA KOY", btn: "OCAKTAN AL", left: "soğuk", right: "taştı", target: () => 80, draw: (o, v) => CLOSEUP.cezveFoam(v, o.phase === "run", { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }, CZ(o)) },
+  tkfoam:  { mode: "sweep", dial: true, speed: 30, btn0: "OCAĞA KOY", btn: "OCAKTAN AL", left: "soğuk", right: "taştı", target: () => 80, draw: (o, v) => CLOSEUP.cezveFoam(v, o.phase === "run", { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }, Object.assign({}, CZ(o), { blind: !o.tutorial && (S.served[o.drink] || 0) >= 3 })) },   // v0.40 §14: 3 servisten sonra ölçek gizli, köpüğe bak
   mndose:  { mode: "hold", dial: true, speed: 40, btn: "BASILI TUT · ezme koy", left: "0", right: "2 kaşık", target: () => 70, sfx: "dose", draw: (o, v) => CLOSEUP.tkdose(v / 100, { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }, CZ(o)) },
   mirraboil:{ mode: "sweep", dial: true, speed: 14, btn0: "KAYNAT", btn: "OCAKTAN AL", left: "soğuk", right: "taştı", target: () => 82, draw: (o, v) => CLOSEUP.cezveFoam(v, o.phase === "run", { t: o.tgt, p: o.z.p, g: o.z.g, k: o.z.k }, { vessel: "mirra" }) },
   tkserve: { mode: "act", act: "taps", need: () => 3, btn: "SERVİS", draw: (o, v) => CLOSEUP.kit("tkserve", v, { n: o.taps || 0, N: 3 }) },
@@ -922,17 +953,37 @@ function uiAct(o, el, s) {                                                      
 function uiZone(o, el) {
   const s = o.steps[o.i], c = MG[s];
   if (c.mode === "act") { uiAct(o, el, s); c.draw(o, 0); return; }
+  if (s === "extract" && o.phase === "run" && o.z && o.tgt != null) {             // v0.40 §14 çift grup: arka planda akan shot'a dönüş (kaldığı yerden)
+    el.innerHTML = zoneBar(o.tgt, o.z, c.left, c.right) + `<button class="hold big pri" id="zB">${c.btn}</button><div id="zRes" class="zres"></div>`; bindZone(o, s); setNeedle(o.v); c.draw(o, o.v); applyFade(el); return; }
+  if (s === "milk") o.milkStage = (DR(o).milk === "hot" || o.tutorial) ? 2 : 1, o.airScore = null;
   $("#closeup").onpointerdown = $("#closeup").onpointermove = null;
   o.z = zoneSet(s); o.tgt = c.target(o); o.mode = null; o.artCut = false; o.dir = 1; o.frozen = false; o.spd = 1; o.blond = null;
   const pf = (s === "extract" && D.drinks[o.drink].profile) || {};                 // §4 tarif profili (ristretto biraz daha dar pencere)
   if (pf.extractZone) o.z = { p: o.z.p * pf.extractZone, g: o.z.g * pf.extractZone, k: o.z.k * pf.extractZone };   // ristretto: aynı hızda biraz daha dar pencere
   if (s === "tkfoam" && (D.drinks[o.drink].cezve || {}).vessel === "sand") o.spd = 0.65;   // kumda pişirme: köpük yavaş kabarır
+  let chain = "";
+  if (s === "extract" && !o.tutorial && o.grindDev != null && Math.abs(o.grindDev) > 3) { o.spd = clamp(1 - o.grindDev / 100 * 1.5, .75, 1.3); chain = o.spd > 1 ? "Öğütüm kaba: kahve hızlı akıyor" : "Öğütüm ince: kahve yavaş akıyor"; }   // v0.40 §14 hata zinciri
   if (o.spd !== 1) o.z = { p: o.z.p * o.spd, g: o.z.g * o.spd, k: o.z.k * o.spd };       // §4 eşit zorluk: ibre hızı değişirse bölgeler de aynı oranda değişir
   if (pf.blond) o.blond = { t: Math.round(o.tgt * .62), done: false, score: null };
   o.v = c.mode === "osc" ? Math.random() * 100 : 0; o.phase = c.mode === "osc" ? "run" : "ready";
   const legend = `<div class="zends" style="justify-content:center"><span class="zleg"><i class="perf"></i>Mükemmel <i class="good"></i>Güzel <i class="ok"></i>İyi</span></div>`;
   const fx = x => typeof x === "function" ? x(o) : x;
   el.innerHTML = (c.ring || c.dial ? legend : zoneBar(o.tgt, o.z, fx(c.left), fx(c.right), o.blond && o.blond.t)) + (o.blond ? `<button class="hold big" id="zB2" disabled style="box-shadow:none">💧 Akışı yumuşat</button>` : "") + `<button class="hold big pri" id="zB">${c.btn0 || c.btn}</button><div id="zRes" class="zres"></div>`;
+  if (chain) el.insertAdjacentHTML("afterbegin", `<div class="chainmsg">⚠ ${chain}</div>`);
+  if (s === "dose" && c.fill === "shake" && !o.tutorial) {                         // v0.40 §14 dozlama: sallayarak doldur, TAMAM'la bitir
+    const b = $("#zB"); b.textContent = "TAMAM"; o.phase = "shake"; const cv = $("#closeup"); let last = null, dir = 0, run = 0;
+    el.insertAdjacentHTML("afterbegin", '<div class="acthint">Yakın planı sağa-sola kaydırarak kahve düşür; hedefe gelince TAMAM</div>');
+    cv.style.touchAction = "none"; cv.onpointerdown = e => { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (x) {} last = e.clientX; };
+    cv.onpointerup = cv.onpointercancel = () => { last = null; };
+    cv.onpointermove = e => { if (last == null || o.phase !== "shake") return; const dx = e.clientX - last, sg = Math.sign(dx), w = cv.getBoundingClientRect().width;
+      if (sg) { if (sg === dir) run += Math.abs(dx); else { if (run > w * .05) { o.v = Math.min(100, o.v + (o.v < o.tgt - 15 ? 6 : 2)); AUDIO.sfx("dose"); setNeedle(o.v); c.draw(o, o.v); } dir = sg; run = Math.abs(dx); } } last = e.clientX; };
+  }
+  if (s === "grind" && !o.tutorial && !o.pregrindAsk) {                             // v0.40 §14 önden öğütme
+    el.insertAdjacentHTML("beforeend", `<button class="sec" id="pgB" style="margin-top:6px">＋ Sonraki için de öğüt</button>`); const pg = $("#pgB"); o.pregrind = false;
+    pg.onclick = () => { o.pregrind = !o.pregrind; pg.classList.toggle("pri", o.pregrind); pg.textContent = o.pregrind ? "✓ Bir doz da sonraki için" : "＋ Sonraki için de öğüt"; AUDIO.sfx("click"); };
+  }
+  if (s === "milk" && o.milkStage === 1) $("#zB").textContent = "BASILI TUT · hava al";
+  applyFade(el);
   if (o.blond) $("#zB2").onclick = () => { if (o.phase !== "run" || o.blond.done) return; const [sc, zone] = zoneScore(o.v, o.blond.t, o.z); o.blond.done = true; o.blond.score = sc; showZone(zone, sc); $("#zB2").disabled = true; AUDIO.sfx("click"); };
   if ((c.ring || c.dial) && c.mode === "osc") $("#closeup").onpointerdown = e => { e.preventDefault(); if (o.phase !== "run" || o.steps[o.i] !== s) return; if (o.tutorial && !o.frozen) return setTut(D.tutorial.tooEarly); stopZone(o, s); };   // §4 tamping: daireye dokun
   bindZone(o, s); setNeedle(o.v); c.draw(o, o.v);
@@ -948,6 +999,7 @@ function uiZone(o, el) {
 function bindZone(o, s) {
   const c = MG[s], b = $("#zB"), mode = o.mode || c.mode;
   b.onpointerdown = b.onpointerup = b.onpointercancel = b.onclick = null;
+  if (o.phase === "shake") { b.onclick = () => { if (o.phase !== "shake" || o.v <= 0) return; $("#closeup").onpointermove = null; stopZone(o, s); }; return; }   // v0.40 §14 dozlama: TAMAM
   if (mode === "osc") b.onpointerdown = e => { e.preventDefault(); if (o.phase !== "run") return; if (o.tutorial && !o.frozen) return setTut(D.tutorial.tooEarly); stopZone(o, s); };
   if (mode === "sweep") b.onclick = () => { if (o.phase === "ready") { o.phase = "run"; b.textContent = c.btn; c.onStart && c.onStart(); const b2 = $("#zB2"); if (b2 && o.blond && !o.blond.done) b2.disabled = false; if (o.tutorial && s === "extract") setTut(D.tutorial.extractRun); }
     else if (o.phase === "run") { if (o.tutorial && !o.frozen) {                    // §10 öğretici: erken durdurdu → çekme baştan
@@ -958,13 +1010,37 @@ function bindZone(o, s) {
       if (o.tutorial && !o.frozen) { o.phase = "ready"; o.v = 0; AUDIO.stopLoops(); b.textContent = c.btn0 || c.btn; setNeedle(0); c.draw(o, 0); setTut(D.tutorial.holdRetry); return; }   // §10 erken bıraktı: baştan
       stopZone(o, s); }; }
 }
+function artDraw(o, s) {                                                          // v0.40 §14 latte art: parmakla kesim çizgisi
+  const c = MG[s], cv = $("#closeup"); $("#mgBody").innerHTML = `<div class="acthint">Fincanın ortasına dokun ve parmağını <b>yukarı</b> çek (kalbin kesimi)</div><div id="zRes" class="zres"></div>`;
+  CLOSEUP.art(o.fill, null); o.phase = "draw"; let pts = null; cv.style.touchAction = "none";
+  const P = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * 480, y: (e.clientY - r.top) / r.width * 480 }; };
+  cv.onpointerdown = e => { e.preventDefault(); if (o.phase !== "draw") return; try { cv.setPointerCapture(e.pointerId); } catch (x) {} pts = [P(e)]; };
+  cv.onpointermove = e => { if (!pts || o.phase !== "draw") return; const p = P(e); pts.push(p); CLOSEUP.art(o.fill, clamp((p.x - 170) / 140, 0, 1)); };
+  cv.onpointerup = cv.onpointercancel = () => { if (!pts || o.phase !== "draw") return; const a = pts[0], z = pts[pts.length - 1]; const L = a.y - z.y;
+    if (pts.length < 3 || L < 15) { pts = null; CLOSEUP.art(o.fill, null); const r = $("#zRes"); if (r) { r.className = "zres ok"; r.textContent = "Yukarı doğru çek"; } return; }
+    const d0 = Math.hypot(a.x - 240, a.y - 125), dev = pts.reduce((m, p) => m + Math.abs(p.x - a.x), 0) / pts.length;
+    const raw = clamp(Math.round(100 - d0 * .8 - dev * 1.6 - Math.max(0, 70 - L) * .9), 0, 100), Zs = D.zones.score;
+    const [cs, zone] = raw >= 88 ? [Zs.perfect, "perfect"] : raw >= 72 ? [Zs.good, "good"] : raw >= 55 ? [Zs.ok, "ok"] : [0, "miss"];
+    o.phase = "done"; cv.onpointerdown = cv.onpointermove = cv.onpointerup = null; showZone(zone, cs); AUDIO.sfx("open");
+    finishStep(o, Math.round((o.fillScore + cs) / 2), d0 > 30 ? c.tipLow : c.tipHigh); };
+}
 function stopZone(o, s) {
   const c = MG[s]; o.phase = "done"; c.onStop && c.onStop();
   let [sc, zone] = zoneScore(o.v, o.tgt, o.z);
   if (o.blond) { const bs = o.blond.done ? o.blond.score : 0; sc = Math.round((sc + bs) / 2); o.blond.done = true; const b2 = $("#zB2"); if (b2) b2.disabled = true; }   // §4 lungo: iki aşamanın ortalaması
   showZone(zone, sc); setNeedle(o.v);
   if (c.sfx) AUDIO.sfx(c.sfx);
-  if (s === "art" && !o.artCut) {                         // §5 latte art 2. aşama: kesim ibresi gidip gelir
+  if (s === "milk" && o.milkStage === 1) {                                        // v0.40 §14 süt: 1. aşama bitti → ısıtma
+    o.airScore = sc; o.milkStage = 2; o.v = 0; o.tgt = c.target(o); o.z = zoneSet("milk");
+    setTimeout(() => { if (o.steps[o.i] !== "milk") return; o.phase = "ready"; $("#mgBody").innerHTML = zoneBar(o.tgt, o.z, "20 °C", "85 °C") + `<button class="hold big pri" id="zB">BASILI TUT · ısıt</button><div id="zRes" class="zres"></div>`; applyFade($("#mgBody")); bindZone(o, s); setNeedle(0); c.draw(o, 0); }, 450);
+    return; }
+  if (s === "milk" && o.airScore != null) { sc = Math.round((o.airScore + sc) / 2); }
+  if (s === "grind") { o.grindDev = o.v - o.tgt; if (o.pregrind && day) { day.pregrind = { score: sc, t: day.t }; useBean(o.bean, SZ(o.size).dose / 1000); toast("Bir doz önden öğütüldü · sonraki espresso hazır"); } }   // v0.40 §14 hata zinciri + önden öğütme
+  if (s === "art" && !o.artCut) {                         // v0.40 §14 latte art 2. aşama: çizim (ortadan yukarı çek)
+    o.fillScore = sc; o.fill = o.v; o.artCut = true;
+    setTimeout(() => { if (o.steps[o.i] !== "art") return; artDraw(o, s); }, 450);
+    return; }
+  if (s === "art" && false) {                             // eski kesim ibresi (kullanılmıyor)
     o.fillScore = sc; o.fill = o.v; o.artCut = true; o.mode = "osc"; o.tgt = 50; o.z = zoneSet("art"); o.v = 0; o.dir = 1; o.frozen = false;
     setTimeout(() => { if (o.steps[o.i] !== "art") return; $("#mgBody").innerHTML = zoneBar(50, o.z, "sol", "sağ") + `<button class="hold big pri" id="zB">KES</button><div id="zRes" class="zres"></div>`;
       bindZone(o, s); o.phase = "run"; if (o.tutorial) pulseControl(s); }, 450);
@@ -1264,6 +1340,7 @@ function renderSettings() {
     <div class="box"><h4>Müzik</h4><div class="setrow"><span class="muted">🔈</span><input type="range" id="volMusic" min="0" max="100" value="${Math.round(a.music * 100)}"><span class="muted">🔊</span></div></div>
     <div class="box"><h4>Efekt sesleri</h4><div class="setrow"><span class="muted">🔈</span><input type="range" id="volSfx" min="0" max="100" value="${Math.round(a.sfx * 100)}"><span class="muted">🔊</span></div></div>
     <div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="muteAll" ${a.muted ? "checked" : ""}> Tüm sesleri kapat</label></div>
+    <div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="fullZones" ${LSG("cb_fullzones") === "1" ? "checked" : ""}> 🎯 Renkli bölgeleri hep tam göster</label><p class="muted">Kapalıyken rütbe yükseldikçe renkli bölgeler soluklaşır (usta görünümü).</p></div>
     <div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="hapticOn" ${LSG("cb_haptic") !== "0" ? "checked" : ""}> 📳 Titreşim (hedef çubuğunda)</label>${navigator.vibrate ? "" : '<p class="muted">Bu cihaz ya da tarayıcı titreşimi desteklemiyor.</p>'}</div>
     <div class="box"><h4>Grafik</h4>
       <label class="setrow" style="cursor:pointer"><input type="checkbox" id="gfxGpu" ${GFX.gpu ? "checked" : ""} ${GPU.ok ? "" : "disabled"}> Ekran kartıyla çiz (donanım hızlandırma)</label>
@@ -1285,6 +1362,7 @@ function renderSettings() {
   $("#setExport").onclick = () => $("#btnExport").click();
   $("#setFull").onclick = () => { toggleFull(); setTimeout(renderSettings, 400); };
   const si = $("#setInstall"); if (si) si.onclick = doInstall;
+  $("#fullZones").onchange = e => LSS("cb_fullzones", e.target.checked ? "1" : "0");   // v0.40 §14
   $("#hapticOn").onchange = e => { LSS("cb_haptic", e.target.checked ? "1" : "0"); if (e.target.checked && navigator.vibrate) try { navigator.vibrate(25); } catch (x) {} };   // §13
   $("#gfxGpu").onchange = e => { GFX.gpu = e.target.checked; saveGfx(); $("#gfxRestart").style.display = ""; };
   $("#gfxReload").onclick = () => { save(); location.reload(); };

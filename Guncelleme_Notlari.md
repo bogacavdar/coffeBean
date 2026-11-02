@@ -1,5 +1,24 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.40 – 2 Kasım 2026 (mini oyun yenilemesi)
+- **Temperleme:** artık basılı tutuluyor; basınç artar, halka koyu yeşildeyken bırakılır.
+- **Dozlama:** yakın planı sağa-sola kaydırarak kahve düşürülüyor; hedefe gelince TAMAM.
+- **Süt köpürtme iki aşama:** önce HAVA AL, sonra ISIT; puan ikisinin ortalaması (salep gibi sıcak sütlerde yalnız ısıtma).
+- **Latte art çizim:** doldurduktan sonra fincanın ortasına dokunup parmağı yukarı çekerek kalbin kesimi çiziliyor.
+- **Türk kahvesi köpüğü:** bir tarif 3 kez yapıldıktan sonra ölçek gizleniyor; köpüğe bakıp taşmadan alınıyor.
+- **Espresso akışı sarışınlaşıyor:** hedefe yaklaştıkça akış açılıyor; usta görünümünde saniye gizli.
+- **Değişken ritim:** öğütme ve ekstraksiyonda ibre hedeften uzaktayken hızlanıp yavaşlıyor; hedefte normal hızda.
+- **Kalibrasyon kayması:** sabah ayarı tutmazsa hedefler daralmıyor, öğütme hedefi kayıyor.
+- **Hata zinciri:** kaba öğütüm kahveyi hızlı, ince öğütüm yavaş akıtıyor; ekranda uyarı çıkıyor.
+- **Çift grupta paralel çalışma:** shot akarken öbür siparişe geçilebiliyor; shot arka planda akmaya devam ediyor.
+- **Önden öğütme:** öğütürken "+ Sonraki için de öğüt" ile bir doz hazır bekletilebiliyor; bekledikçe tazeliği düşüyor.
+- **Ses ve titreşim:** mükemmelde ses, öğütücü çalışırken titreşim.
+- **Krema kaliteyi gösteriyor:** iyi espressoda kalın, kaplan desenli krema; kötüde ince ve soluk.
+- **Usta görünümü:** rütbe yükseldikçe renkli bölgeler soluklaşıyor; Ayarlar'dan hep tam gösterilebilir.
+- **Sabah makineyi aç:** Su → Isıt → Basınç sırasıyla dokun.
+- **Yoğun saat:** bazı günler 30 saniyelik müşteri akını, bahşiş ×1,5.
+- **Gece temizliği ritmi:** Temizle'de ÇALIŞTIR'a 3 kez, aralarda 1 saniye bekleyerek basılıyor.
+
 ## v0.39 – 2 Kasım 2026 (13 yenilik + dik ekranda tam ortalı dükkan)
 - **Dik ekranda dükkan tam ortada:** v0.38'deki yakınlaştırma geri alındı. Dükkanın tamamı görünüyor; tepesinin ekranın üstüne uzaklığı, alt köşesinin ekranın altına uzaklığına eşit. Butonlar altta kaldı.
 - **Sabah kalibrasyonu:** 2. günden itibaren her sabah bir deneme shot'ı; "Daha ince / Böyle kalsın / Daha kaba" doğru seçilirse +5 XP, yanlışsa o gün öğütme ve ekstraksiyon hedefleri daralır.

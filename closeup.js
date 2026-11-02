@@ -105,10 +105,12 @@ window.CLOSEUP = (() => {
       const over = t > tT + tTol, under = t < tT - tTol; ctx.fillStyle = over ? "#8a7458" : under ? "#d4a062" : "#c48a4a"; ctx.beginPath(); ctx.ellipse(240, lvl, 30 + (176 - lvl) * .25, 5, 0, 0, Math.PI * 2); ctx.fill(); }
     if (pre) { ctx.fillStyle = "#5a3416"; [232, 248].forEach((x, i) => { const d = (Date.now() / 400 + i * .5) % 1; ctx.beginPath(); ctx.ellipse(x, 101 + d * 3, 1.6 + d, 2 + d * 1.5, 0, 0, Math.PI * 2); ctx.fill(); });
       ctx.fillStyle = "#2b2117"; ctx.font = "italic 600 12px system-ui"; ctx.textAlign = "center"; ctx.fillText("ön ıslatma…", 240, 124); }
-    if (run && !pre) { ctx.strokeStyle = lg(0, 100, 0, 176, [[0, "#6a3d1a"], [1, "#3a200d"]]); ctx.lineWidth = 2.2; [232, 248].forEach(x => { ctx.beginPath(); ctx.moveTo(x, 100); ctx.quadraticCurveTo(x + (x < 240 ? 3 : -3), 140, 240 + (x - 240) * .5, lvl); ctx.stroke(); }); }
-    ctx.fillStyle = "#2b2117"; ctx.font = "600 15px system-ui"; ctx.textAlign = "left"; if (small) { ctx.font = "700 24px system-ui"; ctx.fillText(t.toFixed(1).replace(".", ",") + " sn", 318, 150); ctx.fillText(Math.round(g) + " / " + targetG + " g", 318, 184); return; }   // v0.30 telefonda büyük okuma, mini gösterge yok
-    ctx.fillText(t.toFixed(1).replace(".", ",") + " sn", 330, 150); ctx.fillText(Math.round(g) + " g", 330, 172);
-    gauge(40, 215, 400, t / 45, (tT - tTol) / 45, (tT + tTol) / 45, `hedef ${targetG} g · ${tT - 2.5}–${tT + 2.5} sn`);
+    const bl = Math.max(0, Math.min(1, (t - (tT - 4)) / 9)), mix = (a, b) => "rgb(" + a.map((x, i) => Math.round(x + (b[i] - x) * bl)).join(",") + ")";   // v0.40 §14: hedefe yaklaştıkça akış sarışınlaşır
+    if (run && !pre) { ctx.strokeStyle = lg(0, 100, 0, 176, [[0, mix([106, 61, 26], [214, 166, 98])], [1, mix([58, 32, 13], [176, 128, 70])]]); ctx.lineWidth = 2.2; [232, 248].forEach(x => { ctx.beginPath(); ctx.moveTo(x, 100); ctx.quadraticCurveTo(x + (x < 240 ? 3 : -3), 140, 240 + (x - 240) * .5, lvl); ctx.stroke(); }); }
+    const hideT = !!(o && o.hideTime);                                              // v0.40 §14 usta görünümü: saniye yazmaz, renge bakılır
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 15px system-ui"; ctx.textAlign = "left"; if (small) { ctx.font = "700 24px system-ui"; if (!hideT) ctx.fillText(t.toFixed(1).replace(".", ",") + " sn", 318, 150); ctx.fillText(Math.round(g) + " / " + targetG + " g", 318, 184); return; }   // v0.30 telefonda büyük okuma, mini gösterge yok
+    if (!hideT) ctx.fillText(t.toFixed(1).replace(".", ",") + " sn", 330, 150); ctx.fillText(Math.round(g) + " g", 330, 172);
+    if (!hideT) gauge(40, 215, 400, t / 45, (tT - tTol) / 45, (tT + tTol) / 45, `hedef ${targetG} g · ${tT - 2.5}–${tT + 2.5} sn`);
     if (o) { const fm = u => String(Math.round(u * 10) / 10).replace(".", ","), x0 = 330, y0 = 182, bw = 120, mx = targetG * 1.5, X = u => x0 + Math.max(0, Math.min(1, u / mx)) * bw;   // terazi: hedef verim
       ctx.fillStyle = lg(x0, 0, x0 + bw, 0, [[0, "#2b2b30"], [.5, "#4a4a50"], [1, "#2b2b30"]]); rr(x0, y0, bw, 22, 6); ctx.fill();
       ctx.fillStyle = "#9cf0a8"; ctx.font = "700 12px monospace"; ctx.textAlign = "center"; ctx.fillText("hedef " + fm(targetG) + " g", x0 + bw / 2, y0 + 15);
@@ -116,7 +118,7 @@ window.CLOSEUP = (() => {
       else { const by = y0 + 28; ctx.fillStyle = "rgba(255,255,255,.65)"; rr(x0, by, bw, 6, 3); ctx.fill();
       ctx.fillStyle = "rgba(63,125,52,.9)"; ctx.fillRect(X(targetG - 2), by, Math.max(2, X(targetG + 2) - X(targetG - 2)), 6);
       ctx.fillStyle = Math.abs(g - targetG) <= 2 ? "#3f7d34" : g > targetG + 2 ? "#b5533c" : "#2b2117"; ctx.fillRect(X(g) - 1.5, by - 3, 3, 12); }
-      if (Array.isArray(o.tWin) && o.tWin.length > 1) { const lo = num(o.tWin[0]), hi = num(o.tWin[1]); ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.textAlign = "left"; ctx.fillText("süre " + fm(lo) + "–" + fm(hi) + " sn", x0, 128); } }
+      if (!hideT && Array.isArray(o.tWin) && o.tWin.length > 1) { const lo = num(o.tWin[0]), hi = num(o.tWin[1]); ctx.fillStyle = "#2b2117"; ctx.font = "11px system-ui"; ctx.textAlign = "left"; ctx.fillText("süre " + fm(lo) + "–" + fm(hi) + " sn", x0, 128); } }
   }
   // ---- Süt köpürtme: çelik sütlük, buhar çubuğu, süt ve köpük seviyesi, buhar
   const MILKC = { milk: ["#f4efe6", "#fffdf8", "#efe6d6"], chocolate: ["#6b3f22", "#a0704a", "#7a4a2a"], salep: ["#f3ead2", "#fffbef", "#ebdfc0"], chai: ["#d6b48a", "#efdcbc", "#d3b088"] };
@@ -368,11 +370,13 @@ window.CLOSEUP = (() => {
         else for (let i = 0; i < 9; i++) { ctx.fillStyle = `rgba(80,140,255,${.5 + .3 * Math.sin(Date.now() / 90 + i)})`; ctx.beginPath(); ctx.ellipse(196 + i * 11, 194, 3, 6, 0, 0, Math.PI * 2); ctx.fill(); } } }
     if (P.ves === "cezve" || P.ves === "sand") { cezve(240, 192, 1, fv, P.foam, P.sp); if (P.ves === "sand") sandTray(192, run); }
     else { const M = vesselSide(P.ves, 240, 192); foamAt(240, M.my, M.mw, fv, P.foam, P.sp); }
-    vZones(312, 70, 192, 12, Z); ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 8; ctx.strokeRect(312, 70, 12, 122);                              // köpük ölçeği
-    const yy = 192 - Math.min(100, v) / 100 * 122; ctx.fillStyle = "#111"; ctx.beginPath(); ctx.moveTo(306, yy); ctx.lineTo(312, yy - 5); ctx.lineTo(312, yy + 5); ctx.fill();
+    const blind = !!(opt && opt.blind);                                            // v0.40 §14: izle ve yakala (ölçek gizli)
+    if (!blind) { vZones(312, 70, 192, 12, Z); ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 8; ctx.strokeRect(312, 70, 12, 122);                              // köpük ölçeği
+    const yy = 192 - Math.min(100, v) / 100 * 122; ctx.fillStyle = "#111"; ctx.beginPath(); ctx.moveTo(306, yy); ctx.lineTo(312, yy - 5); ctx.lineTo(312, yy + 5); ctx.fill(); }
     if (v > 95) { ctx.fillStyle = P.milk ? "rgba(214,180,140,.85)" : "rgba(160,110,60,.8)"; ctx.beginPath(); ctx.ellipse(200, P.ves === "sand" ? 168 : 196, 30, 5, 0, 0, Math.PI * 2); ctx.fill(); }
     const nm = { cezve: "cezveyi", sand: "cezveyi", clay: "toprak çömleği", dallah: "dallahı", mirra: "ibriği" }[P.ves];
     ctx.fillStyle = "#2b2117"; ctx.font = "600 13px system-ui"; ctx.textAlign = "center";
+    if (blind) { ctx.fillText(run ? "köpük kabarıyor… taşmadan hemen önce al" : "ocağa koy; köpüğe bak, taşmadan al", 240, 240); } else
     ctx.fillText(run ? (P.ves === "sand" ? "kum ısıtıyor… köpük kabarınca, koyu yeşilde kumdan çek" : P.ves === "mirra" ? "kısık ateşte… kabarınca, taşmadan koyu yeşilde ocaktan al" : "köpük kabarıyor… taşmadan, koyu yeşilde ocaktan al") : (P.ves === "sand" ? "cezveyi sıcak kuma göm" : nm + " ocağa koy"), 240, 240);
   }
   // ---- v0.24 demleme aletleri (yandan). g: kahve 0..1, out: alttaki kap 0..1, st: aşama, f: v/100, wat: demleyicideki su 0..1, col: kahve rengi
@@ -775,8 +779,10 @@ window.CLOSEUP = (() => {
     label(kind);
   }
   function cupTop(quality, milky, heart) { quality = num(quality); bg(); ctx.fillStyle = rg(236, 120, 10, 90, [[0, "#ffffff"], [1, "#d3cdc4"]]); ctx.beginPath(); ctx.arc(240, 125, 88, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = milky ? rg(232, 118, 5, 74, [[0, "#f7f1e6"], [.7, "#e9dcc6"], [1, "#b8824a"]]) : rg(232, 118, 5, 74, [[0, "#d9a86a"], [.6, "#b77a3c"], [1, "#6a3d1a"]]);
+    ctx.fillStyle = milky ? rg(232, 118, 5, 74, [[0, "#f7f1e6"], [.7, "#e9dcc6"], [1, "#b8824a"]]) : quality < 60 ? rg(232, 118, 5, 74, [[0, "#c8a77e"], [.6, "#a8865e"], [1, "#6e5238"]]) : quality >= 90 ? rg(232, 118, 5, 74, [[0, "#d29a58"], [.55, "#a8652a"], [1, "#4a2610"]]) : rg(232, 118, 5, 74, [[0, "#d9a86a"], [.6, "#b77a3c"], [1, "#6a3d1a"]]);   // v0.40 §14: krema kaliteyi gösterir
     ctx.beginPath(); ctx.arc(240, 125, 74, 0, Math.PI * 2); ctx.fill();
+    if (!milky && quality >= 90) { ctx.strokeStyle = "rgba(90,45,15,.35)"; ctx.lineWidth = 3; for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.arc(240, 125, 18 + i * 8, i * .7, i * .7 + 1.4); ctx.stroke(); } }   // kaplan deseni
+    if (!milky && quality < 60) { ctx.fillStyle = "rgba(40,20,8,.35)"; ctx.beginPath(); ctx.arc(250, 132, 30, 0, Math.PI * 2); ctx.fill(); }   // incelmiş, yer yer delik krema
     if (!milky) { ctx.fillStyle = "rgba(255,255,255,.18)"; for (let i = 0; i < 60; i++) { ctx.beginPath(); ctx.arc(240 + Math.sin(i * 9.1) * 60, 125 + Math.cos(i * 4.7) * 60, 1 + (i % 3) * .6 * (quality / 100), 0, Math.PI * 2); ctx.fill(); } }
     if (heart) { heartShape(240, 122, 34, "#fffaf2"); heartShape(240, 122, 22, "rgba(233,214,190,.6)"); }
     ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; if (!small) ctx.fillText("Kalite " + quality, 240, 235);
