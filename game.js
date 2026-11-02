@@ -214,12 +214,13 @@ function checkUnlocks() {
   const giftCups = cupsKnown().filter(k => !cupsBefore.has(k));                  // §7 yeni bardak türü Tedarik listesine eklenir (hediye yok)
   const milkNew = fresh.some(id => D.drinks[id].steps.includes("milk")) && !S.taught.includes("milk");
   if (milkNew) S.taught.push("milk");
-  AUDIO.sfx("unlock");
+  AUDIO.sfx("unlock"); const fneed = supplyNeedsFor(fresh.filter(hasTools)).filter(n => !n.key.startsWith("cup:"));   // v0.36: bardaklar zaten ayrı yazılıyor
   modal(`<h3>Yeni tarif${fresh.length > 1 ? "ler" : ""}: ${fresh.map(id => D.drinks[id].name).join(", ")}</h3><p class="muted">Yıldız Teyze'nin defterinden</p>` +
     fresh.map(id => { const miss = (D.drinks[id].needs || []).filter(t => !S.tools[t]);
       return `<div class="recipe">${drinkIcon(id, false)}<div><b>${D.drinks[id].name}</b><br>${D.drinks[id].card}${miss.length ? `<div class="req" style="margin-top:6px">Menüye girmesi için gerekli: ${miss.map(t => D.tools[t].name).join(", ")} (gün sonunda Dükkan › Aletler & Makineler)</div>` : ""}</div></div>`; }).join("") +
     (giftCups.length ? `<div class="req" style="margin-top:8px">🥤 Yeni bardaklar Tedarik listesine eklendi: ${giftCups.map(k => D.cups[k].name.toLocaleLowerCase("tr")).join(", ")}. Gün sonunda Tedarik'ten satın al.</div>` : "") +
-    (milkNew ? `<p><i>${D.tutorial.milk}</i></p>` : ""));
+    (milkNew ? `<p><i>${D.tutorial.milk}</i></p>` : "") + (fneed.length ? `<div class="req" style="margin-top:8px">🛒 Müşteriler istemeden önce Tedarik'ten al: ${fneed.map(n => n.txt).join(", ")}.</div>` : ""),
+    fneed.length ? [{ label: "Tamam" }, { label: "Tedarik'e git", pri: true, fn: () => goSupply(fneed.map(n => n.key), false) }] : undefined);
 }
 
 // ---------- Günlük görev (§7) ----------
@@ -327,8 +328,10 @@ function spawnCustomer() {
   const type = pick(Object.keys(D.customers));
   const ct = D.customers[type];
   // §7 herkes her açık kahveyi isteyebilir: aleti olan ve özel malzemesi stokta olan; yeni açılan 3 gün daha sık istenir
-  const menu = S.unlocked.filter(id => hasTools(id) && inSeason(id) && (D.drinks[id].uses || []).every(([k]) => specStock(k) > 0));   // v0.24 mevsimlik tarifler
-  const fresh = menu.filter(id => S.day - ((S.unlockDay || {})[id] ?? -99) < 3);
+  const menuAll = S.unlocked.filter(id => hasTools(id) && inSeason(id) && (D.drinks[id].uses || []).every(([k]) => specStock(k) > 0));   // v0.24 mevsimlik tarifler
+  const uDay = id => (S.unlockDay || {})[id] ?? -99;
+  const menu0 = menuAll.filter(id => uDay(id) !== S.day), menu = menu0.length ? menu0 : menuAll;   // v0.35+: tarif açıldığı gün istenmez (hazırlık için Tedarik'e zaman kalsın)
+  const fresh = menu.filter(id => S.day - uDay(id) >= 1 && S.day - uDay(id) <= 3);                  // ertesi günden itibaren 3 gün daha sık
   const drink = menu.length ? pick(fresh.length && Math.random() < 0.35 ? fresh : menu) : "espresso";
   if (ct.priceSens >= 1 && priceRatio(drink) > 1.2 && Math.random() < 0.6) { day.stats.left++; return; }   // §8 fiyata duyarlı tip gelmez
   const pat = Math.round(ct.patience * decorMult("patience") * DF().patience);    // §12 zorluk: sabır                // §8 pikap: sabır ×1,15
@@ -912,6 +915,18 @@ const TAB = { upg: ["Geliştirmeler", "#3b6ea8", "Geliştirme"], tools: ["Aletle
 let hubTab = "upg";
 const buy = (cost, fn) => { if (S.money < cost) return; S.money -= cost; S.spend = (S.spend || 0) + cost; fn(); AUDIO.sfx("register"); save(); renderHUD(); };   // v0.24: alımlar gün kapanışında görünür
 
+// v0.36: bir tarifin menüde istenebilmesi için Tedarik'te eksik olanlar (özel malzeme/şurup, bardak, süt)
+function supplyNeedsFor(ids) {
+  const out = [], seenK = new Set(), add = (key, txt) => { if (!seenK.has(key)) { seenK.add(key); out.push({ key, txt }); } };
+  ids.forEach(id => { const d = D.drinks[id];
+    (d.uses || []).forEach(([k]) => { if (specStock(k) <= 0) add((k === "sugar" ? "ex:" : "sp:") + k, specName(k)); });
+    (d.sizes || ["single"]).forEach(z => { const c = SZ(z).cup; if ((S.cups[c] || 0) < D.cupMin) add("cup:" + c, D.cups[c].name); });
+    if (isMilky(id) && (S.milk || 0) < D.economy.minMilk) add("milk:cow", D.milks.cow.name); });
+  return out;
+}
+let supplyFocus = null, supplyBackToHub = false;
+function goSupply(keys, fromHub) { supplyFocus = keys; supplyBackToHub = !!fromHub; if (fromHub) $("#ovHub").classList.remove("on"); renderSupply(); openOverlay("#ovShop"); }
+function closeSupplyAside() { closeOverlay("#ovShop"); supplyFocus = null; if (supplyBackToHub) { supplyBackToHub = false; renderHub(); openOverlay("#ovHub"); } }
 // --- Tedarik: yalnızca malzeme (§2) ---
 function supplyMissing() {
   const m = [], kg = beanKg("brazil");
@@ -958,8 +973,12 @@ function renderSupply() {
   html += `<div class="box"><h4>Küçük malzemeler</h4><p class="muted">Ara sıra kullanılır; yoksa bahşiş azalır.</p><table>` +
     Object.entries(D.extras).map(([k, e]) => { const n = S.extras[k] || 0, low = n < D.extrasLow;
       return `<tr><td>${th("ex:" + k)}<b>${e.name}</b><br><span class="muted" style="${n === 0 ? "color:var(--kotu);font-weight:700" : low ? "color:#b58a1e;font-weight:700" : ""}">stok ${n} adet${n === 0 ? " · bitti" : low ? " · az kaldı" : ""}</span></td><td>₺${tl(SP(e.price))}</td><td><button data-ex="${k}" ${S.money < SP(e.price) ? "disabled" : ""}>${e.pack}'lü paket al</button></td></tr>`; }).join("") + `</table></div>`;
-  html += `<div class="row">${flow && endCtx ? '<button id="supBack">← Geri</button>' : ""}<button id="supLoan" class="loanbtn">🏦 Kredi al</button>${plan ? `<button class="pri" id="supFill">Eksikleri al · ₺${tl(plan.cost)}</button>` : `<button class="pri" id="supNext">${flow ? (firstSupply ? "Günü başlat ☕" : "Devam →") : "Kapat"}</button>`}</div>`;
+  html += `<div class="row">${flow && endCtx ? '<button id="supBack">← Geri</button>' : ""}<button id="supLoan" class="loanbtn">🏦 Kredi al</button>${plan ? `<button class="pri" id="supFill">Eksikleri al · ₺${tl(plan.cost)}</button>` : `<button class="pri" id="supNext">${flow ? (firstSupply ? "Günü başlat ☕" : "Devam →") : supplyBackToHub ? "← Dükkana dön" : "Kapat"}</button>`}</div>`;
   const card = $("#shopCard"), keep = card.scrollTop; card.innerHTML = html; card.scrollTop = keep;   // v0.31: alım sonrası liste başa zıplamasın
+  if (supplyFocus && supplyFocus.length) { let first = null;                       // v0.36: yönlendirmeyle gelindiyse gereken satırlar vurgulanır
+    supplyFocus.forEach(k => { const [t, v] = k.split(":"), sel = t === "sp" ? `[data-sp="${v}"]` : t === "cup" ? `[data-cup="${v}"]` : t === "ex" ? `[data-ex="${v}"]` : t === "milk" ? `[data-milk="${v}"]` : null;
+      const b = sel && card.querySelector(sel), tr = b && b.closest("tr"); if (tr) { tr.classList.add("need", "focus"); first = first || tr; } });
+    if (first && !card.dataset.focused) { card.dataset.focused = "1"; first.scrollIntoView({ block: "center" }); } } else delete card.dataset.focused;
   const re = () => renderSupply();
   $("#shopCard").querySelectorAll("[data-buy]").forEach(b => b.onclick = () => { const id = b.dataset.buy; buy(SP(D.beans[id].price), () => { S.beans[id] = { kg: (S.beans[id]?.kg || 0) + 1, boughtDay: S.day }; }); re(); });
   $("#shopCard").querySelectorAll("[data-milk]").forEach(b => b.onclick = () => { const k = b.dataset.milk; buy(SP(D.milks[k].price), () => { if (k === "cow") S.milk = (S.milk || 0) + 1; else { S.milkAlt = S.milkAlt || {}; S.milkAlt[k] = (S.milkAlt[k] || 0) + 1; } S.milkDay = S.day; }); re(); });
@@ -968,10 +987,10 @@ function renderSupply() {
   const cbb = $("#shopCard [data-cb]"); if (cbb) cbb.onclick = () => { if (beanKg("brazil") < .2) return; useBean("brazil", .2); S.cbBrewing = (S.cbBrewing || 0) + D.specials.coldbrew.pack; toast("Cold brew demlenmeye kondu; yarın sabah hazır"); AUDIO.sfx("click"); save(); re(); };
   $("#shopCard").querySelectorAll("[data-ex]").forEach(b => b.onclick = () => { const k = b.dataset.ex; buy(SP(D.extras[k].price), () => { S.extras[k] = (S.extras[k] || 0) + D.extras[k].pack; }); re(); });
   $("#supLoan").onclick = () => openLoans(re);
-  const sx = $("#supX"); if (sx) sx.onclick = () => closeOverlay("#ovShop");
+  const sx = $("#supX"); if (sx) sx.onclick = closeSupplyAside;
   const sbk = $("#supBack"); if (sbk) sbk.onclick = backFromSupply;
   const sf = $("#supFill"); if (sf) sf.onclick = () => { const pl = fillMissingPlan(); if (S.money < pl.cost) return toast("Para yetmiyor · Kredi al ile tamamlayabilirsin"); buy(pl.cost, () => pl.items.forEach(x => x.fn())); toast("Eksikler alındı ✓"); re(); };
-  const sn = $("#supNext"); if (sn) sn.onclick = () => { if (!flow) return closeOverlay("#ovShop"); if (supplyMissing().length) return;
+  const sn = $("#supNext"); if (sn) sn.onclick = () => { if (!flow) return closeSupplyAside(); if (supplyMissing().length) return;
     if (firstSupply) { firstSupply = false; dayFlow = null; mandatoryRestock = false; $("#ovShop").classList.remove("on"); return startDay(); } dayFlow = "hub"; $("#ovShop").classList.remove("on"); hubTab = "upg"; renderHub(); openOverlay("#ovHub"); };
 }
 
@@ -1041,7 +1060,11 @@ function renderHub() {
   const R = $("#hubCard"), re = () => renderHub();
   R.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { hubTab = b.dataset.tab; AUDIO.sfx("click"); re(); });
   R.querySelectorAll("[data-eq]").forEach(b => b.onclick = () => { const id = b.dataset.eq; if (S.money < D.equipment[id].price) return; buy(D.equipment[id].price, () => { S.equipment[id] = true; if (id === "fridge") { S.milkDay = S.day; S.fridgePaid = true; } }); re(); showPurchase("eq:" + id, D.equipment[id].name); });
-  R.querySelectorAll("[data-tool]").forEach(b => b.onclick = () => { const id = b.dataset.tool; if (S.money < D.tools[id].price) return; buy(D.tools[id].price, () => { S.tools[id] = true; S.log.push("Gün " + S.day + ": " + D.tools[id].name + " alındı"); }); re(); showPurchase("tool:" + id, D.tools[id].name); });
+  R.querySelectorAll("[data-tool]").forEach(b => b.onclick = () => { const id = b.dataset.tool; if (S.money < D.tools[id].price) return; const before = new Set(S.unlocked.filter(hasTools));
+    buy(D.tools[id].price, () => { S.tools[id] = true; S.log.push("Gün " + S.day + ": " + D.tools[id].name + " alındı"); }); re(); showPurchase("tool:" + id, D.tools[id].name);
+    const now = S.unlocked.filter(x => hasTools(x) && !before.has(x)), need = supplyNeedsFor(now);   // v0.36: alet tarifi menüye aldıysa ve Tedarik'ten bir şey gerekiyorsa oraya yönlendir
+    if (now.length && need.length) modal(`<h3>${now.map(x => D.drinks[x].name).join(", ")} artık menüde</h3><p>Müşterilerin bu kahveyi isteyebilmesi için Tedarik'ten şunları almalısın:</p><ul>${need.map(n => `<li><b>${n.txt}</b></li>`).join("")}</ul><p class="muted">Almazsan müşteriler bu kahveyi istemez ya da bardak yoksa gider.</p>`,
+      [{ label: "Sonra" }, { label: "Tedarik'e git", pri: true, fn: () => goSupply(need.map(n => n.key), true) }]); });
   R.querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const id = b.dataset.dec; if (S.money < D.decor[id].price) return; buy(D.decor[id].price, () => { S.decor[id] = true; }); re(); showPurchase("decor:" + id, D.decor[id].name); });
   R.querySelectorAll("[data-tr]").forEach(b => b.onclick = () => { const k = b.dataset.tr, T = S.traffic[S.shopLevel] = Object.assign({ cust: 0, freq: 0 }, S.traffic[S.shopLevel]);
     if (T[k] >= 3 || S.money < shop().tierCost[T[k]]) return; const nm = D.traffic[k][T[k]]; buy(shop().tierCost[T[k]], () => { S.log.push("Gün " + S.day + ": " + nm); T[k]++; }); re(); showPurchase("tr:" + k + T[k], nm); });
