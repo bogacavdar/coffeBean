@@ -74,13 +74,14 @@ window.SCENE = (() => {
       OX = W / 2 - TW * .6; OY = (H - 13.6 * TW) / 2 + 5.4 * TW + 20;          // üstte duvar (~z 200), altta zeminin ön köşesi
     } else {                                                                       // dik telefon (v0.32): TÜM dükkan ekrana sığar (duvar tabelası, tezgâh, vitrin, kapı, masalar)
       // dükkanın ilgi kutusu (OX/OY'ye göre, TW biriminde): yatayda −8,4…+10,4 · dikeyde −3,7 (tabela tepesi) … +9,3 (ön masalar)
-      const BX0 = 8.4, BW = 18.8, BY0 = 3.7, BH = 13.0;
+      const K = 0.6;                                                               // v0.37: dik ekranda kamera biraz daha yukarıdan bakar (TH/TW = 0,6)
+      const BX0 = 8.25, BW = 18.5, BY0 = 215 / 40 + .25, BH = 215 / 40 + .25 + 18 * K + .7;   // maketin kutusu: duvar üstü … zemin ön köşesi + kalınlık
       const top = Math.max(0, INS.top) + 52, bot = H - 52, R = INS.right || 0, iTop = INS.iconTop || H;   // HUD + altındaki bildirim (toast) bandı boş kalır
       const fit = (x0, x1, y0, y1) => ({ tw: Math.min(70, (x1 - x0) / BW, (y1 - y0) / BH), x0, x1, y0, y1 });
       const A = fit(8, W - 8, top, Math.min(bot, iTop - 6));                        // ikon sütununun üstünde, tam genişlik
       const B = fit(8, W - R - 6, top, bot);                                        // ikon sütununun solunda, tam yükseklik
       const f = A.tw >= B.tw ? A : B;
-      TW = Math.max(12, f.tw); TH = TW / 2;
+      TW = Math.max(12, f.tw); TH = TW * K;
       OX = f.x0 + BX0 * TW + ((f.x1 - f.x0) - BW * TW) / 2;
       OY = f.y0 + BY0 * TW + Math.max(0, ((f.y1 - f.y0) - BH * TW) * .5);          // boş alanın ortasında
     }
@@ -118,7 +119,7 @@ window.SCENE = (() => {
 
   const CLEN = lv => lv >= 3 ? 7 : lv === 2 ? 6 : 5;            // §11 tezgâh dükkanla büyür
   function room(L, st = {}) {
-    const lv = st.level || 1, EX = W < H ? 30 : 10;   // v0.32: dik ekranda dükkan küçülünce zemin ekranın altına kadar uzansın
+    const PT = W < H, lv = st.level || 1, EX = PT ? 0 : 10;   // v0.37: dik ekranda dükkan bir maket gibi: zemin ve duvarlar dükkanın kendi sınırında biter, dışı koyu fon
     for (let y = 0; y < ROWS + EX; y++) for (let x = 0; x < COLS + EX; x++) {   // meşe tahtalar
       const c = PAL.oak[(x * 3 + y * 5) % 3]; const dark = 1 - Math.min(1, (x + y) / (COLS + ROWS)) * .22 - (x >= COLS || y >= ROWS ? .06 : 0);
       poly([iso(x, y), iso(x + 1, y), iso(x + 1, y + 1), iso(x, y + 1)], shade(c, dark));
@@ -126,9 +127,13 @@ window.SCENE = (() => {
     ctx.strokeStyle = "rgba(60,35,15,.22)"; ctx.lineWidth = 1;
     if (Q.fx > 0) { for (let y = 0; y <= ROWS + EX; y += .5) { const a = iso(0, y), b = iso(COLS + EX, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
       ctx.strokeStyle = "rgba(255,240,210,.05)"; for (let y = .25; y <= ROWS + EX; y += .5) { const a = iso(0, y), b = iso(COLS + EX, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); } }
-    const WH = 170, WTOP = 1400;
+    const WH = 170, WTOP = PT ? 215 : 1400;
     const wl = [iso(0, 0), iso(0, ROWS + EX), iso(0, ROWS + EX, WTOP), iso(0, 0, WTOP)], wr = [iso(0, 0), iso(COLS + EX, 0), iso(COLS + EX, 0, WTOP), iso(0, 0, WTOP)];
     poly(wl, PAL.wallDark); poly(wr, PAL.wall);
+    if (PT) {                                                                        // v0.37 maket: zemin kalınlığı (ön yüzler) ve duvar üst kesitleri
+      poly([iso(0, ROWS), iso(COLS, ROWS), iso(COLS, ROWS, -22), iso(0, ROWS, -22)], "#3b2817"); poly([iso(COLS, 0), iso(COLS, ROWS), iso(COLS, ROWS, -22), iso(COLS, 0, -22)], "#4a331f");
+      poly([iso(0, 0, WTOP), iso(0, ROWS, WTOP), iso(-.18, ROWS + .18, WTOP), iso(-.18, -.18, WTOP)], "#cbbba2"); poly([iso(0, 0, WTOP), iso(COLS, 0, WTOP), iso(COLS + .18, -.18, WTOP), iso(-.18, -.18, WTOP)], "#d9cab2");
+      poly([iso(0, ROWS), iso(0, ROWS, WTOP), iso(-.18, ROWS + .18, WTOP), iso(-.18, ROWS + .18)], "#6d5440"); poly([iso(COLS, 0), iso(COLS, 0, WTOP), iso(COLS + .18, -.18, WTOP), iso(COLS + .18, -.18)], "#7d6249"); }
     // lambri (alt duvar paneli) + üst ray
     wallRect("L", 0, ROWS + EX, 0, 62, "#7e5a3c"); wallRect("R", 0, COLS + EX, 0, 62, "#93694a");
     ctx.strokeStyle = "rgba(0,0,0,.16)"; for (let u = .5; u < COLS + EX; u += .7) { const a = iso(u, 0, 4), b = iso(u, 0, 58); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
@@ -619,7 +624,8 @@ window.SCENE = (() => {
     acc += dt; if (Q.fps && acc < 1 / Q.fps && dt > 0) return; dt = acc; acc = 0;   // düşük kalite: 30 kare/sn
     size(); time += dt; hits = []; bubbles = []; over = []; placed = []; heads = [];
     const { customers = [], orders = [], t = .3, level = 1, slots = 1 } = state; const L = daylight(t);
-    ctx.fillStyle = PAL.wall; ctx.fillRect(0, 0, W, H);
+    if (W < H) { const bg = ctx.createRadialGradient(W / 2, H * .42, 10, W / 2, H * .42, Math.max(W, H) * .75); bg.addColorStop(0, "#4a3424"); bg.addColorStop(1, "#1f150e"); ctx.fillStyle = bg; } else ctx.fillStyle = PAL.wall;   // v0.37: dik ekranda maketin arkası koyu
+    ctx.fillRect(0, 0, W, H);
     room(L, state); furniture(level, slots, state);
     customers.forEach(c => step(c, dt));
     [...customers].sort((a, b) => (a.pos.x + a.pos.y) - (b.pos.x + b.pos.y)).forEach(c => person(c, orders.some(o => o.cust === c)));
