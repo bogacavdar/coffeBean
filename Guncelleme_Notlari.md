@@ -1,5 +1,10 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.41 – 2 Kasım 2026 (telefonu sallayarak çalkala)
+- **Telefonu salla:** sağa-sola kaydırılan her adım (dozlama, shaker, kakao serpme, dabara-tumbler, tarçın serpme) artık telefonu sağa-sola sallayarak da yapılabiliyor. Her yön değişimi bir kaydırma vuruşu sayılıyor; kaydırma da çalışmaya devam ediyor.
+- **iPhone'da izin:** iPhone hareket sensörü için izin istiyor. Adımda çıkan "📱 Telefonu sallayarak yap" düğmesine ya da Ayarlar'daki anahtara bir kez dokunmak yeterli; sonraki açılışlarda ilk dokunuşta kendiliğinden açılıyor. Android'de izin gerekmiyor.
+- **Ayarlar:** "📱 Telefonu sallayarak çalkala / dozla" anahtarı ile kapatılabiliyor.
+
 ## v0.40 – 2 Kasım 2026 (mini oyun yenilemesi)
 - **Temperleme:** artık basılı tutuluyor; basınç artar, halka koyu yeşildeyken bırakılır.
 - **Dozlama:** yakın planı sağa-sola kaydırarak kahve düşürülüyor; hedefe gelince TAMAM.

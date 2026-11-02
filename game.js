@@ -949,9 +949,11 @@ function uiAct(o, el, s) {                                                      
     else { const dx = p.x - last.x; o.shx = clamp(50 + p.x / p.w * 120, 0, 100); const sg = Math.sign(dx);
       if (sg) { if (sg === dir) run += Math.abs(dx); else { if (run > p.w * .06) { set(o.v + 100 / c.need); AUDIO.sfx("dose"); } dir = sg; run = Math.abs(dx); } } }
     last = p; };
+  if (c.act === "shake") { const m = MOTION.bind(el, o, sg => { o.shx = clamp(50 + sg * 35, 0, 100); set(o.v + 100 / c.need); AUDIO.sfx("dose"); });   // v0.41 §14 telefonu salla
+    const h = el.querySelector(".acthint"); if (m && h) { if (m[0] === "<") h.insertAdjacentHTML("afterend", m); else h.textContent += m; } }
 }
 function uiZone(o, el) {
-  const s = o.steps[o.i], c = MG[s];
+  const s = o.steps[o.i], c = MG[s]; MOTION.fn = null;
   if (c.mode === "act") { uiAct(o, el, s); c.draw(o, 0); return; }
   if (s === "extract" && o.phase === "run" && o.z && o.tgt != null) {             // v0.40 §14 çift grup: arka planda akan shot'a dönüş (kaldığı yerden)
     el.innerHTML = zoneBar(o.tgt, o.z, c.left, c.right) + `<button class="hold big pri" id="zB">${c.btn}</button><div id="zRes" class="zres"></div>`; bindZone(o, s); setNeedle(o.v); c.draw(o, o.v); applyFade(el); return; }
@@ -977,6 +979,8 @@ function uiZone(o, el) {
     cv.onpointerup = cv.onpointercancel = () => { last = null; };
     cv.onpointermove = e => { if (last == null || o.phase !== "shake") return; const dx = e.clientX - last, sg = Math.sign(dx), w = cv.getBoundingClientRect().width;
       if (sg) { if (sg === dir) run += Math.abs(dx); else { if (run > w * .05) { o.v = Math.min(100, o.v + (o.v < o.tgt - 15 ? 6 : 2)); AUDIO.sfx("dose"); setNeedle(o.v); c.draw(o, o.v); } dir = sg; run = Math.abs(dx); } } last = e.clientX; };
+    const m = MOTION.bind(el, o, () => { if (o.phase !== "shake") return; o.v = Math.min(100, o.v + (o.v < o.tgt - 15 ? 6 : 2)); AUDIO.sfx("dose"); setNeedle(o.v); c.draw(o, o.v); });   // v0.41 §14 telefonu salla
+    const h = el.querySelector(".acthint"); if (m && h) { if (m[0] === "<") h.insertAdjacentHTML("afterend", m); else h.textContent = h.textContent.replace("; hedefe", m + "; hedefe"); }
   }
   if (s === "grind" && !o.tutorial && !o.pregrindAsk) {                             // v0.40 §14 önden öğütme
     el.insertAdjacentHTML("beforeend", `<button class="sec" id="pgB" style="margin-top:6px">＋ Sonraki için de öğüt</button>`); const pg = $("#pgB"); o.pregrind = false;
@@ -1341,6 +1345,7 @@ function renderSettings() {
     <div class="box"><h4>Efekt sesleri</h4><div class="setrow"><span class="muted">🔈</span><input type="range" id="volSfx" min="0" max="100" value="${Math.round(a.sfx * 100)}"><span class="muted">🔊</span></div></div>
     <div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="muteAll" ${a.muted ? "checked" : ""}> Tüm sesleri kapat</label></div>
     <div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="fullZones" ${LSG("cb_fullzones") === "1" ? "checked" : ""}> 🎯 Renkli bölgeleri hep tam göster</label><p class="muted">Kapalıyken rütbe yükseldikçe renkli bölgeler soluklaşır (usta görünümü).</p></div>
+    ${MOTION.has() ? `<div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="motionOn" ${MOTION.on() ? "checked" : ""}> 📱 Telefonu sallayarak çalkala / dozla</label><p class="muted">Sağa-sola kaydırma adımlarında telefonu sallamak da sayılır. Kaydırma her zaman çalışır.</p></div>` : ""}
     <div class="box"><label class="setrow" style="cursor:pointer"><input type="checkbox" id="hapticOn" ${LSG("cb_haptic") !== "0" ? "checked" : ""}> 📳 Titreşim (hedef çubuğunda)</label>${navigator.vibrate ? "" : '<p class="muted">Bu cihaz ya da tarayıcı titreşimi desteklemiyor.</p>'}</div>
     <div class="box"><h4>Grafik</h4>
       <label class="setrow" style="cursor:pointer"><input type="checkbox" id="gfxGpu" ${GFX.gpu ? "checked" : ""} ${GPU.ok ? "" : "disabled"}> Ekran kartıyla çiz (donanım hızlandırma)</label>
@@ -1362,6 +1367,7 @@ function renderSettings() {
   $("#setExport").onclick = () => $("#btnExport").click();
   $("#setFull").onclick = () => { toggleFull(); setTimeout(renderSettings, 400); };
   const si = $("#setInstall"); if (si) si.onclick = doInstall;
+  const mo = $("#motionOn"); if (mo) mo.onchange = e => { LSS("cb_motion", e.target.checked ? "1" : "0"); if (e.target.checked) MOTION.ask(); };   // v0.41 §14
   $("#fullZones").onchange = e => LSS("cb_fullzones", e.target.checked ? "1" : "0");   // v0.40 §14
   $("#hapticOn").onchange = e => { LSS("cb_haptic", e.target.checked ? "1" : "0"); if (e.target.checked && navigator.vibrate) try { navigator.vibrate(25); } catch (x) {} };   // §13
   $("#gfxGpu").onchange = e => { GFX.gpu = e.target.checked; saveGfx(); $("#gfxRestart").style.display = ""; };
@@ -1376,6 +1382,26 @@ function renderSettings() {
 const BILL = `<svg viewBox="0 0 48 28" width="54" height="32" aria-hidden="true"><rect x="1.5" y="1.5" width="45" height="25" rx="4" fill="#4f9a44" stroke="#2f6b2a" stroke-width="2"/><rect x="6" y="6" width="36" height="16" rx="2.5" fill="none" stroke="#bfe6b2" stroke-width="1.4"/><circle cx="24" cy="14" r="5.5" fill="#bfe6b2"/><text x="24" y="17.6" text-anchor="middle" font-size="9" font-weight="800" fill="#2f6b2a">₺</text><circle cx="10.5" cy="14" r="1.6" fill="#bfe6b2"/><circle cx="37.5" cy="14" r="1.6" fill="#bfe6b2"/></svg>`;   // §7 yeşil kağıt para ikonu
 const cashBox = () => `<div class="cash">${BILL}<span>₺${tl(S.money)}</span><small>Kasa</small></div>`;
 const LSG = k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, LSS = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+/* v0.41 §14 telefonu sallayarak çalkala: devicemotion yön değişimi = bir kaydırma vuruşu */
+const MOTION = { fn: null, live: false, ok: false, dir: 0, last: 0, gx: 0, gy: 0,
+  has: () => typeof DeviceMotionEvent !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0),
+  needAsk: () => typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function",
+  on: () => LSG("cb_motion") !== "0",
+  start() { if (this.live || !this.has()) return; this.live = true; window.addEventListener("devicemotion", e => this.ev(e)); },
+  ask() { if (!this.has()) return Promise.resolve(false); if (!this.needAsk()) { this.ok = true; this.start(); return Promise.resolve(true); }
+    return DeviceMotionEvent.requestPermission().then(r => { const g = r === "granted"; if (g) { this.ok = true; LSS("cb_motionok", "1"); this.start(); } return g; }).catch(() => false); },
+  ready() { return this.has() && (this.ok || !this.needAsk()); },
+  ev(e) { if (!this.fn || !this.on()) return; let x, y; const a = e.acceleration;
+    if (a && a.x != null) { x = a.x; y = a.y || 0; } else { const g = e.accelerationIncludingGravity; if (!g || g.x == null) return; this.gx = this.gx * .9 + g.x * .1; this.gy = this.gy * .9 + (g.y || 0) * .1; x = g.x - this.gx; y = (g.y || 0) - this.gy; }
+    const v = Math.abs(x) >= Math.abs(y) ? x : y, sg = Math.abs(v) > 6 ? Math.sign(v) : 0, now = performance.now();
+    if (sg && sg !== this.dir && now - this.last > 110) { this.dir = sg; this.last = now; this.fn(sg); } },
+  bind(el, o, f) { this.dir = 0; this.fn = sg => { if (!el.isConnected || o.hidden || o.phase === "done") { this.fn = null; return; } f(sg); };
+    if (!this.has() || !this.on()) return "";
+    if (this.ready()) return " · ya da telefonu salla 📱";
+    setTimeout(() => { const b = el.querySelector("#motB"); if (b) b.onclick = () => this.ask().then(g => { b.textContent = g ? "📱 Hazır: telefonu salla" : "📱 Sensör izni verilmedi"; b.disabled = true; }); });
+    return '<button class="sec" id="motB" style="margin:4px auto 0;display:block">📱 Telefonu sallayarak yap</button>'; } };
+if (MOTION.has() && !MOTION.needAsk()) MOTION.start();
+document.addEventListener("pointerdown", () => { if (MOTION.needAsk() && LSG("cb_motionok") === "1" && MOTION.on() && !MOTION.ok) MOTION.ask(); }, { once: true, capture: true });
 const cheatUnlocked = () => LSG("cb_cheatUnlocked") === "1", cheatOn = () => cheatUnlocked() && LSG("cb_cheat") === "1";
 function setCheat(on) { LSS("cb_cheat", on ? "1" : "0"); renderCheats(); toast(on ? "🧪 Hile modu açık" : "Hile modu kapalı"); }
 function unlockCheat() { LSS("cb_cheatUnlocked", "1"); setCheat(true); AUDIO.sfx("unlock"); }

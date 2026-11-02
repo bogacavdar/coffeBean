@@ -7,8 +7,11 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.40)
+## Bekleyen paket (son yayın: v0.41)
 (boş)
+
+## v0.41 – YAYINLANDI (2 Kasım 2026, kullanıcı "yap bunu paket çık" dedi)
+- Telefonu sallayarak çalkala, tasarım §14.18 (Claude Docs + HTML). Kod: `MOTION` (game.js, LSG'nin altında): `devicemotion` ivmesinde (x/y, yerçekimsiz yoksa alçak geçiren süzgeç) |a|>6 m/s² ve yön değişimi, en az 110 ms arayla = bir kaydırma vuruşu; `MOTION.bind(el,o,f)` uiAct `act:"shake"` ve doz `phase:"shake"` için; her adımda `uiZone` başında `MOTION.fn=null`; iOS `DeviceMotionEvent.requestPermission` adımdaki "📱 Telefonu sallayarak yap" düğmesi / Ayarlar `cb_motion` anahtarı ile; izin bir kez verildiyse (`cb_motionok`) sonraki açılışta ilk dokunuşta sessizce istenir. Kural 7: test yok, yalnız sözdizimi kontrolü.
 
 ## v0.40 – YAYINLANDI (2 Kasım 2026, kullanıcı "hepsini yap paket çık" dedi)
 - Mini oyun yenilemesi, tasarım §14 (Claude Docs rev 167 + HTML). Kod: tamp `hold`; dose `fill: "shake"` (uiZone'da kaydırma, `o.phase = "shake"`, bindZone'da TAMAM); süt `o.milkStage` 1/2 + `o.airScore`; `artDraw()` (çizim puanı); tkfoam `blind` (3 servisten sonra); `CLOSEUP.extract` akış rengi `bl` + `hideTime`; stepTick `rhy` (hedeften uzakta ±%35); `day.calShift` (kalibrasyon cezası artık kayma, `calPenalty` kaldırıldı); `o.grindDev` → ekstraksiyon `o.spd` 0,75–1,3 (Kural 9: bölgeler hızla ölçeklenir); `bgExtract` (çift grup); `day.pregrind`; `zFade/applyFade` + Ayarlar `cb_fullzones`; `showMachineOn`; `day.rush` + `rushOn()`; gece temizliği penceresi; `CLOSEUP.cupTop` kaliteye göre krema; `D.tutorial.releaseTamp`.
