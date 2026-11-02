@@ -103,6 +103,8 @@
   /* öğretici balonu (§10) */
   #tut{display:none;background:#fff8e8;border:1px solid #e8d7a8;border-radius:14px;padding:8px 14px;margin:6px auto;max-width:640px;text-align:left;font-size:14px;position:relative}
   #tut.on{display:block}#tut b{color:var(--kiremit)}
+  .ftlist{display:flex;flex-direction:column;gap:6px;text-align:left}.ftlist h4{margin:8px 0 2px}.ftlist button{text-align:left;font-size:14px;min-height:40px;padding:6px 10px;width:100%}.ftlist b{display:inline-block;min-width:36px;color:var(--kiremit)}   /* v0.42 akış testi listesi */
+  .tutnote{background:#fff8e8;border:1px solid #e8d7a8;border-radius:12px;padding:6px 10px;margin:6px 0;text-align:left;font-size:14px;line-height:1.4}.tutnote b:first-child{color:#8a6a4a}   /* v0.42 Yıldız Teyze notu (açılış/kapanış) */
   #tut::before{content:"Yıldız Teyze";display:block;font-size:11px;color:var(--soluk);margin-bottom:2px}
   /* tam ekran kartlar */
   .overlay{position:fixed;inset:0;background:rgba(28,23,19,.72);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
@@ -264,6 +266,7 @@
     .steps{margin:2px 0 6px;gap:4px}.steps span{font-size:11.5px;padding:2px 8px;white-space:nowrap}
     #tut{height:calc(3 * 1.35em + 14px);overflow-y:auto;font-size:13.5px;line-height:1.35;padding:6px 10px;margin:2px 0 4px;max-width:none}
     @media (max-width:359px){#tut{height:calc(4 * 1.35em + 14px)}}
+    #tut.lesson{height:auto;max-height:calc(5 * 1.35em + 14px)}   /* v0.42 ilk kez dersi: metin kadar yükseklik */
     #tut::before{display:inline;content:"Yıldız Teyze: ";font-size:inherit;font-weight:700;color:#8a6a4a;margin:0}
     #closeup{width:100%;margin:2px auto;border-radius:12px}
     .zbar{height:40px;margin:8px auto 2px}.zends{font-size:12px}.zleg{font-size:11px}.zleg i{margin:0 3px 0 5px}
@@ -433,6 +436,7 @@
     <button class="pri" id="btnResume" style="display:none">▶ Devam<span id="resumeInfo" style="display:block;font-size:.62em;font-weight:600;opacity:.8"></span></button>
     <button id="btnNew">Yeni oyun</button>
     <button id="btnContinue">Yükle</button>
+    <button id="btnFlow" style="display:none">🧪 Akış testi</button>
     <button id="btnSettings">Ayarlar</button>
     <button id="btnQuit">⏻ Çıkış</button>
     <div style="display:none"><button id="btnExport"></button><button id="btnImport"></button></div>
@@ -448,11 +452,11 @@
   </svg>
 </section>
 <div class="toast" id="toast"></div>
-<script>window.CB_VERSION = "0.41";</script>
-<script src="data.js?v=0.41"></script>
-<script src="audio.js?v=0.41"></script>
-<script src="scene.js?v=0.41"></script>
-<script src="closeup.js?v=0.41"></script>
-<script src="game.js?v=0.41"></script>
+<script>window.CB_VERSION = "0.42";</script>
+<script src="data.js?v=0.42"></script>
+<script src="audio.js?v=0.42"></script>
+<script src="scene.js?v=0.42"></script>
+<script src="closeup.js?v=0.42"></script>
+<script src="game.js?v=0.42"></script>
 </body>
 </html>

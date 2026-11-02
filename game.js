@@ -32,7 +32,7 @@ function newState(diff = "normal") {
     perfect: { espresso: 0 }, served: {}, unlocked: ["espresso"], taught: [],
     beans: { brazil: { kg: 1, boughtDay: 1 } }, bean: "brazil", milk: 0,
     equipment: {}, prices: {}, tipsLearned: [], regulars: {}, log: [],
-    debt: 0, staff: {}, decor: {}, streak: 0, milkDay: 1, traffic: {}, tools: {}, market: {}, loans: [], cups: Object.assign({}, D.startCups), extras: Object.fromEntries(Object.keys(D.extras).map(k => [k, typeof D.extrasStart === "object" ? (D.extrasStart[k] || 0) : D.extrasStart])), econ: D.econScale, syr: {}, cbBrewing: 0
+    debt: 0, staff: {}, decor: {}, streak: 0, milkDay: 1, traffic: {}, tools: {}, market: {}, loans: [], cups: Object.assign({}, D.startCups), extras: Object.fromEntries(Object.keys(D.extras).map(k => [k, typeof D.extrasStart === "object" ? (D.extrasStart[k] || 0) : D.extrasStart])), econ: D.econScale, lessonMig: 1, syr: {}, cbBrewing: 0
   };
 }
 function save(slot) { if (!S) return; try { S.savedAt = Date.now(); localStorage.setItem(SLOT_KEY(slot || curSlot), JSON.stringify(S)); } catch (e) {} }
@@ -124,6 +124,36 @@ function modal(html, buttons) {
     el.onclick = () => { $("#ovModal").classList.remove("on"); b.fn && b.fn(); }; row.appendChild(el);
   });
   $("#ovModal").classList.add("on");
+}
+// v0.42 §15 ilk kez karşılaşılan mekanik: Yıldız Teyze'nin defterinden ders (bir kez gösterilir)
+const taught = k => !!S && S.taught.includes(k), teach = (...ks) => ks.forEach(k => { if (S && !S.taught.includes(k)) S.taught.push(k); });
+let lessonQ = [];
+function lesson(key, then) {
+  if (!S || taught("L:" + key) || !D.lessons[key]) { if (then) then(); return false; }
+  teach("L:" + key); save(); lessonQ.push({ key, then }); pumpLessons(); return true;
+}
+function pumpLessons() {
+  if (!lessonQ.length) return;
+  if ($("#ovModal").classList.contains("on")) { setTimeout(pumpLessons, 600); return; }
+  const { key, then } = lessonQ.shift(), L = D.lessons[key];
+  modal(`<h3>📖 ${L.t}</h3><p class="muted" style="margin:-6px 0 6px">Yıldız Teyze'nin defterinden</p><p>${L.h}</p>`, [{ label: "Anladım", pri: true, fn: () => { if (then) then(); setTimeout(pumpLessons, 60); } }]);
+}
+function stepLessonKey(o, s) {                                                    // hazırlama adımının dersi (öğretici ve otomatik adımlar hariç)
+  if (o.tutorial || o.assist || (o.auto && o.auto.has(s))) return null;
+  let k = s;
+  if (s === "milk" && DR(o).milk !== "hot") k = "milk2";
+  else if (s === "tkfoam" && taught("mg:tkfoam") && (S.served[o.drink] || 0) >= 3) k = "tkfoamBlind";
+  else if (s === "grind" && taught("mg:grind") && !o.pregrindAsk) k = "pregrind";
+  else if (s === "extract" && taught("mg:extract") && S.equipment.dualGroup) k = "dual";
+  return taught("mg:" + k) ? null : k;
+}
+const stepLessonHTML = (k, s) => { const L = D.lessons.steps[k]; return `<b>${L ? L.t : D.minigames[s].name}.</b> ${L ? L.h : D.minigames[s].hint}`; };
+function lessonGate(o, s, k) {                                                    // ders okunana kadar adım başlamaz, saat ve sabır durur
+  const el = $("#mgBody"), b = $("#zB"), prev = o.phase; o.phase = "intro"; window.CB_LESSON = true;
+  if (b) b.style.display = "none";
+  const html = `<button class="hold big pri pulse" id="lesOk">Anladım</button>`;
+  if (b) b.insertAdjacentHTML("beforebegin", html); else el.insertAdjacentHTML("beforeend", html);
+  $("#lesOk").onclick = () => { if (o.phase !== "intro") return; $("#lesOk").remove(); if (b) b.style.display = ""; o.phase = prev; window.CB_LESSON = false; teach("mg:" + k); save(); AUDIO.sfx("click"); };
 }
 function renderHUD() {
   const hd = endCtx ? endCtx.dayNum : S.day;                                      // v0.30: gün sonu akışında HUD kapanan günü gösterir (saat "Kapanış")
@@ -264,31 +294,38 @@ function juryScore(sv) {                                                        
   renderHUD(); save();
 }
 function rollWeather() {                                                          // §13 hava: Cumartesi kalabalık; diğer günler %25 yağmur, %25 sıcak
+  if (window.CB_TEST_WEATHER) { const w = window.CB_TEST_WEATHER; window.CB_TEST_WEATHER = null; return w === "none" ? null : w; }   // v0.42 akış testi
   if (S.day % 7 === 6) return "crowd"; const r = Math.random(), W = D.weather; return r < W.rain.p ? "rain" : r < W.rain.p + W.hot.p ? "hot" : null;
 }
-function showMachineOn(next) {                                                    // v0.40 §14 sabah açılışı: Su → Isıt → Basınç
+function showMachineOn(next, tut) {                                               // v0.40 §14 sabah açılışı: Su → Isıt → Basınç (v0.42: ilk gün Yıldız Teyze anlatır)
   const ORDER = ["Su", "Isıt", "Basınç"], btns = ORDER.slice().sort(() => Math.random() - .5); let idx = 0, first = true;
-  const show = msg => modal(`<h3>⚙ Makineyi aç</h3><p>Sırayla dokun: <b>Su → Isıt → Basınç</b></p><p>${ORDER.map((x, i) => (i < idx ? "✅ " : "⬜ ") + x).join(" &nbsp; ")}</p>${msg ? `<p class="muted">${msg}</p>` : ""}`,
-    btns.map(b => ({ label: b, pri: false, fn: () => { if (!day) return; if (b === ORDER[idx]) { idx++; AUDIO.sfx("click"); if (idx >= ORDER.length) { if (first) { S.xp += 2; toast("Makine hazır ✓ · +2 XP"); } else toast("Makine hazır"); return next(); } show(""); } else { first = false; idx = 0; AUDIO.sfx("sad"); show("Yanlış sıra; baştan."); } } })));
+  const show = msg => modal(`<h3>⚙ Makineyi aç</h3>${tut ? `<div class="tutnote"><b>Yıldız Teyze:</b> ${D.tutorial.openIntro}</div>` : ""}<p>Sırayla dokun: <b>Su → Isıt → Basınç</b></p><p>${ORDER.map((x, i) => (i < idx ? "✅ " : "⬜ ") + x).join(" &nbsp; ")}</p>${msg ? `<p class="muted">${msg}</p>` : ""}`,
+    btns.map(b => ({ label: b, pri: false, fn: () => { if (!day) return; if (b === ORDER[idx]) { idx++; AUDIO.sfx("click"); if (idx >= ORDER.length) { if (first) { S.xp += 2; toast("Makine hazır ✓ · +2 XP"); } else toast("Makine hazır"); return next(); } show(""); } else { first = false; idx = 0; AUDIO.sfx("sad"); show(tut ? D.tutorial.openWrong : "Yanlış sıra; baştan."); } } })));
   show("");
 }
-function showCalibration() {                                                      // §13 sabah kalibrasyonu (dial-in)
+function showCalibration(next, tut) {                                             // §13 sabah kalibrasyonu (dial-in); v0.42: ilk gün Yıldız Teyze anlatır (kayma hep "hızlı", yanlışta tekrar)
   const C = D.calibration, r = Math.random(); let acc = 0, drift = "ok"; for (const [k, p] of C.drift) { acc += p; if (r < acc) { drift = k; break; } }
+  if (tut) drift = "coarse";
   day.calPenalty = false;
+  if (tut) { const ask = msg => modal(`<h3>☕ Sabah kalibrasyonu</h3><div class="tutnote"><b>Yıldız Teyze:</b> ${msg || D.tutorial.calIntro}</div><p>${C.shot[drift]}</p><p class="muted">Öğütücü ayarını ne yapalım?</p>`,
+      [{ label: "Daha kaba", fn: () => { AUDIO.sfx("sad"); ask(D.tutorial.calWrong); } }, { label: "Böyle kalsın", fn: () => { AUDIO.sfx("sad"); ask(D.tutorial.calWrong); } },
+       { label: "Daha ince", pri: true, fn: () => { if (!day) return; day.calShift = 0; S.xp += C.xp; toast("Ayar tuttu ✓ · +" + C.xp + " XP"); AUDIO.sfx("perfect"); renderHUD(); if (next) next(); } }]);
+    return ask(); }
   const pickA = ans => { if (!day) return; const ok = ans === C.answer[drift]; day.calPenalty = false;
     day.calShift = ok ? 0 : drift === "coarse" ? 8 : drift === "fine" ? -8 : ans === "finer" ? -8 : ans === "coarser" ? 8 : 0;   // v0.40 §14: tutmazsa öğütme hedefi kayar (daralma yok)
-    if (ok) { S.xp += C.xp; toast("Ayar tuttu ✓ · +" + C.xp + " XP"); AUDIO.sfx("perfect"); } else toast(day.calShift ? "Ayar tutmadı · bugün öğütme hedefi " + (day.calShift > 0 ? "ince" : "kaba") + " tarafa kaydı" : "Kalibrasyon atlandı"); renderHUD(); };
+    if (ok) { S.xp += C.xp; toast("Ayar tuttu ✓ · +" + C.xp + " XP"); AUDIO.sfx("perfect"); } else toast(day.calShift ? "Ayar tutmadı · bugün öğütme hedefi " + (day.calShift > 0 ? "ince" : "kaba") + " tarafa kaydı" : "Kalibrasyon atlandı"); renderHUD(); if (next) next(); };
   modal(`<h3>☕ Sabah kalibrasyonu</h3><p>${C.shot[drift]}</p><p class="muted">Öğütücü ayarını ne yapalım? Doğru ayar bugünü kolaylaştırır; yanlışsa öğütme ve ekstraksiyon hedefleri daralır.</p>`,
     [{ label: "Atla", fn: () => pickA("skip") }, { label: "Daha kaba", fn: () => pickA("coarser") }, { label: "Böyle kalsın", fn: () => pickA("keep") }, { label: "Daha ince", pri: true, fn: () => pickA("finer") }]);
 }
 const rushOn = () => !!(day && day.rush && day.rush.on && day.t < day.rush.at + day.rush.dur);
 const wIcon = () => (rushOn() ? "⏰ " : "") + (day && day.weather ? D.weather[day.weather].icon + " " : "");
 function startDay() {
-  endCtx = null; if (S) delete S.endPending;
+  window.CB_LESSON = false; endCtx = null; if (S) delete S.endPending;
   if (S.cbBrewing) { S.syr = S.syr || {}; S.syr.coldbrew = (S.syr.coldbrew || 0) + S.cbBrewing; S.cbBrewing = 0; }   // v0.24: gece demlenen cold brew sabah hazır
   setTimeout(flushNewFx, 200);
   let n = dayCap(); checkUnlocks();
   const firstTime = S.day === 1 && !S.taught.includes("first");
+  if (!S.lessonMig) { S.lessonMig = 1; if (S.taught.includes("first")) teach("mg:grind", "mg:tamp", "mg:extract"); }   // v0.42 §15 eski kayıt: espresso adımlarını biliyor (dozlama v0.40'ta değişti, dersi çıkar)
   const weather = firstTime ? null : rollWeather(); if (weather === "crowd") n = Math.round(n * D.weather.saturdayCrowd);   // §13
   if (!firstTime && S.buzz) { n = Math.max(1, n + S.buzz); } const buzz = S.buzz || 0; S.buzz = 0;
   day = { t: 0, toSpawn: n, spawnEvery: arrivalEvery(), nextSpawn: firstTime ? 99999 : 1, customers: [], orders: [], active: 0,
@@ -302,11 +339,17 @@ function startDay() {
     if (buzz > 0) msgs.push("📱 Fenomen paylaştı: bugün +" + buzz + " müşteri"); if (buzz < 0) msgs.push("📱 Fenomen kötü yazdı: bugün " + buzz + " müşteri");
     if (day.dirty) msgs.push("🧽 Makine dün temizlenmedi: ekstraksiyon bugün daha zor");
     if (day.jury) msgs.push("🏆 Yarışma günü: ilk 3 müşteri jüri");
-    if (msgs.length) toast(msgs.join(" · ")); if (S.day >= 2) showMachineOn(showCalibration); }, 350);
+    if (msgs.length) toast(msgs.join(" · "));
+    const after = () => { if (!day) return; if (day.weather) lesson("weather"); if (day.dirty) lesson("dirty"); if (day.jury) lesson("jury"); };   // v0.42 §15
+    const skipOpen = window.CB_TEST_NOOPEN; window.CB_TEST_NOOPEN = false;   // akış testi: sabah açılışını atla
+    if (S.day >= 2 && !skipOpen) lesson("machineOn", () => showMachineOn(() => lesson("calibration", () => showCalibration(after)))); else after(); }, 350);
   if (firstTime) {
     day.tutorialActive = true;
     day.customers.push({ id: day.id++, type: "nejla", name: "Yıldız Teyze", drink: "espresso", size: "double", bean: "brazil", milk: null, patience: Infinity, patienceMax: 0,
-      pos: Object.assign({}, SCENE.queueSlot(0)), target: null, moving: false, say: "Hazırsan başlayabiliriz evladım, bana dokun." });   // §10 Yıldız Teyze zaten tezgâhın önünde (v0.30: aynı anda tek talimat – balon söyler, toast yok)
+      pos: Object.assign({}, SCENE.queueSlot(0)), target: null, moving: false, say: D.tutorial.openSay });
+    day.opening = true;                                                          // v0.42 §15 açılış dersi: makineyi aç → kalibrasyon → espresso
+    setTimeout(() => { if (!day) return; showMachineOn(() => showCalibration(() => { if (!day) return; teach("L:machineOn", "L:calibration");
+      modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.openDone}</p>`, [{ label: "Tamam", pri: true, fn: () => { if (!day) return; day.opening = false; const y = day.customers.find(c => c.type === "nejla"); if (y) y.say = "Hazırsan başlayabiliriz evladım, bana dokun."; layout(); } }]); }, true), true); }, 400);   // §10 Yıldız Teyze zaten tezgâhın önünde (v0.30: aynı anda tek talimat – balon söyler, toast yok)
   }
   AUDIO.sfx("shopOpen");                                                            // §11 açılış sesi
   layout(); renderHUD(); renderBench(); lastT = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
@@ -326,7 +369,7 @@ function layout() {
     c.target = SCENE.queueSlot(i++);
   });
 }
-const dayPaused = () => !!window.CB_FREEZE || !!document.querySelector(".overlay.on");   // bilgi penceresi / Tedarik / Defter / Fiyatlar / Ayarlar açıkken saat ve sabır durur (hazırlama ekranı #sheet hariç)
+const dayPaused = () => !!window.CB_FREEZE || !!window.CB_LESSON || !!document.querySelector(".overlay.on");   // bilgi penceresi / Tedarik / Defter / Fiyatlar / Ayarlar açıkken saat ve sabır durur (hazırlama ekranı #sheet hariç)
 function tick(now) {
   const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
   try {
@@ -335,7 +378,7 @@ function tick(now) {
     if (!day.tutorialActive && !paused) {
       day.t += dt;
       if (day.t >= DAY_SECONDS) day.toSpawn = 0;                                   // §9 20:00: gün biter, gelemeyen gelmez
-      if (day.rush && !day.rush.on && day.t >= day.rush.at) { day.rush.on = true; day.toSpawn += 3; day.nextSpawn = Math.min(day.nextSpawn, day.t + 1); toast("⏰ Yoğun saat! 30 saniye boyunca müşteri akını · bahşiş ×1,5"); AUDIO.sfx("shopOpen"); }
+      if (day.rush && !day.rush.on && day.t >= day.rush.at) { day.rush.on = true; day.toSpawn += 3; day.nextSpawn = Math.min(day.nextSpawn, day.t + 1); toast("⏰ Yoğun saat! 30 saniye boyunca müşteri akını · bahşiş ×1,5"); AUDIO.sfx("shopOpen"); lesson("rush"); }
       if (day.toSpawn > 0 && day.t >= day.nextSpawn) {
         if (queueOf().length >= shop().maxQueue) day.stats.bounced++;                  // §9 sıra dolu: kapıdan döner
         else spawnCustomer();
@@ -410,6 +453,7 @@ function leave(c, cancelled) {
   toast(c.name + (cancelled ? " siparişi iptal etti · −5 itibar" : " vazgeçip gitti · −5 itibar")); renderOrders(); if (had) renderBench(); renderHUD();
 }
 function takeOrder(id) {
+  if (day && day.opening) return;                                                // v0.42 §15 açılış dersi bitmeden sipariş yok
   const c = day.customers.find(x => x.id === id && !x.ordered && !x.leaving); if (!c) return;
   if (c !== queueOf()[0]) { toast("Önce sıranın en önündeki müşteri"); return; }   // §7 yalnızca öndeki müşteri sipariş verir
   if (!c.say && c.type !== "nejla" && day.orders.length < slots()) { toast("Müşteri kasaya gelsin, siparişini söylesin"); return; }
@@ -434,6 +478,7 @@ function takeOrder(id) {
   const o = { cust: c, drink: c.drink, size: c.size, i: 0, scores: {}, phase: "ready", v: 0, dir: 1, start: null, tutorial: c.type === "nejla", selecting: true, sel: { bean: multiBeans() ? null : "brazil", drink: null, size: null, milk: null, sugar: null }, all: [], steps: [], auto: new Set() };
   if (o.tutorial) prepareOrder(o, "espresso", "double", "brazil", null, null);   // v0.24: öğretici 18 g → 36 g double (doppio)                         // §7 öğreticide seçim kendiliğinden
   day.orders.push(o); day.active = day.orders.length - 1; renderOrders();
+  if ((D.customers[c.type] || {}).special) lesson(c.type);                         // v0.42 §15 özel müşteri ilk kez
   layout(); renderBench();
 }
 
@@ -472,6 +517,7 @@ function drinkGroupsOf(ids) {
   return out.filter(g => g.ids.length);
 }
 function renderSelect(o, tabs) {                                                  // §6/§7 sıra: çekirdek → tarif → boy → süt
+  if (!o.tutorial) { setTimeout(() => { lesson("select"); const wm = o.cust.mods || {}; if (wm.extra || wm.takeaway) lesson("extras"); }, 150); }   // v0.42 §15
   const menu = S.unlocked.filter(hasTools), sel = o.sel, sizes = sel.drink ? (D.drinks[sel.drink].sizes || ["single"]) : [];
   const showBean = multiBeans(), showMilk = sel.drink && isMilky(sel.drink) && multiMilks(), showSugar = sel.drink && D.drinks[sel.drink].sugar;
   const ready = sel.bean && sel.drink && sel.size && sizes.includes(sel.size) && (!showMilk || sel.milk) && (!showSugar || sel.sugar);
@@ -649,7 +695,7 @@ function serve(o) {
   else { repGain = -3; msg = "Şikâyet."; }
   if (c.type === "critic") repGain = service >= 95 ? 20 : service < 70 ? -15 : 3;   // §13 eleştirmen
   if (c.type === "influencer") S.buzz = Math.max(-2, (S.buzz || 0) + (service >= 95 ? 3 : service < 70 ? -2 : 0));   // §13 fenomen: ertesi gün
-  if (!o.assist && !(D.customers[c.type] || {}).special && c.type !== "nejla") { S.loyal = S.loyal || {}; S.loyal[c.type] = service >= 95 ? (S.loyal[c.type] || 0) + 1 : service < 80 ? 0 : (S.loyal[c.type] || 0); }   // §13 sadakat
+  if (!o.assist && !(D.customers[c.type] || {}).special && c.type !== "nejla") { S.loyal = S.loyal || {}; S.loyal[c.type] = service >= 95 ? (S.loyal[c.type] || 0) + 1 : service < 80 ? 0 : (S.loyal[c.type] || 0); if (S.loyal[c.type] === D.loyalty.need) lesson("loyal"); }   // §13 sadakat
   S.rep = Math.max(0, S.rep + repGain);
   if (c.type === "jury") juryScore(service);
   checkAch(o, c, service);
@@ -669,8 +715,8 @@ function serve(o) {
   const wasTutorial = o.tutorial;
   renderHUD(); save();
   setTimeout(() => {
-    if (wasTutorial) { S.taught.push("first"); save();                            // §10 Devam'a basılana kadar saat durur, müşteri gelmez
-      modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.done}</p>`, [{ label: "Devam", pri: true, fn: () => { if (!day) return; day.tutorialActive = false; day.nextSpawn = day.t + day.spawnEvery * rnd(0.6, 1.4); } }]); }
+    if (wasTutorial) { S.taught.push("first"); teach("mg:grind", "mg:dose", "mg:tamp", "mg:extract"); save();   // §10 Devam'a basılana kadar saat durur, müşteri gelmez
+      modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.midday}</p>`, [{ label: "Devam", pri: true, fn: () => { if (!day) return; day.tutorialActive = false; day.nextSpawn = day.t + day.spawnEvery * rnd(0.6, 1.4); } }]); }
     checkUnlocks(); layout(); renderBench();
   }, 900);
 }
@@ -694,9 +740,11 @@ function endDay() {
   endCtx = S.endPending = { dayNum, st, L, repDelta, advanced: false };
   day = null; save(); renderHUD(); renderScene(0);           // §2 gün sonu ekranları arasında geri dönebilmek için; kayda da yazılır (çıkıp Devam edince aynı gün tekrar oynanamaz)
   save();
-  showRent(dayNum, L, () => showLedger(dayNum, st, L, repDelta));                 // §2 gün sonu ilk ekran: kira
+  const goRent = () => showRent(dayNum, L, () => showLedger(dayNum, st, L, repDelta));   // §2 gün sonu ilk ekran: kira
+  if (closingTut()) modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.closeIntro}</p>`, [{ label: "Tamam", pri: true, fn: goRent }]); else goRent();   // v0.42 §15 kapanış dersi
 }
 let endCtx = null;
+const closingTut = () => !!S && S.taught.includes("first") && !taught("closing") && (endCtx ? endCtx.dayNum : S.day) === 1;   // v0.42 §15 ilk günün kapanışı Yıldız Teyze ile
 const backToRent = () => { const c = endCtx; showRent(c.dayNum, c.L, () => showLedger(c.dayNum, c.st, c.L, c.repDelta)); };
 const backToLedger = () => { const c = endCtx; showLedger(c.dayNum, c.st, c.L, c.repDelta); };
 const backFromSupply = () => { $("#ovShop").classList.remove("on"); dayFlow = null; const c = endCtx; if (c.L.news) showNews(weekNo(c.dayNum), c.L.news, openRestock, backToLedger); else backToLedger(); };
@@ -723,6 +771,7 @@ function showRent(dayNum, L, next) {
 function showLedger(dayNum, st, L, repDelta) {
   const short = S.money < 0, need = short ? Math.ceil(-S.money / D.economy.rentLoanStep) * D.economy.rentLoanStep : 0;
   if (short && (S.debt || 0) + Math.round(need * (1 + D.economy.loanInterest)) > shop().loanLimit) return bankrupt(null, need);   // §2 kira ödenemiyor + kredi limiti dolu: iflas
+  const ctut = closingTut();
   $("#ledgerCard").innerHTML = `<h2>${weekday(dayNum)} · ${weekNo(dayNum)}. Hafta – gün kapanışı</h2>
     <table>
       <tr><td>Servis edilen</td><td class="num">${st.served}</td></tr>${st.perfect ? `<tr><td>Mükemmel servis</td><td class="num">${st.perfect}</td></tr>` : ""}
@@ -752,15 +801,21 @@ function showLedger(dayNum, st, L, repDelta) {
     </table>
     ${short ? `<div class="req">Kasa eksiye düştü. Devam etmek için bankadan en az ₺${tl(need)} kredi çekmelisin (kira kredisi: geri ödeme ₺${tl(Math.round(need * (1 + D.economy.loanInterest)))}, %10 fazla, ${D.economy.rentLoanDays} gün vade).</div>` :
       `<p class="muted">${rentPaid(dayNum) ? "Bu haftanın kirası ödendi." : `Kiraya ${daysToRent(dayNum)} gün kaldı.`} Yeni güne başlamadan önce tedarik yap: en az ${D.economy.minBeans} kg çekirdek${needsMilk() ? ` ve ${D.economy.minMilk} L süt` : ""} gerekir.</p>`}
-    <div class="row">${endCtx ? '<button id="ledgerBack">← Geri</button>' : ""}<button class="pri" id="ledgerOk">${short ? "Bankadan ₺" + tl(need) + " kredi çek" : (L.news ? "Gazeteye bak →" : "Devam →")}</button></div>`;
+    ${ctut ? `<div class="tutnote"><b>Yıldız Teyze:</b> ${S.cleanDay === dayNum ? "Makine pırıl pırıl. Şimdi <b>Devam</b>'a bas." : D.tutorial.closeLedger}</div>` : ""}
+    <div class="row">${endCtx ? '<button id="ledgerBack">← Geri</button>' : ""}<button class="pri" id="ledgerOk" ${ctut && S.cleanDay !== dayNum ? "disabled" : ""}>${short ? "Bankadan ₺" + tl(need) + " kredi çek" : (L.news ? "Gazeteye bak →" : "Devam →")}</button></div>`;
   openOverlay("#ovLedger");
   const lbk = $("#ledgerBack"); if (lbk) lbk.onclick = () => backToRent();
   const cb = $("#cleanBtn"); if (cb) cb.onclick = () => {                         // v0.40 §14 gece temizliği ritmi: ÇALIŞTIR × 3, aralarda 1 sn bekle
-    let n = 0; modal(`<h3>🧽 Gece temizliği (backflush)</h3><p>Kör filtreyle makineyi 3 kez çalıştır; her seferinde 1 saniye bekle.</p><p id="bfN" style="font-size:20px">⬜ ⬜ ⬜</p><button class="hold big pri" id="bfGo">ÇALIŞTIR</button>`, [{ label: "Vazgeç" }]);
+    let n = 0; modal(`<h3>🧽 Gece temizliği (backflush)</h3>${ctut ? `<div class="tutnote"><b>Yıldız Teyze:</b> ${D.tutorial.cleanHow}</div>` : "<p>Kör filtreyle makineyi 3 kez çalıştır; her seferinde 1 saniye bekle.</p>"}<p id="bfN" style="font-size:20px">⬜ ⬜ ⬜</p><button class="hold big pri" id="bfGo">ÇALIŞTIR</button>`, ctut ? [] : [{ label: "Vazgeç" }]);
     const g = $("#bfGo"); g.onclick = () => { if (g.disabled) return; n++; AUDIO.sfx("extractStop"); $("#bfN").textContent = "✅ ".repeat(n) + "⬜ ".repeat(3 - n);
       if (n >= 3) { $("#ovModal").classList.remove("on"); S.cleanDay = dayNum; toast("Makine temizlendi ✓ · yarın ekstraksiyon normal"); save(); showLedger(dayNum, st, L, repDelta); return; }
       g.disabled = true; g.textContent = "Bekle…"; setTimeout(() => { g.disabled = false; g.textContent = "ÇALIŞTIR"; }, 1000); }; };
-  $("#ledgerOk").onclick = () => { if (short) { takeLoan(need, D.economy.rentLoanDays); showLedger(dayNum, st, L, repDelta); return; } $("#ovLedger").classList.remove("on"); if (L.news) showNews(weekNo(dayNum), L.news, openRestock, backToLedger); else openRestock(); };
+  const go = () => { if (L.news) showNews(weekNo(dayNum), L.news, openRestock, backToLedger); else openRestock(); };
+  $("#ledgerOk").onclick = () => { if (short) { takeLoan(need, D.economy.rentLoanDays); showLedger(dayNum, st, L, repDelta); return; }
+    if (ctut) { if (S.cleanDay !== dayNum) return; $("#ovLedger").classList.remove("on"); teach("closing", "L:clean"); save();   // v0.42 §15 veda: Yıldız Teyze kapanıştan sonra gider
+      return modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.done}</p>`, [{ label: "Devam", pri: true, fn: go }]); }
+    $("#ovLedger").classList.remove("on"); go(); };
+  if (!ctut && cb) lesson("clean");                                              // v0.42 §15 eski kayıt: temizlik dersi
 }
 // §7 ilk günden önce tedarik: bardak ve küçük malzemeleri oyuncu alır; Günü başlat ilk günü açar
 let firstSupply = false;
@@ -769,7 +824,7 @@ function openRestock() { mandatoryRestock = true; dayFlow = "supply"; if (!endCt
 
 // ---------- Alt panel (tezgâh, §11) ----------
 function renderBench() {
-  renderHUD();
+  window.CB_LESSON = false; renderHUD();
   if (!day || !day.orders[day.active]) { $("#sheet").classList.remove("on"); return; }
   const o = day.orders[day.active]; if (o.hidden) { $("#sheet").classList.remove("on"); return; } const s = o.steps[o.i]; const d = D.drinks[o.drink];
   if (o.selecting) { const tb = day.orders.length > 1 ? `<div class="tabs">${day.orders.map((x, i) => `<button class="${i === day.active ? "on" : ""}" data-i="${i}">${x.cust.name}</button>`).join("")}</div>` : "";
@@ -784,12 +839,14 @@ function renderBench() {
     $("#sheetBody").querySelectorAll(".tabs button").forEach(b => b.onclick = () => { day.active = +b.dataset.i; renderBench(); });
     return;
   }
-  const tut = o.tutorial ? `<div id="tut" class="on">${s === "grind" && o.i === 0 ? D.tutorial.espressoIntro + " " : ""}${D.tutorial.steps[s] || ""}</div>` : "";
-  $("#sheetBody").innerHTML = `${sheetX(o)}${tabs}${wantHTML(o)}<h3 class="ptitle">${o.cust.name} için ${cap1(sizedName(o.drink, o.size))}</h3>${steps}${tut}<canvas id="closeup"></canvas><div id="mgBody"></div><div class="hint">${rank().guide && !o.tutorial ? D.minigames[s].hint : ""}</div><div id="mgScore" class="score"></div>`;
+  window.CB_LESSON = false; const lk = stepLessonKey(o, s);                       // v0.42 §15 adımın ilk kez oynanışı: ders
+  const tut = o.tutorial ? `<div id="tut" class="on">${s === "grind" && o.i === 0 ? D.tutorial.espressoIntro + " " : ""}${D.tutorial.steps[s] || ""}</div>` : lk ? `<div id="tut" class="on lesson">${stepLessonHTML(lk, s)}</div>` : "";
+  $("#sheetBody").innerHTML = `${sheetX(o)}${tabs}${wantHTML(o)}<h3 class="ptitle">${o.cust.name} için ${cap1(sizedName(o.drink, o.size))}</h3>${steps}${tut}<canvas id="closeup"></canvas><div id="mgBody"></div><div class="hint">${rank().guide && !o.tutorial && !lk ? D.minigames[s].hint : ""}</div><div id="mgScore" class="score"></div>`;
   CLOSEUP.init($("#closeup"));
   $("#sheet").classList.add("on"); bindSheetX(); updOrderBars(); drawCup = null;
   $("#sheetBody").querySelectorAll(".tabs button").forEach(b => b.onclick = () => { day.active = +b.dataset.i; renderBench(); });
   uiZone(o, $("#mgBody"));
+  if (lk && !(s === "extract" && o.phase === "run")) lessonGate(o, s, lk);
   if (o.tutorial) pulseControl(s);
   if (fitSheet()) { CLOSEUP.init($("#closeup")); if (MG[s]) try { MG[s].draw(o, o.v || 0); } catch (e) {} }   // v0.30: tuval kalan alana göre küçüldü → yeniden çiz
 }
@@ -809,7 +866,7 @@ function fitSheet() {
   return cv.style.width !== old;
 }
 function bindSheetX() { const x = $("#sheetX"); if (x) x.onclick = () => hideSheet(); }
-function hideSheet() { const o = day && day.orders[day.active]; if (!o || o.tutorial) return;
+function hideSheet() { const o = day && day.orders[day.active]; if (!o || o.tutorial) return; window.CB_LESSON = false;
   AUDIO.stopLoops(); o.hidden = true; if (o.phase === "run") { o.phase = "ready"; o.v = 0; }
   $("#sheet").classList.remove("on"); toast("Sipariş bekliyor; devam için müşteriye dokun"); }
 function pulseControl(s) { const el = $("#zB"); if (el && !el.disabled) el.classList.add("pulse"); }
@@ -930,13 +987,13 @@ function uiAct(o, el, s) {                                                      
   const c = MG[s]; o.v = 0; o.ang = 0; o.shx = 50; o.phase = "run"; o.frozen = false; let last = null, acc = 0, dir = 0, run = 0;
   el.innerHTML = `<div class="actbar"><i id="actFill"></i></div><div class="acthint">${c.act === "taps" ? D.minigames[s].hint : c.btn}</div>` + (c.act === "hold" || c.act === "taps" ? `<button class="hold big pri" id="zB">${c.btn}</button>` : "") + `<div id="zRes" class="zres"></div>`;
   const cv = $("#closeup"), done = () => { if (o.phase === "done") return; o.phase = "done"; AUDIO.stopLoops(); showZone("perfect", 100); finishStep(o, 100); };
-  const set = p => { o.v = clamp(p, 0, 100); const f = $("#actFill"); if (f) f.style.width = o.v + "%"; if (o.v >= 100) done(); };
+  const set = p => { if (o.phase === "intro") return; o.v = clamp(p, 0, 100); const f = $("#actFill"); if (f) f.style.width = o.v + "%"; if (o.v >= 100) done(); };
   const pt = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left - r.width / 2, y: e.clientY - r.top - r.height / 2, w: r.width }; };
   if (c.act === "taps") { const b = $("#zB"), N = c.need(o); o.taps = 0;          // §3 sayılı dokunuş: pompa, buz, limon
-    b.onclick = () => { if (o.phase === "done") return; o.taps++; o.flash = true; setTimeout(() => { o.flash = false; }, 120); AUDIO.sfx("click"); set(o.taps / N * 100); };
+    b.onclick = () => { if (o.phase === "done" || o.phase === "intro") return; o.taps++; o.flash = true; setTimeout(() => { o.flash = false; }, 120); AUDIO.sfx("click"); set(o.taps / N * 100); };
     return; }
   if (c.act === "hold") { const b = $("#zB"); o.phase = "ready";
-    b.onpointerdown = e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {} if (o.phase === "done") return; o.phase = "run"; AUDIO.loop("extract", true); };
+    b.onpointerdown = e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {} if (o.phase === "done" || o.phase === "intro") return; o.phase = "run"; AUDIO.loop("extract", true); };
     b.onpointerup = b.onpointercancel = () => { if (o.phase === "run") { o.phase = "ready"; AUDIO.loop("extract", false); } };
     o.holdTick = dt => { if (o.phase === "run") set(o.v + c.speed * dt); };
     return; }
@@ -972,14 +1029,16 @@ function uiZone(o, el) {
   const fx = x => typeof x === "function" ? x(o) : x;
   el.innerHTML = (c.ring || c.dial ? legend : zoneBar(o.tgt, o.z, fx(c.left), fx(c.right), o.blond && o.blond.t)) + (o.blond ? `<button class="hold big" id="zB2" disabled style="box-shadow:none">💧 Akışı yumuşat</button>` : "") + `<button class="hold big pri" id="zB">${c.btn0 || c.btn}</button><div id="zRes" class="zres"></div>`;
   if (chain) el.insertAdjacentHTML("afterbegin", `<div class="chainmsg">⚠ ${chain}</div>`);
-  if (s === "dose" && c.fill === "shake" && !o.tutorial) {                         // v0.40 §14 dozlama: sallayarak doldur, TAMAM'la bitir
+  if (s === "dose" && c.fill === "shake") {                                       // v0.40 §14 dozlama: sallayarak doldur, TAMAM'la bitir (v0.42: öğreticide de)
     const b = $("#zB"); b.textContent = "TAMAM"; o.phase = "shake"; const cv = $("#closeup"); let last = null, dir = 0, run = 0;
-    el.insertAdjacentHTML("afterbegin", '<div class="acthint">Yakın planı sağa-sola kaydırarak kahve düşür; hedefe gelince TAMAM</div>');
+    const inc = () => { if (o.phase !== "shake" || o.frozen) return; o.v = Math.min(100, o.v + (o.v < o.tgt - 15 ? 6 : 2)); AUDIO.sfx("dose");
+      if (o.tutorial && o.v >= o.tgt - 1) { o.v = o.tgt; o.frozen = true; setTut(D.tutorial.doseNow); b.classList.add("pulse"); } setNeedle(o.v); c.draw(o, o.v); };
+    if (!o.tutorial) el.insertAdjacentHTML("afterbegin", '<div class="acthint">Yakın planı sağa-sola kaydırarak kahve düşür; hedefe gelince TAMAM</div>');   // v0.42: öğreticide Yıldız Teyze anlatır
     cv.style.touchAction = "none"; cv.onpointerdown = e => { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (x) {} last = e.clientX; };
     cv.onpointerup = cv.onpointercancel = () => { last = null; };
     cv.onpointermove = e => { if (last == null || o.phase !== "shake") return; const dx = e.clientX - last, sg = Math.sign(dx), w = cv.getBoundingClientRect().width;
-      if (sg) { if (sg === dir) run += Math.abs(dx); else { if (run > w * .05) { o.v = Math.min(100, o.v + (o.v < o.tgt - 15 ? 6 : 2)); AUDIO.sfx("dose"); setNeedle(o.v); c.draw(o, o.v); } dir = sg; run = Math.abs(dx); } } last = e.clientX; };
-    const m = MOTION.bind(el, o, () => { if (o.phase !== "shake") return; o.v = Math.min(100, o.v + (o.v < o.tgt - 15 ? 6 : 2)); AUDIO.sfx("dose"); setNeedle(o.v); c.draw(o, o.v); });   // v0.41 §14 telefonu salla
+      if (sg) { if (sg === dir) run += Math.abs(dx); else { if (run > w * .05) inc(); dir = sg; run = Math.abs(dx); } } last = e.clientX; };
+    const m = MOTION.bind(el, o, inc);   // v0.41 §14 telefonu salla
     const h = el.querySelector(".acthint"); if (m && h) { if (m[0] === "<") h.insertAdjacentHTML("afterend", m); else h.textContent = h.textContent.replace("; hedefe", m + "; hedefe"); }
   }
   if (s === "grind" && !o.tutorial && !o.pregrindAsk) {                             // v0.40 §14 önden öğütme
@@ -997,13 +1056,13 @@ function uiZone(o, el) {
     const b = $("#zB"); b.disabled = true; b.classList.remove("pulse"); b.style.display = "none";   // v0.30: "Anladım" ana düğmenin yerinde (hep görünür, düzen zıplamaz)
     b.insertAdjacentHTML("beforebegin", `<button class="hold big pri pulse" id="tutOk">Anladım</button>`);
     $("#tutOk").onclick = () => { if (o.phase !== "intro") return; $("#tutOk").remove(); b.style.display = ""; AUDIO.sfx("click");
-      if (osc) o.phase = "run"; else { o.phase = "ready"; b.disabled = false; b.classList.add("pulse"); } };   // dozlama/çekme: düğme şimdi açılır
+      if (osc) o.phase = "run"; else { o.phase = s === "dose" && c.fill === "shake" ? "shake" : "ready"; b.disabled = false; if (o.phase !== "shake") b.classList.add("pulse"); } };   // dozlama/çekme: düğme şimdi açılır
   }
 }
 function bindZone(o, s) {
   const c = MG[s], b = $("#zB"), mode = o.mode || c.mode;
   b.onpointerdown = b.onpointerup = b.onpointercancel = b.onclick = null;
-  if (o.phase === "shake") { b.onclick = () => { if (o.phase !== "shake" || o.v <= 0) return; $("#closeup").onpointermove = null; stopZone(o, s); }; return; }   // v0.40 §14 dozlama: TAMAM
+  if (o.phase === "shake") { b.onclick = () => { if (o.phase !== "shake" || o.v <= 0) return; if (o.tutorial && !o.frozen) return setTut(D.tutorial.doseEarly); $("#closeup").onpointermove = null; stopZone(o, s); }; return; }   // v0.40 §14 dozlama: TAMAM
   if (mode === "osc") b.onpointerdown = e => { e.preventDefault(); if (o.phase !== "run") return; if (o.tutorial && !o.frozen) return setTut(D.tutorial.tooEarly); stopZone(o, s); };
   if (mode === "sweep") b.onclick = () => { if (o.phase === "ready") { o.phase = "run"; b.textContent = c.btn; c.onStart && c.onStart(); const b2 = $("#zB2"); if (b2 && o.blond && !o.blond.done) b2.disabled = false; if (o.tutorial && s === "extract") setTut(D.tutorial.extractRun); }
     else if (o.phase === "run") { if (o.tutorial && !o.frozen) {                    // §10 öğretici: erken durdurdu → çekme baştan
@@ -1403,7 +1462,7 @@ const MOTION = { fn: null, live: false, ok: false, dir: 0, last: 0, gx: 0, gy: 0
 if (MOTION.has() && !MOTION.needAsk()) MOTION.start();
 document.addEventListener("pointerdown", () => { if (MOTION.needAsk() && LSG("cb_motionok") === "1" && MOTION.on() && !MOTION.ok) MOTION.ask(); }, { once: true, capture: true });
 const cheatUnlocked = () => LSG("cb_cheatUnlocked") === "1", cheatOn = () => cheatUnlocked() && LSG("cb_cheat") === "1";
-function setCheat(on) { LSS("cb_cheat", on ? "1" : "0"); renderCheats(); toast(on ? "🧪 Hile modu açık" : "Hile modu kapalı"); }
+function setCheat(on) { LSS("cb_cheat", on ? "1" : "0"); renderCheats(); refreshMenu(); toast(on ? "🧪 Hile modu açık" : "Hile modu kapalı"); }
 function unlockCheat() { LSS("cb_cheatUnlocked", "1"); setCheat(true); AUDIO.sfx("unlock"); }
 let cheatBuf = "", verTaps = [];
 document.addEventListener("keydown", e => { if ($("#menu").style.display === "none" || !e.key || e.key.length !== 1) return; cheatBuf = (cheatBuf + e.key.toLowerCase()).slice(-5); if (cheatBuf === "cheat") { cheatBuf = ""; unlockCheat(); } });
@@ -1430,6 +1489,72 @@ const CHEATS = [
   ["⏸ Saati durdur / başlat", () => { window.CB_FREEZE = !window.CB_FREEZE; toast(window.CB_FREEZE ? "Saat durdu (hile)" : "Saat işliyor"); }],
   ["🏪 Dükkan seviyesi atla", () => { if (S.shopLevel < D.shopLevels.length - 1) S.shopLevel++; else toast("En üst seviye"); }]
 ];
+// ---------- v0.42 Akış testi (hile modunda ana menüde): her akış ve mini oyun ayrı bir deneme kaydında (yuva 0) açılır ----------
+function tsState(o = {}) {                                                       // deneyimli oyuncu: ilk gün bitmiş, stok dolu, tüm tarif ve aletler
+  const x = newState("normal"); x.day = o.day || 4; x.money = 900000; x.rep = 60; x.xp = 400; x.shopLevel = o.lv ?? 2;
+  x.taught = ["intro", "first", "closing", "mg:grind", "mg:dose", "mg:tamp", "mg:extract", "mg:pregrind", "L:machineOn", "L:calibration", "L:clean", "L:select"].filter(k => !(o.untaught || []).includes(k));
+  if (o.noMg) x.taught = x.taught.filter(k => !/^mg:/.test(k));
+  x.unlocked = Object.keys(D.drinks); x.tools = Object.fromEntries(Object.keys(D.tools).map(k => [k, true])); x.cleanDay = x.day - 1; x.rentPaidWeek = Math.ceil(x.day / 7);
+  x.beans = Object.fromEntries(Object.keys(D.beans).map(k => [k, { kg: 20, boughtDay: x.day }])); x.milk = 50; x.milkAlt = Object.fromEntries(Object.keys(D.milks).filter(k => k !== "cow").map(k => [k, 50])); x.milkDay = x.day;
+  Object.keys(D.cups).forEach(k => x.cups[k] = 200); Object.keys(D.extras).forEach(k => x.extras[k] = 200); x.syr = Object.fromEntries(Object.keys(D.specials).map(k => [k, 200]));
+  x.beansSeen = Object.keys(D.beans); x.milksSeen = Object.keys(D.milks); x.taught.push("milk"); x.rp = 999; x.unlockDay = {};
+  return Object.assign(x, o.set || {});
+}
+function tsBegin(x, after) { if (!window.CB_TEST_WEATHER) window.CB_TEST_WEATHER = "none"; curSlot = 0; window.CB_LESSON = false; lessonQ = []; begin(x); if (after) setTimeout(() => { if (S) after(); }, 500); }
+function tsDay(after, noOpen) { window.CB_TEST_NOOPEN = !!noOpen; startDay(); setTimeout(() => { if (day && after) after(); }, 700); }
+function tsCust(type, drink, size, extra) {                                      // sıraya belirli bir müşteri koy
+  day.tutorialActive = false; spawnCustomer(); const c = day.customers[day.customers.length - 1]; if (!c) return null;
+  const d = D.drinks[drink] || D.drinks.espresso; drink = D.drinks[drink] ? drink : "espresso";
+  Object.assign(c, { type, name: D.customers[type].name, drink, size: size || (d.sizes || ["single"])[0], milk: isMilky(drink) ? "cow" : null, sugar: d.sugar ? "orta" : null, bean: "brazil", mods: { extra: false, takeaway: false } }, extra || {});
+  if (!c.patienceMax || D.customers[type].special) { c.patience = c.patienceMax = 120; } layout(); return c;
+}
+function tsStep(stepKey, variant) {                                               // mini oyun: o adımı içeren ilk tarifte doğrudan o adımdan başla
+  const lv = stepKey === "pour" ? 0 : 2, x = tsState({ lv, noMg: true });
+  if (variant === "blind") { x.taught.push("mg:tkfoam"); x.served = { turkish: 5 }; }
+  if (variant === "dual") { x.equipment.dualGroup = true; x.taught.push("mg:extract"); }
+  if (variant === "pregrind") { x.taught.push("mg:grind"); x.taught = x.taught.filter(k => k !== "mg:pregrind"); }
+  tsBegin(x, () => tsDay(() => {
+    const drink = Object.keys(D.drinks).find(id => stepsForLv(id, lv).includes(stepKey) && (variant !== "hot" || D.drinks[id].milk === "hot") && (variant !== "milk2" || D.drinks[id].milk !== "hot") && (variant !== "blind" || id === "turkish"));
+    if (!drink) return toast("Bu adımı içeren tarif bulunamadı");
+    const c = tsCust("regular", drink); if (!c) return; if (variant === "dual") tsCust("student", "espresso", "double");
+    day.customers = [c].concat(day.customers.filter(z => z !== c)); c.pos = Object.assign({}, SCENE.queueSlot(0)); c.target = null; c.moving = false; c.say = orderLine(c);   // kasaya ışınla
+    takeOrder(c.id); const o = day.orders.find(z => z.cust === c); if (!o) return toast("Test siparişi açılamadı");
+    prepareOrder(o, c.drink, c.size, "brazil", c.milk, c.sugar); o.auto = new Set(); o.steps = o.all.slice();
+    const i = Math.max(0, o.steps.indexOf(variant === "pregrind" ? "grind" : stepKey)); o.steps.slice(0, i).forEach(st => o.scores[st] = 100); o.i = i; o.autoRun = false;
+    toast("Akış testi: " + D.minigames[stepKey].name + " (" + D.drinks[drink].name + ")"); renderBench(); }, true));
+}
+const stepsForLv = (id, lv) => { const d = D.drinks[id]; const st = d.steps.slice(); if (d.art && D.shopLevels[lv].stars >= 3) { if (st.includes("pour")) st[st.indexOf("pour")] = "art"; else st.splice(st.indexOf(st.includes("swirl") ? "swirl" : "milk") + 1, 0, "art"); } return st; };
+const FLOWS = [
+  ["A1", "İlk gün baştan: Yıldız Teyze (açılış → espresso → kapanış)", () => { curSlot = 0; window.CB_LESSON = false; begin(newState("normal")); }],
+  ["A2", "İlk günün kapanışı (kira, defter, temizlik, veda)", () => tsBegin(tsState({ day: 1, untaught: ["closing", "L:clean"] }), () => tsDay(() => cheatEndDay()))],
+  ["A3", "Sabah açılışı, ilk kez (makine + kalibrasyon dersi)", () => tsBegin(tsState({ day: 2, untaught: ["L:machineOn", "L:calibration"] }), () => tsDay())],
+  ["A4", "Sabah açılışı, bilinen (ders yok)", () => tsBegin(tsState({ day: 3 }), () => tsDay())],
+  ["A5", "Gün sonu: kira günü → defter → temizlik dersi → gazete → tedarik → dükkan → fiyatlar", () => tsBegin(tsState({ day: 7, untaught: ["L:clean"], set: { rentPaidWeek: 0 } }), () => tsDay(() => cheatEndDay(), true))],
+  ["A6", "Sipariş seçimi dersi (ilk normal müşteri)", () => tsBegin(tsState({ untaught: ["L:select"] }), () => tsDay(() => tsCust("regular", "latte", "M"), true))],
+  ["A7", "Ekstralar: ekstra shot + paket servis", () => tsBegin(tsState({ day: 5 }), () => tsDay(() => tsCust("business", "latte", "M", { mods: { extra: true, takeaway: true } }), true))],
+  ["A8", "Özel müşteri: Eleştirmen", () => tsBegin(tsState(), () => tsDay(() => tsCust("critic", "cappuccino", "M"), true))],
+  ["A9", "Özel müşteri: Turist", () => tsBegin(tsState(), () => tsDay(() => tsCust("tourist", "latte", "M"), true))],
+  ["A10", "Özel müşteri: Fenomen", () => tsBegin(tsState(), () => tsDay(() => tsCust("influencer", "espresso", "double"), true))],
+  ["A11", "Yarışma günü (3 jüri)", () => tsBegin(tsState({ lv: 4, set: { compDay: 4 } }), () => tsDay())],
+  ["A12", "Yoğun saat", () => tsBegin(tsState(), () => tsDay(() => { day.rush = { at: day.t + 3, dur: 30, on: false }; }, true))],
+  ["A13", "Kirli makine (dün temizlenmedi)", () => tsBegin(tsState({ set: { cleanDay: 0 } }), () => tsDay())],
+  ["A14", "Hava: yağmurlu gün", () => { window.CB_TEST_WEATHER = "rain"; tsBegin(tsState(), () => tsDay()); }],
+  ["A15", "Hava: sıcak gün", () => { window.CB_TEST_WEATHER = "hot"; tsBegin(tsState(), () => tsDay()); }],
+  ["A16", "Sadık müşteri (bir mükemmel servis daha)", () => tsBegin(tsState({ set: { loyal: { regular: 2 } } }), () => tsDay(() => tsCust("regular", "espresso", "double"), true))],
+  ["A17", "Çift grup: shot akarken öbür siparişe geç", () => tsStep("extract", "dual")],
+  ["A18", "Önden öğütme (Sonraki için de öğüt)", () => tsStep("grind", "pregrind")],
+  ["A19", "Dozlama: kaydırarak / telefonu sallayarak", () => tsStep("dose")],
+  ["A20", "Süt: iki aşama (hava al + ısıt)", () => tsStep("milk", "milk2")],
+  ["A21", "Süt: tek aşama (sıcak süt, ör. café au lait)", () => tsStep("milk", "hot")],
+  ["A22", "Latte art: dök + yukarı çizim", () => tsStep("art")],
+  ["A23", "Türk kahvesi köpüğü ölçeksiz (3 servisten sonra)", () => tsStep("tkfoam", "blind")]
+];
+Object.keys(D.minigames).filter(k => Object.keys(D.drinks).some(id => stepsForLv(id, k === "pour" ? 0 : 2).includes(k))).forEach((k, i) => FLOWS.push(["M" + (i + 1), D.minigames[k].name + " (" + k + ")", () => tsStep(k)]));
+function showFlowTests() {
+  modal(`<h3>🧪 Akış testi</h3><p class="muted">Her test ayrı bir deneme kaydında açılır; gerçek yuvaların değişmez. Bitince Çıkış → Ana menüye dön. Kodu (A3, M12…) yazarak geri bildirim ver.</p>
+    <div class="ftlist">${FLOWS.map(([c, n], i) => (i === 0 ? "<h4>Akışlar</h4>" : c === "M1" ? "<h4>Mini oyunlar (her biri ilk kez dersiyle)</h4>" : "") + `<button data-ft="${i}"><b>${c}</b> ${n}</button>`).join("")}</div>`, [{ label: "Kapat" }]);
+  document.querySelectorAll("[data-ft]").forEach(b => b.onclick = () => { $("#ovModal").classList.remove("on"); AUDIO.sfx("open"); try { FLOWS[+b.dataset.ft][2](); } catch (e) { console.error(e); toast("Test açılamadı: " + e.message); } });
+}
 function refreshOpenScreen() {                                                    // hile sonrası açık gün sonu ekranını yenile
   const on = x => $(x).classList.contains("on");
   if (on("#ovShop")) renderSupply(); if (on("#ovHub")) renderHub(); if (on("#ovPrice")) renderPrices();
@@ -1610,6 +1735,7 @@ $("#icPrice").onclick = () => { AUDIO.sfx("open"); renderPrices(); openOverlay("
 $("#icSettings").onclick = () => { AUDIO.sfx("open"); renderSettings(); openOverlay("#ovSettings"); };
 ["ovBook", "ovShop", "ovModal", "ovSettings"].forEach(id => $("#" + id).addEventListener("click", e => { if (e.target.id === id) closeOverlay("#" + id); }));
 $("#btnNew").onclick = () => { AUDIO.sfx("open"); renderSlots("new"); };
+$("#btnFlow").onclick = () => { AUDIO.sfx("open"); showFlowTests(); };   // v0.42 akış testi
 $("#btnContinue").onclick = () => { AUDIO.sfx("open"); renderSlots("load"); };
 $("#btnExport").onclick = () => { let best = null; for (let i = 1; i <= SLOTS; i++) { const x = loadSlot(i); if (x && (!best || (x.savedAt || 0) > (best.savedAt || 0))) best = x; }
   if (!best) return toast("Kayıt yok"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(best)], { type: "application/json" })); a.download = "coffebean-kayit.json"; a.click(); };
@@ -1647,7 +1773,7 @@ window.addEventListener("resize", () => { if (S) { sceneInsets(); renderScene(0)
 function latestSlot() { let best = 0, t = -1; for (let i = 1; i <= 3; i++) { const x = loadSlot(i); if (x && !x.bankrupt && (x.savedAt || 0) > t) { t = x.savedAt || 0; best = i; } } return best; }
 function refreshMenu() { try { $("#btnContinue").disabled = !anySlot(); const i = latestSlot(), r = $("#btnResume"), n = $("#btnNew");
     if (i) { const x = loadSlot(i); r.style.display = ""; $("#resumeInfo").textContent = `Yuva ${i} · ${weekday(x.day)} · Gün ${x.day} · ₺${tl(x.money)}`; n.classList.remove("pri"); }
-    else { r.style.display = "none"; n.classList.add("pri"); } } catch (e) {} $("#menuVer").textContent = "Sürüm " + D.version; }
+    else { r.style.display = "none"; n.classList.add("pri"); } } catch (e) {} $("#menuVer").textContent = "Sürüm " + D.version; const ft = $("#btnFlow"); if (ft) ft.style.display = cheatOn() ? "" : "none"; }
 $("#btnResume").onclick = () => { const i = latestSlot(); if (!i) return refreshMenu(); const x = loadSlot(i); AUDIO.sfx("open"); begin(x, i); };
 // §12 otomatik kayıt: tarayıcı kapanırken / sekme gizlenirken
 window.addEventListener("pagehide", () => save());

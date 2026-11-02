@@ -7,8 +7,12 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.41)
+## Bekleyen paket (son yayın: v0.42)
 (boş)
+
+## v0.42 – YAYINLANDI (2 Kasım 2026, kullanıcı "tutorial düzenlendikten sonra ikisini de yap paket çık")
+- Tasarım §15 (Claude Docs rev 169 + HTML). Öğretici: `day.opening` (takeOrder kapalı) → `showMachineOn(next, tut)` → `showCalibration(next, tut)` (kayma hep coarse, yanlışta tekrar) → `D.tutorial.openDone`; öğretici dozlama kaydırarak (`inc()`, `o.frozen` + `doseNow/doseEarly`); servis sonrası `D.tutorial.midday`; kapanış `closingTut()` (gün 1, "closing" öğretilmemiş): `closeIntro` modalı → kira → defterde `tutnote` + Temizle zorunlu (Vazgeç yok) → `done` vedası → Tedarik. Dersler: `lesson(key)` + `lessonQ/pumpLessons` (modal, `L:` önekli `S.taught`), adım dersleri `stepLessonKey/stepLessonHTML/lessonGate` (`mg:` önekli; `window.CB_LESSON` saati durdurur; renderBench/hideSheet/startDay sıfırlar). Eski kayıt göçü `S.lessonMig`. `D.lessons` (13 pencere + 5 adım dersi). Akış testi: `FLOWS` (A1–A23 + M1–M53, `pressure` hiçbir tarifte olmadığı için listede yok), `tsState/tsBegin/tsDay/tsCust/tsStep`, deneme kaydı yuva 0 (`curSlot = 0`), `CB_TEST_WEATHER`, `CB_TEST_NOOPEN`; menüde `#btnFlow` yalnız `cheatOn()`.
+- Kontrol (kullanıcı hata bildirdi, Kural 7 istisnası): telefon denetimi yeni öğretici akışına uyarlandı (açılış, kaydırarak doz, seçim dersi, adım dersi, kapanış + zorunlu temizlik); 375×667 ve 320×568'de 74 ekran, 0 ihlal. 76 akış testi Playwright ile tek tek açıldı: JS hatası yok, mini oyunların hepsi dersle açılıyor.
 
 ## v0.41 – YAYINLANDI (2 Kasım 2026, kullanıcı "yap bunu paket çık" dedi)
 - Telefonu sallayarak çalkala, tasarım §14.18 (Claude Docs + HTML). Kod: `MOTION` (game.js, LSG'nin altında): `devicemotion` ivmesinde (x/y, yerçekimsiz yoksa alçak geçiren süzgeç) |a|>6 m/s² ve yön değişimi, en az 110 ms arayla = bir kaydırma vuruşu; `MOTION.bind(el,o,f)` uiAct `act:"shake"` ve doz `phase:"shake"` için; her adımda `uiZone` başında `MOTION.fn=null`; iOS `DeviceMotionEvent.requestPermission` adımdaki "📱 Telefonu sallayarak yap" düğmesi / Ayarlar `cb_motion` anahtarı ile; izin bir kez verildiyse (`cb_motionok`) sonraki açılışta ilk dokunuşta sessizce istenir. Kural 7: test yok, yalnız sözdizimi kontrolü.

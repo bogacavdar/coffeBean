@@ -1,5 +1,19 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.42 – 2 Kasım 2026 (öğretici düzeltmesi + akış testi)
+- **Yıldız Teyze artık bütün ilk günü öğretiyor:**
+  - **Açılış:** Sabah makineyi açmayı (Su → Isıt → Basınç) ve kalibrasyonu (hızlı akan shot → Daha ince) anlatıyor. Yanlışta açıklayıp tekrar sorduruyor.
+  - **Espresso:** Sonra espressoyu öğretiyor. Dozlama artık gerçek oyundaki gibi kaydırarak yapılıyor.
+  - **Kapanış:** Öğlen "akşam kapanışta yanındayım" deyip çıkıyor. Gün bitince kirayı, gün defterini ve makine temizliğini gösteriyor (temizlemeden Devam açılmıyor).
+  - **Veda:** Ardından vedalaşıp gidiyor.
+- **İlk kez karşılaşılan her mekanikte ders:**
+  - **Hazırlama adımları:** Bir adım ilk kez oynanırken nasıl yapıldığı yazıyor. Anladım'a basılana kadar adım başlamıyor; saat ve müşteri sabrı bekliyor.
+  - **Kendi dersi olan durumlar:** sipariş seçimi, ekstralar, kirli makine, hava, yoğun saat, eleştirmen, turist, fenomen, yarışma günü, sadık müşteri, önden öğütme, çift grup, süt iki aşama, latte art çizimi, ölçeksiz Türk kahvesi köpüğü.
+- **Akış testi (hile modu):**
+  - Ana menüde "🧪 Akış testi" düğmesi var. 23 akış (A1–A23) ve 53 mini oyun (M1–M53) tek tek açılabiliyor.
+  - Her test ayrı bir deneme kaydında çalışıyor; kayıt yuvaların değişmiyor.
+  - Geri bildirimi kodla verebilirsin (ör. "A3: …").
+
 ## v0.41 – 2 Kasım 2026 (telefonu sallayarak çalkala)
 - **Telefonu salla:** sağa-sola kaydırılan her adım (dozlama, shaker, kakao serpme, dabara-tumbler, tarçın serpme) artık telefonu sağa-sola sallayarak da yapılabiliyor. Her yön değişimi bir kaydırma vuruşu sayılıyor; kaydırma da çalışmaya devam ediyor.
 - **iPhone'da izin:** iPhone hareket sensörü için izin istiyor. Adımda çıkan "📱 Telefonu sallayarak yap" düğmesine ya da Ayarlar'daki anahtara bir kez dokunmak yeterli; sonraki açılışlarda ilk dokunuşta kendiliğinden açılıyor. Android'de izin gerekmiyor.

@@ -135,7 +135,13 @@ async function run(size) {
     await click('#btnNew'); await check('slots');
     await click('[data-act="new"][data-i="1"]'); await check('zorluk');
     await click('[data-diff="normal"]'); await check('giris_teyze');
-    await clickText('Devral'); await sleep(700); await check('sahne_teyze');
+    await clickText('Devral'); await sleep(900);
+    const mbtn = async l => { await page.evaluate(l => { const b = [...document.querySelectorAll('#ovModal.on button')].find(x => x.textContent.trim() === l); if (b) b.click(); }, l); await sleep(350); };
+    // v0.42 açılış dersi: makineyi aç → kalibrasyon (önce yanlış) → hazır
+    await waitFor(() => document.querySelector('#ovModal').classList.contains('on')); await check('acilis_makine');
+    await mbtn('Isıt'); await check('acilis_makine_yanlis'); for (const l of ['Su', 'Isıt', 'Basınç']) await mbtn(l);
+    await check('acilis_kalibrasyon'); await mbtn('Böyle kalsın'); await check('acilis_kalibrasyon_yanlis'); await mbtn('Daha ince');
+    await check('acilis_hazir'); await mbtn('Tamam'); await sleep(400); await check('sahne_teyze');
     if (!await tapCustomer()) throw new Error('Yıldız Teyze tıklanamadı');
     await sleep(400); await check('tut_ogut_anladim');
     // öğütme
@@ -145,8 +151,10 @@ async function run(size) {
     await page.locator(zB).dispatchEvent('pointerdown'); await sleep(800);
     // dozlama
     await waitFor(() => !!document.querySelector('#tutOk')); await check('tut_doz_anladim'); await click('#tutOk');
-    { const b = await page.locator(zB).boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down();
-      await waitFor(() => /Şimdi bırak/.test(document.querySelector('#tut').textContent)); await check('tut_doz_birak'); await page.mouse.up(); }
+    { await click(zB); await check('tut_doz_erken');   // v0.42 öğreticide dozlama kaydırarak
+      const cb = await page.locator('#closeup').boundingBox(); await page.mouse.move(cb.x + cb.width * .3, cb.y + cb.height / 2); await page.mouse.down();
+      for (let j = 0; j < 40 && !(await page.evaluate(() => /Tam 18 gram/.test(document.querySelector('#tut').textContent))); j++) await page.mouse.move(cb.x + cb.width * (j % 2 ? .3 : .7), cb.y + cb.height / 2, { steps: 4 });
+      await page.mouse.up(); await check('tut_doz_tamam'); await click(zB); }
     await sleep(800);
     // temperleme
     await waitFor(() => !!document.querySelector('#tutOk')); await check('tut_temper_anladim'); await click('#tutOk');
@@ -165,7 +173,7 @@ async function run(size) {
     await waitFor(() => { const d = CEKIRDEK.day(); const q = d && d.customers.filter(c => !c.ordered && !c.leaving); return q && q[0] && q[0].say && !q[0].moving; }, null, 25000);
     await page.evaluate(() => { const d = CEKIRDEK.day(); d.nextSpawn = d.t + 0.5; });   // ikinci müşteri sıraya (şerit için)
     await sleep(1500); await check('sahne_musteri_balon');
-    await tapCustomer(); await check('secim');
+    await tapCustomer(); await sleep(400); await check('ders_secim'); await mbtn('Anladım'); await check('secim');
     if (await page.evaluate(() => { const x = document.querySelector('#sheetX'); return x && getComputedStyle(x).display !== 'none'; })) {
       await click('#sheetX'); await check('panel_kapali_siparis_bekliyor');
       const pt = await page.evaluate(() => { const d = CEKIRDEK.day(), id = d.orders[0].cust.id; for (let y = 60; y < innerHeight - 20; y += 6) for (let x = 10; x < innerWidth - 10; x += 6) if (SCENE.hitTest(x, y) === id) return { x: x + 6, y: y + 20 }; return null; });
@@ -179,6 +187,7 @@ async function run(size) {
     const playSteps = async (tagp) => {
       for (let k = 0; k < 8; k++) {
         if (await page.evaluate(() => !!document.querySelector('#rvServe'))) return;
+        if (await page.evaluate(() => !!document.querySelector('#lesOk'))) { await check(tagp + '_ders'); await click('#lesOk'); }
         const t = await page.evaluate(() => (document.querySelector('#zB') || {}).textContent || '');
         if (/ÖĞÜT|BASTIR/.test(t)) { await page.locator(zB).dispatchEvent('pointerdown'); }
         else if (/BASILI/.test(t)) { const b = await page.locator(zB).boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await sleep(1400); await check(tagp + '_doz_basili'); await page.mouse.up(); }
@@ -205,10 +214,15 @@ async function run(size) {
     // günü bitir
     await page.evaluate(() => { const d = CEKIRDEK.day(); d.t = 149.5; d.toSpawn = 0; d.customers.forEach(c => { if (c.patienceMax) c.patience = 0.01; }); });
     await waitFor(() => document.querySelector('#ovLedger').classList.contains('on'), null, 20000); await sleep(400);
+    await check('kapanis_teyze'); await mbtn('Tamam'); await sleep(300);
     await check('kira');
     await click('#rentNext'); await check('kapanis');
     await page.evaluate(() => { const c = document.querySelector('#ledgerCard'); c.scrollTop = c.scrollHeight; }); await check('kapanis_alt');
-    await click('#ledgerOk'); await sleep(300);
+    if (!await page.evaluate(() => document.querySelector('#ledgerOk').disabled)) throw new Error('ilk gün temizlemeden Devam açık');
+    await click('#cleanBtn'); await check('temizlik_teyze');
+    for (let j = 0; j < 3; j++) { await page.evaluate(() => document.querySelector('#bfGo').click()); await sleep(1150); }
+    await page.evaluate(() => { const c = document.querySelector('#ledgerCard'); c.scrollTop = c.scrollHeight; }); await check('kapanis_temiz');
+    await click('#ledgerOk'); await sleep(300); await check('teyze_veda_aksam'); await mbtn('Devam'); await sleep(300);
     if (await page.evaluate(() => document.querySelector('#ovModal').classList.contains('on'))) { await check('gazete'); await clickText('Devam'); }
     await check('tedarik');
     await page.evaluate(() => { const c = document.querySelector('#shopCard'); c.scrollTop = c.scrollHeight / 2; }); await check('tedarik_orta');
@@ -220,7 +234,7 @@ async function run(size) {
     await click('#hubNext'); await check('fiyatlar');
     await click('[data-pu]'); await check('fiyatlar_arti');
     await click('#prNext'); await sleep(900);
-    for (const lb of ['Su', 'Isıt', 'Basınç', 'Böyle kalsın']) { await page.evaluate(l => { const b = [...document.querySelectorAll('#ovModal.on button')].find(x => x.textContent.trim() === l); if (b) b.click(); }, lb); await sleep(350); }   // v0.40 sabah açılışı + kalibrasyon
+    for (const lb of ['Su', 'Isıt', 'Basınç', 'Böyle kalsın', 'Anladım', 'Anladım']) { await page.evaluate(l => { const b = [...document.querySelectorAll('#ovModal.on button')].find(x => x.textContent.trim() === l); if (b) b.click(); }, lb); await sleep(350); }   // v0.40 sabah açılışı + kalibrasyon
     await check('gun2_sahne');
     await click('#icBook'); await check('defter'); await page.evaluate(() => { const c = document.querySelector('#bookCard'); c.scrollTop = c.scrollHeight; }); await check('defter_alt'); await page.evaluate(() => document.querySelector('#bookX').click()); await sleep(200);
     await click('#icSettings'); await check('ayarlar'); await page.evaluate(() => document.querySelector('#setX').click()); await sleep(200);
