@@ -1,5 +1,67 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.33 – 2 Kasım 2026 (dükkan ekrana sığıyor)
+- **Telefonu dik tutunca dükkanın tamamı görünüyor.** Duvar tabelası, raflar, tezgâh, vitrin, kapı ve masalar ekranın genişliğine göre ölçeklenir.
+- Sağdaki düğme sütununun üstünde yer varsa dükkan oraya, tam genişlikte yerleşir. Yoksa sütunun soluna sığar.
+- Dükkanın altında kalan alan zeminle dolu, boş bir arka plan görünmez.
+- Dükkan küçülünce bile sipariş rozeti, müşteri adı ve konuşma balonu okunur boyda kalır. Müşteriye dokunma alanı parmak büyüklüğünde.
+- HUD'un altındaki bildirim bandı boş bırakıldı; bildirimler konuşma balonlarının üstüne binmiyor.
+- Uçuşan efektler (ör. kırık fincan) artık balon yazısının altında çiziliyor.
+- Hazırlama ekranında bildirim alttaki "Sırada bekleyenler" şeridinde çıkınca şeridin yazısı geçici olarak gizleniyor; iki yazı birbirine karışmıyor.
+
+## v0.32 – 2 Kasım 2026 (gün başlamıyor)
+- **Tedarik'te takılıp kalma düzeltildi.** Çekirdek ya da bardak en az miktarın altına düşünce "Devam" sönük kalıyordu. Üstteki kırmızı "EKSİK" kutuları düğme gibi görünüyor ama basınca hiçbir şey olmuyordu. Satın alma düğmeleri listenin çok aşağısındaydı ve her alımdan sonra liste başa zıplıyordu. Telefonda bu, günün hiç başlamaması gibi görünüyordu.
+- Eksik varken alttaki ana düğme artık **"Eksikleri al · ₺…"**. Tek dokunuşla yalnızca gereken kadarını alır, sonra düğme "Devam →" olur. Para yetmezse ne yapılacağı yazar (Kredi al).
+- Eksik listesi artık düğmeye benzemeyen bir uyarı kutusu ve sayılar Türkçe virgüllü ("0,3 kg").
+- Tedarik'te bir şey satın alınca liste başa zıplamıyor.
+
+## v0.31 – 2 Kasım 2026 (sahnede yanıp sönme)
+- **Sipariş rozetleri, müşteri adları ve konuşma balonları artık yanıp sönmüyor.** v0.30'da üst üste binmesinler diye gizleniyorlardı; ama müşteriler yürüyüp birbirinin önünden geçerken her karede gizlenip yeniden çıkıyorlardı.
+- Ekranda zaten görünen bir şey yerini korur ve ondan önce yerleşir.
+- Gizlenen bir şey ancak yeri yarım saniye boş kalınca geri gelir, o zaman da yumuşakça belirir.
+- Yürüyen müşterinin rozeti ve adı gösterilmez; müşteri durduktan kısa süre sonra belirir. Sıra ilerlerken de ekran sakin kalır.
+- Yeni gelen tepki balonu ("Berbat olmuş, kalsın." gibi) yine hemen gösterilir.
+- Ölçüm: dik telefonda kalabalık sırada 48 saniyede çok kısa süreli (0,3 saniyeden kısa) gizlenip çıkma sayısı 320 px ekranda 66'dan 0'a, 375 px ekranda 11'den 0'a indi. Hiçbir şey üst üste binmiyor.
+
+## v0.30 – 1 Kasım 2026 (telefon dikey düzeni)
+Telefonu dik tutunca görülen tüm düzen hataları düzeltildi. Bilgisayar ve yatay ekran düzeni aynı kaldı; oyun dengesi (fiyat, süre, puan, sabır, renkli bölgeler) değişmedi.
+
+### Artık hiçbir düğme kaybolmuyor
+- **Yıldız Teyze'nin "Anladım" düğmesi** balonun içinde gizli kalıyordu; artık ana düğmenin yerinde, aynı büyüklükte duruyor. İlk dakikada takılıp kalma sorunu bitti.
+- **Hazırlama ekranı ekrana sığıyor:** ÖĞÜT, BASILI TUT, BAŞLAT/DURDUR, BASTIR, Teslim et ve Yeniden yap düğmeleri kaydırmadan görünüyor. Yakın plan çizimi kalan alana göre küçülüyor.
+- **Gün sonu pencerelerinde** (Kira, Gün kapanışı, Tedarik, Dükkan, Fiyatlar) düğme satırı kartın altında sabit: "Devam", "Kirayı öde", "Günü başlat" hep görünüyor. Birincil düğme en üstte ve tam genişlikte. (Yatay telefonda da düğme satırı artık sabit.)
+- **Fiyatlar:** [−₺5] [₺84] [+₺5] tek satıra sığıyor; fiyat kutusunda ₺ işareti var. "+₺5" artık ekran dışında değil.
+- Çıkış düğmesi hazırlama ekranını örtmüyor (ekran açıkken gizleniyor; kapatmak için sağ üstte ✕ var). Alttaki "Sırada bekleyenler" şeridi hazırlama ekranının hiçbir yerini örtmüyor.
+
+### Siparişi okumak kolay
+- Seçim ve hazırlama ekranının en üstünde müşterinin **istediği** sipariş (içecek, boy, varsa çekirdek/süt/şeker) ve sabır çubuğu büyük yazıyor. "Sağ üstteki karttan oku" yazısı telefonda kalktı.
+- Yanlış seçimde birincil düğme **Yeniden yap**, "Teslim et" ikinci planda. Malzeme gram ile yazıyor: "−18 g çekirdek".
+
+### Daha sade ekran
+- Üst bilgi iki kısa satır: gün · saat, para, itibar, yıldızlar. Kira yalnızca yaklaşınca, borç ve seri yalnızca varsa görünüyor. Saat hiçbir telefonda kesilmiyor.
+- Kamera tezgâhı, baristayı ve sırayı üst bilginin altındaki boş alana kadrajlıyor.
+- **Konuşma balonu yeniden tasarlandı:** kart ve pencerelerle aynı aileden krem zemin, ince kahve kenar, yuvarlak köşe ve hafif gölge. Genişliği sahnenin en fazla %62'si, yazı en az 12–13 px ve en fazla 2 satır (çok uzun cümleler bölünerek 3 satıra iner, kesilmez). Kuyruk konuşan kişinin başına bakıyor; balon kenara kaydırılsa da kuyruk kişide kalıyor. Balon başın biraz üstünde duruyor, HUD'un altında ve sağdaki ikonların solunda kalıyor. Kısa bir belirme animasyonu var; titremiyor. Sabır halkası balonun içinde sağda.
+- Konuşma balonları ekrandan taşmıyor. İki müşteri aynı anda konuşursa balonlar üst üste binmiyor: yer varsa yan yana duruyor, yoksa önce en yeni tepki ("Berbat olmuş, kalsın.") gösteriliyor, birkaç saniye sonra sipariş cümlesi geri geliyor.
+- Sipariş rozetleri (fincan + sabır halkası) ve müşteri adları balonların, birbirlerinin ve sağdaki ikon sütununun üstüne binmiyor; yer yoksa öndeki müşterininki gösteriliyor.
+- "Yuva seç" ekranında düğme metnin altına indi; "Boş yuva / Henüz kayıt yok" tek satırda.
+- Bildirimler kısa ("Yaşlı teyze · Espresso · ₺84 · Güzel") ve üst bilginin ya da açık pencerenin üstüne binmiyor. İlk açılışta aynı anda tek talimat var.
+- Yıldız Teyze'nin anlatımları kısaldı (1–2 cümle) ve balon sabit boyda; ekran zıplamıyor. Çekme süresi her yerde aynı: "yaklaşık 27 saniye".
+- Yakın plan çiziminde telefonda okunmayan küçük yazılar ve küçük hedef göstergesi gizlendi; süre ve gram büyük yazıyor.
+- Tedarik, Dükkan ve Fiyatlar telefonda tablo yerine kart: üstte resim + ad + stok, altta fiyat ve tam genişlik düğme. Açıklamalar kısaldı. Dükkan sekmeleri 2×2.
+- Gün kapanışı sırası düzeldi: Satış, Bahşiş, Alımlar, Kira, Maaş, sonra **Günün neti**.
+- Kahve Defteri'nde kilitli tarifler tek özet satırı ("??? 81 kilitli tarif · sıradaki: 3 kahve daha sat").
+- Kira ekranında para yetiyorsa "Kredi çek" gösterilmiyor (Tedarik ve Dükkan › Krediler'de duruyor).
+- Zorluk penceresinde her zorluğun başlangıç parası yazıyor; açıklamalar sade.
+- Ana menüde fincan resmi telefonda Çıkış düğmesine binmiyor.
+- Ayarlar'da teknik ekran kartı adı yerine kısa açıklama.
+- Sayılar Türkçe yazılıyor: 0,95 kg, ×1,00, 26,7 sn.
+
+### Hata düzeltmeleri
+- Gün bitince arkada açık kalan inceleme ekranı kapanıyor; gün sonu boyunca üst bilgi kapanan günü ve "Kapanış" yazıyor.
+- Dükkan kapalıyken yanlış "Hazır olunca aç" yazısı (ilk günde düğme yokken) kaldırıldı.
+- Kalite çok düşükken sonuç yazısı ("%0 · Berbat") kırmızı kutuya bürünüp okunmuyordu, düzeldi.
+- Nadiren dükkan sahnesinin çizilememesine yol açan bir hata (müşteri tam yerinde dururken) düzeltildi.
+
 ## v0.29 – 1 Kasım 2026
 - Barlı tüm adımlarda (öğütme, dozlama, ekstraksiyon, süt köpürtme, sıcak su, latte art) yakın plan çiziminde de küçük bir hedef göstergesi var: alttaki büyük çubuğun aynı sarı / açık yeşil / koyu yeşil bölgeleri ve ibre. Ekstraksiyondaki gösterge artık sabit ±2 g yerine gerçek renkli bölgeleri gösteriyor.
 

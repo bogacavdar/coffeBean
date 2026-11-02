@@ -12,6 +12,59 @@ window.SCENE = (() => {
   let Q = QUALITY.high, acc = 0;
   function init(canvas, gpu = true) { cv = canvas; ctx = cv.getContext("2d", gpu ? { alpha: false, desynchronized: true } : { alpha: false, willReadFrequently: true }); }
   function setQuality(q) { Q = QUALITY[q] || QUALITY.high; }
+  let INS = { top: 0, right: 0 };                                                            // v0.30: dikey telefonda HUD'un alt kenarı (kamera ve balonlar bunun altında kalır)
+  function setInsets(o) { INS = Object.assign({ top: 0, right: 0 }, o || {}); }
+  let bubbles = [], over = [], placed = [], heads = [];                                       // v0.30: balon/rozet/etiket adayları ve çizilenlerin kutuları (test/denetim için)
+  // v0.30: konuşma balonu, sipariş rozeti ve ad etiketi birbirinin üstüne binmez; hepsi [8, W − ikon sütunu − 8] içinde kalır.
+  // Öncelik sırasıyla yerleştirilir; balon çakışırsa yukarı/aşağı kaydırılır, yer yoksa (rozet/etiket) o kare çizilmez.
+    const clamp01 = v => Math.max(0, Math.min(1, v || 0));
+  // v0.31: yanıp sönme önleyici. Önceki karede görünen balon/rozet/etiket önce yerleşir (yerini korur).
+  // Gizlenen bir şey ancak REAPPEAR ms boyunca kesintisiz yer bulursa geri gelir ve yumuşakça belirir.
+  // Böylece müşteriler yürürken birbirinin önünden geçince hiçbir şey kare kare yanıp sönmez; çakışma da olmaz.
+  const vis = new Map(), REAPPEAR = 450, FADE = 160;
+  function layoutOverlays() {
+    const portrait = W < H, X0 = 8, X1 = W - 8, Y0 = (portrait ? INS.top : 0) + 4, Y1 = H - 8, now = performance.now();
+    const ICO = portrait && INS.right ? { x: W - INS.right - 6, y: (INS.iconTop || 0) - 6, w: INS.right + 6, h: H } : null;   // v0.32: yalnız ikon sütununun kendisi yasak
+    const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    const inside = r => r.x >= X0 - .5 && r.x + r.w <= X1 + .5 && r.y >= Y0 - .5 && r.y + r.h <= Y1 + .5 && !(ICO && hit(r, ICO));
+    const free = r => inside(r) && !placed.some(p => hit({ x: r.x - 3, y: r.y - 3, w: r.w + 6, h: r.h + 6 }, p));
+    const order = { bubble: 0, badge: 1, label: 2 }, seen = new Set();
+    over.forEach(o => { o.key = (o.kind === "bubble" ? "B" + o.id + "|" + o.text : (o.kind === "badge" ? "G" : "L") + o.id);
+      let m = vis.get(o.key); if (!m) { m = { shown: false, everShown: false, freeSince: null, t0: now, dx: null, k: 0, off: null }; vis.set(o.key, m); } o.m = m; seen.add(o.key); });
+    const tier = o => (o.kind === "bubble" && o.react ? 0 : o.m.shown ? 1 : 2);   // yeni tepki balonu > zaten görünen > yeni gelen
+    over.sort((a, b) => order[a.kind] - order[b.kind] || tier(a) - tier(b) || a.pr - b.pr).forEach(o => {
+      const m = o.m; let r = null;
+      if (o.kind === "bubble") {
+        const cx = x => Math.max(X0, Math.min(X1 - o.w, x)), tipY = o.headTop - 4;
+        const box = (x, k) => { const y = Math.max(Y0, o.y - k * (o.h + o.tailH + 8)), tip = o.sx;   // balon + kuyruk birlikte tek kutu
+          return { x: Math.min(x, tip - 6), y, w: Math.max(x + o.w, tip + 6) - Math.min(x, tip - 6), h: Math.max(y + o.h, tipY) - y, bx: x, k }; };
+        const cands = []; if (m.dx != null) cands.push([cx(o.sx + m.dx), m.k]);
+        cands.push([cx(o.sx - o.w / 2), 0]); placed.forEach(p => { cands.push([cx(p.x - 8 - o.w), 0], [cx(p.x + p.w + 8), 0]); }); cands.push([cx(o.sx - o.w / 2), 1]);
+        const noHead = b => !heads.some(hd => hd.id !== o.id && hit(b, hd));
+        for (const strict of [true, false]) { for (const [x, k] of cands) { const b = box(x, k); if (o.sx < x - 30 || o.sx > x + o.w + 30) continue; /* kuyruk konuşanın başına uzanabilmeli */ if (free(b) && (!strict || noHead(b))) { r = b; break; } } if (r) break; }
+      } else {
+        const offs = o.kind === "badge" ? [[0, 0], [14, 0], [-14, 0], [28, 0], [-28, 0], [0, -14], [20, -14], [-20, -14]] : [[0, 0]];   // rozet çakışırsa biraz kayar, yine olmazsa çizilmez
+        if (o.kind === "badge") placed.forEach(p => [p.x + p.w + 6 - o.x, p.x - 6 - o.w - o.x].forEach(dx => { if (Math.abs(dx) <= 56) offs.push([dx, 0]); }));
+        if (m.off) offs.unshift(m.off);                                            // önceki karedeki kaymayı koru (zıplamasın)
+        for (const [dx, dy] of offs) { const t = { x: o.x + dx, y: o.y + dy, w: o.w, h: o.h, off: [dx, dy] }; if (free(t)) { r = t; break; } }
+      }
+      if (!r) { m.shown = false; m.freeSince = null; return; }                     // yer yok: gizle (çakışma olmaz)
+      if (!m.shown) {                                                              // gizliydi: yer kesintisiz REAPPEAR ms boş kalmadan geri gelme
+        if (m.everShown && !(o.kind === "bubble" && o.react)) { if (m.freeSince == null) m.freeSince = now; if (now - m.freeSince < REAPPEAR) return; }
+        m.shown = true; m.everShown = true; m.t0 = now; m.freeSince = null;
+      }
+      const a = clamp01((now - m.t0) / (o.kind === "bubble" ? 150 : FADE));
+      if (o.kind === "bubble") {
+        m.dx = r.bx - o.sx; m.k = r.k; o.draw(r.bx, r.y, a);
+        placed.push({ kind: "bubble", id: o.id, text: o.text, x: r.x, y: r.y, w: r.w, h: r.h }); bubbles.push({ x: r.bx, y: r.y, w: o.w, h: o.h, text: o.text, lines: o.nl, fsz: o.fsz, sx: o.sx, alpha: a });
+      } else {
+        m.off = r.off; ctx.save(); ctx.globalAlpha = a; o.draw(r.x, r.y); ctx.restore();
+        placed.push({ kind: o.kind, id: o.id, text: o.text, x: r.x, y: r.y, w: r.w, h: r.h });
+      }
+    });
+    vis.forEach((v, k) => { if (seen.has(k)) v.last = now; else if (now - (v.last || v.t0) > 1500) vis.delete(k); });
+    over = [];
+  }
   function size() {
     const dpr = Math.min(Q.maxDpr, window.devicePixelRatio || 1) * Q.scale; const w = cv.clientWidth, h = cv.clientHeight;
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
@@ -19,9 +72,17 @@ window.SCENE = (() => {
     if (W >= H) {                                                                  // §11 yatay ekran: tüm dükkan kadrajda (vitrin, kapı, tabelalar, masalar)
       TW = Math.min(84, W / 18.5, (H - 30) / 13.6); TH = TW / 2;
       OX = W / 2 - TW * .6; OY = (H - 13.6 * TW) / 2 + 5.4 * TW + 20;          // üstte duvar (~z 200), altta zeminin ön köşesi
-    } else {                                                                       // dik telefon: tezgâh ve sıra bölgesine yakın
-      TW = Math.min(84, W / (COLS + ROWS) * 2.1, H / (COLS + ROWS) * 4.2); TH = TW / 2;
-      OX = W / 2; OY = H * 0.5 - (COLS + ROWS) * TH / 2 + 30;
+    } else {                                                                       // dik telefon (v0.32): TÜM dükkan ekrana sığar (duvar tabelası, tezgâh, vitrin, kapı, masalar)
+      // dükkanın ilgi kutusu (OX/OY'ye göre, TW biriminde): yatayda −8,4…+10,4 · dikeyde −3,7 (tabela tepesi) … +9,3 (ön masalar)
+      const BX0 = 8.4, BW = 18.8, BY0 = 3.7, BH = 13.0;
+      const top = Math.max(0, INS.top) + 52, bot = H - 52, R = INS.right || 0, iTop = INS.iconTop || H;   // HUD + altındaki bildirim (toast) bandı boş kalır
+      const fit = (x0, x1, y0, y1) => ({ tw: Math.min(70, (x1 - x0) / BW, (y1 - y0) / BH), x0, x1, y0, y1 });
+      const A = fit(8, W - 8, top, Math.min(bot, iTop - 6));                        // ikon sütununun üstünde, tam genişlik
+      const B = fit(8, W - R - 6, top, bot);                                        // ikon sütununun solunda, tam yükseklik
+      const f = A.tw >= B.tw ? A : B;
+      TW = Math.max(12, f.tw); TH = TW / 2;
+      OX = f.x0 + BX0 * TW + ((f.x1 - f.x0) - BW * TW) / 2;
+      OY = f.y0 + BY0 * TW + Math.max(0, ((f.y1 - f.y0) - BH * TW) * .5);          // boş alanın ortasında
     }
   }
   const iso = (x, y, z = 0) => [OX + (x - y) * TW, OY + (x + y) * TH - z * (TW / 40)];
@@ -57,7 +118,7 @@ window.SCENE = (() => {
 
   const CLEN = lv => lv >= 3 ? 7 : lv === 2 ? 6 : 5;            // §11 tezgâh dükkanla büyür
   function room(L, st = {}) {
-    const lv = st.level || 1, EX = 10;
+    const lv = st.level || 1, EX = W < H ? 30 : 10;   // v0.32: dik ekranda dükkan küçülünce zemin ekranın altına kadar uzansın
     for (let y = 0; y < ROWS + EX; y++) for (let x = 0; x < COLS + EX; x++) {   // meşe tahtalar
       const c = PAL.oak[(x * 3 + y * 5) % 3]; const dark = 1 - Math.min(1, (x + y) / (COLS + ROWS)) * .22 - (x >= COLS || y >= ROWS ? .06 : 0);
       poly([iso(x, y), iso(x + 1, y), iso(x + 1, y + 1), iso(x, y + 1)], shade(c, dark));
@@ -488,28 +549,51 @@ window.SCENE = (() => {
     ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(sx, sy - 58 * s, 9.5 * s, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = (c.type === "nejla" || c.type === "elder") ? "#d9d4cc" : c.type === "student" ? "#6b4a2a" : "#3a2a22"; ctx.beginPath(); ctx.arc(sx, sy - 61 * s, 9.5 * s, Math.PI, Math.PI * 2); ctx.fill();
     if (active) { ctx.strokeStyle = "#ffd89a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(sx, sy + 2, 19 * s, 9 * s, 0, 0, Math.PI * 2); ctx.stroke(); }
-    // §7 konuşma baloncuğu: yalnızca öndeki müşteri sorar; fiyat tepkisi ("Çok pahalı!", "Ne kadar ucuz!")
-    const sayTxt = c.say && (!c.sayUntil || performance.now() < c.sayUntil) ? c.say : null;
-    if (sayTxt) {
-      ctx.font = `600 ${12 * s}px system-ui`; const tw = ctx.measureText(sayTxt).width, bw = tw + 22 * s + (c.patienceMax && !c.leaving ? 22 * s : 0), bh = 28 * s, by = sy - 96 * s;
-      const bad = /pahalı/i.test(sayTxt), good = /ucuz/i.test(sayTxt);
-      ctx.fillStyle = bad ? "#fbe3dc" : good ? "#e6f3dc" : "rgba(255,255,255,.97)"; ctx.shadowColor = "rgba(0,0,0,.25)"; ctx.shadowBlur = 6; rr(sx - bw / 2, by - bh / 2, bw, bh, 10 * s); ctx.fill(); ctx.shadowBlur = 0;
-      ctx.beginPath(); ctx.moveTo(sx - 5 * s, by + bh / 2); ctx.lineTo(sx, by + bh / 2 + 8 * s); ctx.lineTo(sx + 5 * s, by + bh / 2); ctx.fill();
-      ctx.fillStyle = bad ? "#9c3a26" : good ? "#3f6b2c" : "#2b2117"; ctx.textAlign = "left"; ctx.fillText(sayTxt, sx - bw / 2 + 11 * s, by + 4 * s);
-      if (c.patienceMax && !c.leaving) { const p = c.patience / c.patienceMax, rx = sx + bw / 2 - 14 * s; ctx.lineWidth = 3.5 * s; ctx.strokeStyle = "rgba(0,0,0,.1)"; ctx.beginPath(); ctx.arc(rx, by, 7 * s, 0, Math.PI * 2); ctx.stroke();
-        ctx.strokeStyle = p < .3 ? "#b5533c" : p < .6 ? "#c9962b" : "#6f7d4a"; ctx.beginPath(); ctx.arc(rx, by, 7 * s, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); ctx.stroke(); }
-    } else if (!c.leaving || c.angry) {
-      const by = sy - 96 * s, p = c.patienceMax ? c.patience / c.patienceMax : 1; const bw = 48 * s, bh = 34 * s;
-      ctx.fillStyle = c.angry ? "#f3d9d4" : "rgba(255,255,255,.97)"; ctx.shadowColor = "rgba(0,0,0,.25)"; ctx.shadowBlur = 6; rr(sx - bw / 2, by - bh / 2, bw, bh, 9 * s); ctx.fill(); ctx.shadowBlur = 0;
-      ctx.beginPath(); ctx.moveTo(sx - 5 * s, by + bh / 2); ctx.lineTo(sx, by + bh / 2 + 8 * s); ctx.lineTo(sx + 5 * s, by + bh / 2); ctx.fill();
-      if (c.angry) { ctx.fillStyle = "#b5533c"; ctx.font = `600 ${14 * s}px system-ui`; ctx.textAlign = "center"; ctx.fillText("✖", sx, by + 5 * s); }
-      else { cupIcon(sx - 9 * s, by + 1 * s, 11 * s, c.drink);
-        if (c.patienceMax) { ctx.lineWidth = 4 * s; ctx.strokeStyle = "rgba(0,0,0,.1)"; ctx.beginPath(); ctx.arc(sx + 12 * s, by, 8 * s, 0, Math.PI * 2); ctx.stroke();
-          ctx.strokeStyle = p < .3 ? "#b5533c" : p < .6 ? "#c9962b" : "#6f7d4a"; ctx.beginPath(); ctx.arc(sx + 12 * s, by, 8 * s, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); ctx.stroke(); }
-        else { ctx.fillStyle = "#7a4f7a"; ctx.font = `600 ${11 * s}px system-ui`; ctx.textAlign = "center"; ctx.fillText("∞", sx + 12 * s, by + 4 * s); } }
-    }
-    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.font = `600 ${11 * s}px system-ui`; ctx.textAlign = "center"; ctx.shadowColor = "rgba(0,0,0,.7)"; ctx.shadowBlur = 3; ctx.fillText(c.name, sx, sy + 17 * s); ctx.shadowBlur = 0;
-    if (!c.leaving) hits.push({ id: c.id, x: sx - 26 * s, y: sy - 115 * s, w: 52 * s, h: 135 * s });
+    // v0.30 §7 konuşma baloncuğu / sipariş rozeti / ad etiketi: hemen çizilmez, kare sonunda çakışmasız yerleştirilir (layoutOverlays)
+    const tnow = performance.now(); if (c.moving || c._stillT == null) c._stillT = tnow; const still = !c.moving && tnow - c._stillT > 350;   // v0.31: yürüyen müşterinin rozeti/adı gösterilmez (sıra ilerlerken yanıp sönmesin), durunca belirir
+    heads.push({ id: c.id, x: sx - 11 * s, y: sy - 70 * s, w: 22 * s, h: 24 * s });   // balonlar başkasının başını da örtmesin (mümkünse)
+    const sayTxt = c.say && (!c.sayUntil || performance.now() < c.sayUntil) ? c.say : null, pr = (c.leaving ? 100 : 0) + (c.ordered ? 30 : 0) + (c.pos.x + c.pos.y);   // öncelik: sıradaki/aktif müşteri önce, gidenler sonra
+    const portrait = W < H, R = portrait ? INS.right : 0, X0 = 8, X1 = W - R - 8;
+    if (sayTxt) {                                                                // v0.30 balon: krem kart, ince kahve kenar, en fazla 2 satır, kuyruk konuşanın başına bakar
+      const pat = !!(c.patienceMax && !c.leaving), headTop = sy - 68 * s, maxBw = Math.min(X1 - X0, W * .62);
+      const base = portrait ? Math.max(13, Math.min(12 * s, 15)) : Math.max(13, 12 * s), fonts = [...new Set([base, 13, 12])].filter(f => f <= base);
+      const wrap = (fsz, maxLines) => { ctx.save(); ctx.font = `600 ${fsz}px system-ui`; const padX = Math.max(8, fsz * .7), ringW = pat ? fsz * 1.25 + 4 : 0, maxText = maxBw - 2 * padX - ringW, lines = []; let cur = "";
+        sayTxt.split(" ").forEach(w => { const t = cur ? cur + " " + w : w; if (cur && ctx.measureText(t).width > maxText) { lines.push(cur); cur = w; } else cur = t; }); lines.push(cur);
+        const tw = Math.max(...lines.map(l => ctx.measureText(l).width)); ctx.restore(); return lines.length <= maxLines ? { fsz, padX, ringW, lines, tw } : null; };
+      let L2 = null; for (const f of fonts) { L2 = wrap(f, 2); if (L2) break; } if (!L2) L2 = wrap(12, 9);   // çok uzun cümle: 12 px'te gereken satır sayısı (kesilmez)
+      const { fsz, padX, ringW, lines, tw } = L2, lh = fsz * 1.28, bw = Math.min(maxBw, tw + 2 * padX + ringW), bh = lines.length * lh + Math.max(14, fsz * 1.05), tailH = 9;
+      over.push({ kind: "bubble", react: !!c.sayUntil, pr: c.sayUntil ? -1 - c.sayUntil / 1e9 : pr, id: c.id, /* aynı anda tek yer varsa en yeni tepki önce (birkaç sn sürer), sipariş cümlesi sonra döner */ text: sayTxt, nl: lines.length, fsz, sx, x: sx - bw / 2, y: headTop - 4 - tailH - bh, w: bw, h: bh, tailH, headTop,
+        draw: (bx, bt, alpha) => {
+          const dy = 4 * (1 - alpha), y = bt + dy, rad = Math.min(12, bh / 2), tip = sx, b0 = Math.max(bx + rad + 2, Math.min(bx + bw - rad - 14, sx - 6)), b1 = b0 + 12;
+          ctx.save(); ctx.globalAlpha = alpha;
+          ctx.beginPath(); ctx.moveTo(bx + rad, y); ctx.arcTo(bx + bw, y, bx + bw, y + bh, rad); ctx.arcTo(bx + bw, y + bh, bx, y + bh, rad);
+          ctx.lineTo(b1, y + bh); ctx.lineTo(tip, y + bh + tailH); ctx.lineTo(b0, y + bh);                     // kuyruk: konuşanın başının x'ine
+          ctx.arcTo(bx, y + bh, bx, y, rad); ctx.arcTo(bx, y, bx + bw, y, rad); ctx.closePath();
+          ctx.shadowColor = "rgba(40,22,8,.22)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2; ctx.fillStyle = "#FBF6EE"; ctx.fill();
+          ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.lineWidth = 1.5; ctx.strokeStyle = "#C9A27E"; ctx.lineJoin = "round"; ctx.stroke();
+          ctx.fillStyle = "#3a2414"; ctx.font = `600 ${fsz}px system-ui`; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+          const ty0 = y + (bh - lines.length * lh) / 2 + lh / 2; lines.forEach((l, i) => ctx.fillText(l, bx + padX, ty0 + i * lh));
+          if (pat) { const p = clamp01(c.patience / c.patienceMax), Rr = fsz * .55, rx = bx + bw - padX * .6 - Rr, ry = y + bh / 2; ctx.lineWidth = Math.max(2.5, fsz * .2);
+            ctx.strokeStyle = "rgba(90,60,30,.15)"; ctx.beginPath(); ctx.arc(rx, ry, Rr, 0, Math.PI * 2); ctx.stroke();
+            ctx.strokeStyle = p < .3 ? "#b5533c" : p < .6 ? "#c9962b" : "#6f7d4a"; ctx.beginPath(); ctx.arc(rx, ry, Rr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); ctx.stroke(); }
+          ctx.restore(); } });
+    } else if ((!c.leaving && still) || c.angry) {
+      const s0 = s; { const s = Math.max(s0, .72);                                // v0.32: küçük ölçekte rozet okunur boyda kalır
+      const p = c.patienceMax ? c.patience / c.patienceMax : 1, bw = 48 * s, bh = 34 * s;
+      over.push({ kind: "badge", id: c.id, pr: pr + 50, text: "", sx, x: sx - bw / 2, y: sy - 70 * s0 - 12 * s - bh, w: bw, h: bh + 8 * s,
+        draw: (bx, bt) => { const cx = bx + bw / 2, by = bt + bh / 2;
+          ctx.save(); ctx.fillStyle = c.angry ? "#f3d9d4" : "rgba(255,255,255,.97)"; ctx.shadowColor = "rgba(0,0,0,.25)"; ctx.shadowBlur = 6; rr(bx, bt, bw, bh, 9 * s); ctx.fill(); ctx.shadowBlur = 0;
+          ctx.beginPath(); ctx.moveTo(cx - 5 * s, bt + bh); ctx.lineTo(cx, bt + bh + 8 * s); ctx.lineTo(cx + 5 * s, bt + bh); ctx.fill();
+          if (c.angry) { ctx.fillStyle = "#b5533c"; ctx.font = `600 ${14 * s}px system-ui`; ctx.textAlign = "center"; ctx.fillText("✖", cx, by + 5 * s); }
+          else { cupIcon(cx - 9 * s, by + 1 * s, 11 * s, c.drink);
+            if (c.patienceMax) { ctx.lineWidth = 4 * s; ctx.strokeStyle = "rgba(0,0,0,.1)"; ctx.beginPath(); ctx.arc(cx + 12 * s, by, 8 * s, 0, Math.PI * 2); ctx.stroke();
+              ctx.strokeStyle = p < .3 ? "#b5533c" : p < .6 ? "#c9962b" : "#6f7d4a"; ctx.beginPath(); ctx.arc(cx + 12 * s, by, 8 * s, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); ctx.stroke(); }
+            else { ctx.fillStyle = "#7a4f7a"; ctx.font = `600 ${11 * s}px system-ui`; ctx.textAlign = "center"; ctx.fillText("∞", cx + 12 * s, by + 4 * s); } }
+          ctx.restore(); } });    } }
+    if (still && !c.leaving) { ctx.save(); const fs = Math.max(11, 11 * s); ctx.font = `600 ${fs}px system-ui`; const nw = ctx.measureText(c.name).width; ctx.restore();
+      over.push({ kind: "label", id: c.id, pr: pr + 200, text: c.name, sx, x: sx - nw / 2 - 2, y: sy + 6 * s + 11 - fs, w: nw + 4, h: fs * 1.3,
+        draw: () => { ctx.save(); ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.font = `600 ${fs}px system-ui`; ctx.textAlign = "center"; ctx.shadowColor = "rgba(0,0,0,.7)"; ctx.shadowBlur = 3; ctx.fillText(c.name, sx, sy + 6 * s + 11); ctx.restore(); } }); }
+    if (!c.leaving) { const hs = Math.max(s, .8); hits.push({ id: c.id, x: sx - 26 * hs, y: sy - 115 * hs, w: 52 * hs, h: 135 * hs }); }   // v0.32: küçük ölçekte de parmakla dokunulabilir
   }
   function cupIcon(x, y, s, drink) { const milky = /latte|cappuccino|cortado|macchiato/.test(drink || "");
     ctx.fillStyle = "#fff"; ctx.strokeStyle = "#8b7a6a"; ctx.lineWidth = 1; rr(x - s * .6, y - s * .5, s * 1.2, s, 3); ctx.fill(); ctx.stroke();
@@ -528,18 +612,18 @@ window.SCENE = (() => {
   function step(c, dt) {
     const tg = c.target; if (!tg) { c.moving = false; return; }
     const dx = tg.x - c.pos.x, dy = tg.y - c.pos.y, d = Math.hypot(dx, dy), sp = 2.2 * dt;
-    if (d < sp) { c.pos.x = tg.x; c.pos.y = tg.y; c.moving = false; if (c.leaving) c.gone = true; } else { c.pos.x += dx / d * sp; c.pos.y += dy / d * sp; c.moving = true; }
+    if (d <= sp || d < 1e-6) { c.pos.x = tg.x; c.pos.y = tg.y; c.moving = false; if (c.leaving) c.gone = true; } else { c.pos.x += dx / d * sp; c.pos.y += dy / d * sp; c.moving = true; }
   }
   function draw(state, dt = 0) {
     if (!cv) return;
     acc += dt; if (Q.fps && acc < 1 / Q.fps && dt > 0) return; dt = acc; acc = 0;   // düşük kalite: 30 kare/sn
-    size(); time += dt; hits = [];
+    size(); time += dt; hits = []; bubbles = []; over = []; placed = []; heads = [];
     const { customers = [], orders = [], t = .3, level = 1, slots = 1 } = state; const L = daylight(t);
     ctx.fillStyle = PAL.wall; ctx.fillRect(0, 0, W, H);
     room(L, state); furniture(level, slots, state);
     customers.forEach(c => step(c, dt));
     [...customers].sort((a, b) => (a.pos.x + a.pos.y) - (b.pos.x + b.pos.y)).forEach(c => person(c, orders.some(o => o.cust === c)));
-    drawFx(dt); drawHL(dt);
+    drawFx(dt); layoutOverlays(); drawHL(dt);   // v0.32: uçuşan efektler balon yazısının üstüne binmesin
     // akşam sıcaklığı + vinyet
     if (Q.fx > 0) { const vg = ctx.createRadialGradient(W / 2, H * .45, H * .4, W / 2, H * .45, Math.max(W, H) * .85); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, `rgba(35,20,8,${.12 + .22 * L.warm})`); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H); }
     if (L.warm) { ctx.fillStyle = `rgba(255,150,60,${L.warm * .12})`; ctx.fillRect(0, 0, W, H); }
@@ -576,5 +660,5 @@ window.SCENE = (() => {
       ctx.font = `800 ${16 * s}px system-ui`; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0,0,0,.6)"; ctx.strokeText("✨ Yeni!", sx, by); ctx.fillStyle = "#fff4c2"; ctx.fillText("✨ Yeni!", sx, by);
       ctx.restore(); }
   }
-  return { init, setQuality, draw, hitTest, addFx, queueSlot, thumb, itemPos, highlight, DOOR };
+  return { init, setQuality, setInsets, draw, hitTest, addFx, queueSlot, thumb, itemPos, highlight, DOOR, bubbles: () => bubbles.slice(), overlays: () => placed.map(p => ({ kind: p.kind, id: p.id, text: p.text, x: p.x, y: p.y, w: p.w, h: p.h })), insets: () => Object.assign({}, INS) };
 })();

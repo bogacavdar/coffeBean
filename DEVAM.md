@@ -1,14 +1,23 @@
 # DEVAM.md – İlerleme ve Devam Notları
 
-Son güncelleme: 2026-11-01
+Son güncelleme: 2026-11-02
 
 ## Öncelik hatırlatması
 "Acilen" / "kritik" denilen her istek, bu dosyadaki her şeyin önüne geçer (bkz. KURALLAR.md, Kural 3).
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.29)
+## Bekleyen paket (son yayın: v0.33)
 (boş)
+
+## v0.30–v0.33 – YAYINLANDI (2 Kasım 2026; kullanıcı telefonda dik ekran sorunlarını bildirdi)
+Not: v0.30–v0.32 kullanıcıya yalnız zip olarak gitmişti, GitHub'a gönderilmemişti (Kural 4 ihlali). Kullanıcı adreste hâlâ v0.29'u görünce dördü birlikte v0.33 olarak main'e gönderildi.
+- **v0.30 telefon dikey düzeni:** gizli "Anladım", kesik ana düğmeler, seçimde görünmeyen sipariş, kaydırma isteyen Devam, ekran dışındaki +₺5, yatay taşmalar, kenarda kesilen konuşma balonları, 8 hap HUD → 2 satır. Hazırlama paneli ekrana sığıyor, pencere düğme satırları sabit, tablolar telefonda kart düzeninde. Konuşma balonu yeniden tasarlandı (krem kart, en çok 2 satır, kuyruk konuşanın başına bakar). Balon/rozet/etiket çakışmasız yerleşiyor (`layoutOverlays`). Sahnede NaN donması da düzeltildi.
+- **v0.31 yanıp sönme:** çakışınca gizlenen balon/rozet/etiket her karede açılıp kapanıyordu. Artık görünen yerini korur, gizlenen ancak 450 ms boş yer bulunca geri gelir; yürüyen müşterinin rozeti ve adı gösterilmez.
+- **v0.32 gün başlamıyor:** Tedarik'te zorunlu eksik varken Devam sönüktü, EKSİK kutuları düğmeye benziyordu, alımda liste başa zıplıyordu. Eksik varken ana düğme "Eksikleri al · ₺…" (`fillMissingPlan()`), kaydırma korunuyor.
+- **v0.33 dükkan ekrana sığıyor:** dik ekranda kamera bütün dükkanı (tabela, raflar, tezgâh, vitrin, kapı, masalar) ekran genişliğine sığdırıyor; küçük ölçekte rozet, ad ve dokunma alanı alt sınırlı. `sceneInsets()` artık `iconTop` da gönderiyor.
+- Oyun dengesi değişmedi (Kural 9'a dokunulmadı). Kullanıcı hata bildirdiği için düzeltmeler telefon emülasyonunda doğrulandı (Kural 7 istisnası).
+- Doküman eşleşme: değişiklikler yalnız arayüz ve kamera; mekanik/sayı değişmedi. `Tasarim_Dokumani.html` §11 telefon kuralları v0.30'da güncellendi. Claude Docs'taki canlı doküman henüz bu §11 değişikliğiyle eşitlenmedi (açık iş).
 
 ## v0.29 – YAYINLANDI (1 Kasım 2026, kullanıcı "paket çık" dedi)
 - **Tuval içi hedef göstergesi (kullanıcı isteği):** ekstraksiyondaki küçük göstergeye benzer `CLOSEUP.zmeter(v, Z, {label,x,y,w})` eklendi; büyük çubuğun aynı renkli bölgelerini (sarı/açık yeşil/koyu yeşil, `o.z`) ve ibreyi gösterir. Öğütme ("hedef öğütüm"), dozlama ("hedef 18 g"), ekstraksiyon (sabit ±2 g bandı yerine gerçek bölgeler), süt ("hedef 60–65 °C", solda), sıcak su ("hedef seviye"), latte art ("doluluk %65–80" / "kesim: tam orta") adımlarında. Kural 9 gereği bölgeler ibre hızıyla orantılı `o.z`'den gelir. Göstergeli (dial/ring) adımlarda bölgeler zaten çizimin üstünde.

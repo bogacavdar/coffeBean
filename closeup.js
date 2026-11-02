@@ -7,7 +7,12 @@ window.CLOSEUP = (() => {
   function setQuality(q, gpu) { maxDpr = q === "high" ? 2 : q === "medium" ? 1.25 : 1; if (gpu != null) gpuOn = gpu; }   // §12
   function init(canvas) { if (!canvas || !canvas.getContext) return; cv = canvas; ctx = harden(cv.getContext("2d", gpuOn ? { desynchronized: true } : { willReadFrequently: true })); if (ctx) size(); }
   // v0.24 sağlamlık: NaN / negatif yarıçap çizimi patlatmasın (arc/ellipse/arcTo negatif yarıçapta hata fırlatır)
-  function harden(c) { if (!c || c.__cuSafe) return c; c.__cuSafe = 1; const A = c.arc, E = c.ellipse, AT = c.arcTo, R = v => Math.max(0, v) || 0;
+  let small = false;                                                               // v0.30: telefonda dar tuval – okunmayan küçük yazılar gizlenir, okunması gerekenler büyür
+  function harden(c) { if (!c || c.__cuSafe) return c; c.__cuSafe = 1; const A = c.arc, E = c.ellipse, AT = c.arcTo, R = v => Math.max(0, v) || 0, FT = c.fillText;
+    c.fillText = function (t, x, y, mw) { if (!small) return FT.call(this, t, x, y, mw); const m = /(\d+(?:\.\d+)?)px/.exec(this.font), px = m ? +m[1] : 12;
+      if (px < 12.5 || (px <= 13 && y >= 228)) return;                              // küçük etiketler ve alttaki talimat satırı (düğmenin üstünde zaten yazıyor)
+      if (px <= 18 && !/monospace/.test(this.font)) { const f = this.font; this.font = f.replace(m[0], Math.round(px * 1.35) + "px"); FT.call(this, t, x, y, mw); this.font = f; return; }
+      return FT.call(this, t, x, y, mw); };
     c.arc = function (x, y, r, a, b, cc) { return A.call(this, x, y, R(r), a, b, !!cc); };
     if (E) c.ellipse = function (x, y, rx, ry, rot, a, b, cc) { return E.call(this, x, y, R(rx), R(ry), rot, a, b, !!cc); };
     if (AT) c.arcTo = function (x1, y1, x2, y2, r) { return AT.call(this, x1, y1, x2, y2, R(r)); };
@@ -17,7 +22,7 @@ window.CLOSEUP = (() => {
   const obj = o => (o && typeof o === "object") ? o : {};
   function size() {
     const dpr = Math.min(maxDpr, window.devicePixelRatio || 1);
-    const cw = cv.clientWidth || W, ch = cv.clientHeight || H;
+    const cw = cv.clientWidth || W, ch = cv.clientHeight || H; small = cw < 420;
     cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
     ctx.setTransform(dpr * cw / W, 0, 0, dpr * ch / H, 0, 0);
   }
@@ -43,7 +48,7 @@ window.CLOSEUP = (() => {
   }
   // v0.29 küçük hedef göstergesi: alttaki büyük çubuğun renkli bölgelerinin (sarı/açık yeşil/koyu yeşil) aynısı + ibre.
   // Z = { t: hedef, p, g, k: bölge yarı genişlikleri } (0–100 çubuk birimi; §4 eşit zorluk: ibre hızıyla orantılı). opt: { x, y, w, label }
-  function zmeter(v, Z, opt) { const o = obj(opt), z = obj(Z), x0 = num(o.x, 330), y0 = num(o.y, 182), bw = num(o.w, 120), val = clamp(v, 0, 100, 0), X = u => x0 + Math.max(0, Math.min(100, num(u))) / 100 * bw;
+  function zmeter(v, Z, opt) { if (small) return; const o = obj(opt), z = obj(Z), x0 = num(o.x, 330), y0 = num(o.y, 182), bw = num(o.w, 120), val = clamp(v, 0, 100, 0), X = u => x0 + Math.max(0, Math.min(100, num(u))) / 100 * bw;
     ctx.fillStyle = lg(x0, 0, x0 + bw, 0, [[0, "#2b2b30"], [.5, "#4a4a50"], [1, "#2b2b30"]]); rr(x0, y0, bw, 22, 6); ctx.fill();
     ctx.fillStyle = "#9cf0a8"; ctx.font = "700 12px monospace"; ctx.textAlign = "center"; ctx.fillText(String(o.label || "hedef"), x0 + bw / 2, y0 + 15);
     const by = y0 + 28; ctx.fillStyle = "rgba(255,255,255,.7)"; rr(x0, by, bw, 8, 3); ctx.fill();
@@ -70,7 +75,7 @@ window.CLOSEUP = (() => {
     ctx.fillStyle = lg(0, top, 0, 180, [[0, "#6a4124"], [1, "#2d1a0e"]]); ctx.beginPath(); ctx.moveTo(172 + (1 - fill) * 4, top); ctx.lineTo(308 - (1 - fill) * 4, top); ctx.lineTo(306, 178); ctx.lineTo(174, 178); ctx.closePath(); ctx.fill();
     ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.beginPath(); ctx.ellipse(240, top, 66, 7, 0, 0, Math.PI * 2); ctx.fill();
     if (g > 20) { for (let i = 0; i < 25; i++) { ctx.fillStyle = "#4a2c17"; ctx.beginPath(); ctx.arc(150 + Math.sin(i * 9.3) * 90 + 90, H - 70 + Math.abs(Math.cos(i * 5)) * 10, 2, 0, Math.PI * 2); ctx.fill(); } }
-    steel(40, 150, 90, 40, 6); ctx.fillStyle = "#101214"; rr(48, 156, 74, 22, 3); ctx.fill(); ctx.fillStyle = "#7df0a0"; ctx.font = "600 16px monospace"; ctx.textAlign = "right"; ctx.fillText(g.toFixed(1) + " g", 118, 173);
+    steel(40, 150, 90, 40, 6); ctx.fillStyle = "#101214"; rr(48, 156, 74, 22, 3); ctx.fill(); ctx.fillStyle = "#7df0a0"; ctx.font = "600 16px monospace"; ctx.textAlign = "right"; ctx.fillText(g.toFixed(1).replace(".", ",") + " g", 118, 173);
     gauge(40, 215, 400, g / 24, 17.5 / 24, 18.5 / 24, "hedef 18 g ±0,5");
   }
   // ---- Tamping: üstten sepet, tamper, güç halkası
@@ -101,7 +106,8 @@ window.CLOSEUP = (() => {
     if (pre) { ctx.fillStyle = "#5a3416"; [232, 248].forEach((x, i) => { const d = (Date.now() / 400 + i * .5) % 1; ctx.beginPath(); ctx.ellipse(x, 101 + d * 3, 1.6 + d, 2 + d * 1.5, 0, 0, Math.PI * 2); ctx.fill(); });
       ctx.fillStyle = "#2b2117"; ctx.font = "italic 600 12px system-ui"; ctx.textAlign = "center"; ctx.fillText("ön ıslatma…", 240, 124); }
     if (run && !pre) { ctx.strokeStyle = lg(0, 100, 0, 176, [[0, "#6a3d1a"], [1, "#3a200d"]]); ctx.lineWidth = 2.2; [232, 248].forEach(x => { ctx.beginPath(); ctx.moveTo(x, 100); ctx.quadraticCurveTo(x + (x < 240 ? 3 : -3), 140, 240 + (x - 240) * .5, lvl); ctx.stroke(); }); }
-    ctx.fillStyle = "#2b2117"; ctx.font = "600 15px system-ui"; ctx.textAlign = "left"; ctx.fillText(t.toFixed(1).replace(".", ",") + " sn", 330, 150); ctx.fillText(Math.round(g) + " g", 330, 172);
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 15px system-ui"; ctx.textAlign = "left"; if (small) { ctx.font = "700 24px system-ui"; ctx.fillText(t.toFixed(1).replace(".", ",") + " sn", 318, 150); ctx.fillText(Math.round(g) + " / " + targetG + " g", 318, 184); return; }   // v0.30 telefonda büyük okuma, mini gösterge yok
+    ctx.fillText(t.toFixed(1).replace(".", ",") + " sn", 330, 150); ctx.fillText(Math.round(g) + " g", 330, 172);
     gauge(40, 215, 400, t / 45, (tT - tTol) / 45, (tT + tTol) / 45, `hedef ${targetG} g · ${tT - 2.5}–${tT + 2.5} sn`);
     if (o) { const fm = u => String(Math.round(u * 10) / 10).replace(".", ","), x0 = 330, y0 = 182, bw = 120, mx = targetG * 1.5, X = u => x0 + Math.max(0, Math.min(1, u / mx)) * bw;   // terazi: hedef verim
       ctx.fillStyle = lg(x0, 0, x0 + bw, 0, [[0, "#2b2b30"], [.5, "#4a4a50"], [1, "#2b2b30"]]); rr(x0, y0, bw, 22, 6); ctx.fill();
@@ -773,7 +779,7 @@ window.CLOSEUP = (() => {
     ctx.beginPath(); ctx.arc(240, 125, 74, 0, Math.PI * 2); ctx.fill();
     if (!milky) { ctx.fillStyle = "rgba(255,255,255,.18)"; for (let i = 0; i < 60; i++) { ctx.beginPath(); ctx.arc(240 + Math.sin(i * 9.1) * 60, 125 + Math.cos(i * 4.7) * 60, 1 + (i % 3) * .6 * (quality / 100), 0, Math.PI * 2); ctx.fill(); } }
     if (heart) { heartShape(240, 122, 34, "#fffaf2"); heartShape(240, 122, 22, "rgba(233,214,190,.6)"); }
-    ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; ctx.fillText("Kalite " + quality, 240, 235);
+    ctx.fillStyle = "#2b2117"; ctx.font = "600 18px system-ui"; ctx.textAlign = "center"; if (!small) ctx.fillText("Kalite " + quality, 240, 235);
   }
   // v0.24: hiçbir çizim çağrısı hata fırlatmasın; çizim durumu her çağrıdan sonra geri yüklenir
   const safe = fn => function () { if (!ctx) return; ctx.save(); try { return fn.apply(null, arguments); } catch (e) { try { console.warn("CLOSEUP." + fn.name, e); } catch (_) {} } finally { try { ctx.restore(); } catch (_) {} } };

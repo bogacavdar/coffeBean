@@ -62,7 +62,7 @@
   #quitScreen{position:fixed;inset:0;z-index:50;background:radial-gradient(circle at 50% 40%,#3b2717,#120b06);color:#f6efe3;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}#quitScreen h2{font:800 32px "Fraunces",Georgia,serif;margin:8px 0}#quitScreen p{color:#e6d6bf;font-size:18px}
   #cheats{position:fixed;right:96px;top:50%;transform:translateY(-50%);z-index:12;display:flex;flex-direction:column;gap:5px;background:rgba(20,14,9,.82);padding:8px;border-radius:14px;max-height:80vh;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)}#cheats .chead{color:#ffd89a;font-weight:800;font-size:14px;cursor:grab;padding:4px 6px;touch-action:none;user-select:none}#cheats .chead::before{content:"⠿ ";opacity:.7}#cheats button{font-size:13px;padding:6px 10px;text-align:left;white-space:nowrap}
   @media (max-width:620px),(pointer:coarse) and (max-height:500px){#cheats{right:70px;top:auto;bottom:70px;transform:none;max-height:34vh;width:150px;padding:5px;gap:3px;overflow-y:auto;-webkit-overflow-scrolling:touch}#cheats button{font-size:11px;padding:4px 7px}#cheats .chead{font-size:12px}}
-  .diffs{display:flex;flex-direction:column;gap:10px;margin:10px 0}.diff{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:4px;padding:14px 16px;border-radius:14px;border:3px solid var(--cizgi);background:#fff;font-size:15px}.diff b{font:800 22px "Fraunces",Georgia,serif}.diff.easy{border-color:#5f9a4b}.diff.easy b{color:#3f7d34}.diff.normal{border-color:#c9962b}.diff.normal b{color:#8a6420}.diff.hard{border-color:#b5533c}.diff.hard b{color:#b5533c}.diff:hover{transform:scale(1.02)}
+  .diffs{display:flex;flex-direction:column;gap:10px;margin:10px 0}.diff{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:4px;padding:14px 16px;border-radius:14px;border:3px solid var(--cizgi);background:#fff;font-size:15px}.diff b{font:800 22px "Fraunces",Georgia,serif}.diff.easy{border-color:#5f9a4b}.diff.easy b{color:#3f7d34}.diff.normal{border-color:#c9962b}.diff.normal b{color:#8a6420}.diff.hard{border-color:#b5533c}.diff.hard b{color:#b5533c}
   .rentbig{font:800 34px "Fraunces",Georgia,serif;color:#3f6b2c;text-align:center;margin:10px 0 4px}.rentbig.due{color:#b5533c;animation:dayglow 1.3s ease-in-out infinite;border-radius:14px}
   .actbar{height:26px;max-width:640px;margin:16px auto 6px;background:#e6ddcd;border-radius:13px;overflow:hidden;box-shadow:inset 0 2px 7px rgba(0,0,0,.18)}.actbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6fae5f,#3f7d34);transition:width .12s}
   .acthint{font-size:18px;font-weight:700;color:var(--kahve);margin:4px 0}
@@ -121,6 +121,7 @@
   .req{font-size:13px;padding:6px 10px;border-radius:8px;background:#fdeeea;color:var(--kotu)}.req.ok{background:#eef5e8;color:var(--iyi)}
   .recipe{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--cizgi)}.recipe:last-child{border-bottom:0}.recipe .dIcon{flex:none}.recipe.lock{opacity:1}.recipe.lock b{color:var(--soluk);letter-spacing:2px}
   /* §2 gün sonu ekranları */
+  .needbox{background:#fbe9e4;border:1.5px solid #e2b3a6;border-left:5px solid #b5533c;color:#6e2a1c;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:15px;line-height:1.35;text-align:left}.needbox ul{margin:6px 0 6px 18px;padding:0}.needbox li{margin:2px 0}.needbox span{display:block;font-size:14px;color:#7d4a3c}
   .miss{background:#b5533c;color:#fff;font-weight:700;font-size:16px;padding:12px 14px;border-radius:12px;margin:8px 0;box-shadow:0 4px 0 #7d3424}
   .box.need{border:2px solid #b5533c;background:#fff4f1}
   .loanbtn{background:#fbe9e4;border-color:#e7b9ad;color:#7d3424;font-weight:700}
@@ -198,30 +199,136 @@
   .toast{position:fixed;left:50%;top:56px;transform:translateX(-50%);background:rgba(43,33,23,.92);color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:10;max-width:90vw;text-align:center}
   .toast.on{opacity:1}
   #modalCard{display:flex;flex-direction:column;overflow:hidden}#modalCard .mtext{overflow-y:auto;min-height:0;flex:1 1 auto}#modalCard .mrow{flex:none}
-  /* §11 telefon dikey düzeni: bilgiler sol üstte küçük ve alt alta; bilgisayar/yatay ekran değişmez */
+  /* v0.30 ortak küçük parçalar (her ekranda zararsız) */
+  #hint.empty{display:none!important}
+  .want,.pOnly,.shx,#orders .oqmore{display:none}
+  .bsub{display:block;font-size:12px;font-weight:600;letter-spacing:0}
+  .rvrow button.big{max-width:300px}.rvrow button.sec{box-shadow:none}
+  .diff span{font-weight:400}
+  @media (hover:hover){.diff:hover{transform:scale(1.02)}}
+  .zres.miss{background:none;box-shadow:none;padding:0;margin:8px 0 0;border-radius:0;color:var(--kotu)}   /* "Kaçtı"/düşük kalite yazısı .miss uyarı kutusu stiline bürünüp görünmez oluyordu */
+  .pinw{display:inline-flex;align-items:center;gap:2px;border:2px solid var(--cizgi);border-radius:10px;background:#fff;padding:0 8px;font-weight:700;font-size:18px}
+  .pinw .pin{border:0;width:64px;padding:8px 0;font-size:18px;font-weight:700;background:none}
+  .plbl{display:none}
+  tr.net td{border-top:2px solid var(--cizgi)}
+  /* §11 telefon dikey düzeni (v0.30): HUD 2 kısa satır, panel ekrana sığar, ana düğmeler hep görünür; bilgisayar/yatay ekran değişmez */
   @media (orientation:portrait) and (max-width:620px){
-    #hud{right:auto;flex-direction:column;flex-wrap:nowrap;align-items:flex-start;gap:3px;padding:6px;font-size:11.5px;background:none;max-width:56vw}
-    #hud .sp{display:none}
-    #hud .pill{padding:2px 8px;border-radius:9px;line-height:1.3;background:rgba(20,12,6,.6)}
-    #hud .pill.xp{font-size:1em}
-    #hud{max-width:calc(100vw - 112px)}
-    #exitBtn{top:8px;right:8px;width:auto;height:32px;font-size:13px;padding:0 10px;gap:4px;border-radius:10px}
-    #orders{max-height:calc(100vh - 150px)}
-    #tut{max-height:20vh;overflow-y:auto;font-size:13px;padding:6px 10px}
-    #sheet{padding:46px 8px 8px}#sheet .wrap{padding:10px 12px 14px;border-radius:18px}
-    #orders{top:48px;right:8px;width:46vw;padding:8px 10px;border-radius:13px}#orders .odrink{font-size:16px}#orders .osize{font-size:13px;padding:2px 7px}#orders .ohead{font-size:15px}
-    #task{top:auto;bottom:40px;left:8px;font-size:12px;padding:5px 10px;max-width:calc(100vw - 90px)}
-    #openDay{top:auto;left:50%;bottom:84px;transform:translateX(-50%);font-size:17px;padding:12px 22px}
-    #hint{left:8px;bottom:10px;font-size:11px}
-    #icons{right:8px;bottom:8px;gap:7px}
+    /* HUD: sol üstte kompakt blok – gün·saat, para, itibar, yıldız; ikincil bilgiler gizli */
+    #hud{right:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px;padding:calc(6px + env(safe-area-inset-top)) 6px 6px calc(6px + env(safe-area-inset-left));font-size:12.5px;background:none;max-width:calc(100vw - 100px)}
+    #hud .sp,#hud .hwk,#hud .hx,#hNext,#hRank,#hStock{display:none!important}
+    body:has(.overlay.on) #hud{visibility:hidden}
+    #hRent:not(.warn){display:none}
+    #hud .pill{padding:2px 8px;border-radius:9px;line-height:1.35;background:rgba(20,12,6,.7);white-space:nowrap;overflow:visible;text-overflow:clip;max-width:none}
+    #exitBtn{top:calc(8px + env(safe-area-inset-top));right:calc(8px + env(safe-area-inset-right));width:auto;height:34px;font-size:14px;padding:0 10px;gap:4px;border-radius:10px}
+    body:has(.overlay.on) #exitBtn{top:calc(8px + env(safe-area-inset-top))}
+    body:has(#sheet.on) #exitBtn{display:none!important}
+    /* toast: sahnede HUD'un altında; panel açıkken alttaki şerit bandında; pencere açıkken en üst bantta (Çıkış'ın solunda) */
+    .toast{top:calc(var(--hudb,56px) + 6px);left:8px;right:8px;transform:none;max-width:none;font-size:13px;line-height:1.3;padding:7px 12px;border-radius:14px}
+    body:has(#sheet.on) .toast{top:auto;right:8px;bottom:calc(6px + env(safe-area-inset-bottom));min-height:40px;max-height:48px;display:flex;align-items:center;justify-content:center;z-index:12;font-size:12.5px;line-height:1.25}
+    body:has(.overlay.on) .toast{top:calc(6px + env(safe-area-inset-top));bottom:auto;right:110px;min-height:0;max-height:42px;font-size:12px;line-height:1.25;padding:5px 10px;z-index:12;display:block}
+    #task{top:auto;bottom:calc(40px + env(safe-area-inset-bottom));left:8px;font-size:12px;padding:5px 10px;max-width:calc(100vw - 86px)}
+    #openDay{top:auto;left:calc(50% - 31px);bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);font-size:17px;padding:12px 22px;white-space:nowrap}
+    #hint{left:8px;bottom:calc(10px + env(safe-area-inset-bottom));font-size:11px;max-width:calc(100vw - 86px)}
+    #icons{right:calc(8px + env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));gap:7px}
     .icon{width:54px;height:54px;border-radius:15px;font-size:10.5px}
     .icon svg{width:26px;height:26px}
-    /* hazırlarken: sipariş kartı alta ince şerit olur, yalnız sırada bekleyenlerin adı + sabrı */
-    body:has(#sheet.on) #orders{top:auto;bottom:6px;left:6px;right:6px;width:auto;max-height:22vh;padding:4px 10px 6px}
+    .pOnly{display:inline}.dOnly{display:none}
+    /* panel kapalıyken bekleyen sipariş: altta, ikon sütununun solunda kompakt kart (müşterileri ve ikonları örtmez) */
+    #orders{top:auto;bottom:calc(8px + env(safe-area-inset-bottom));left:8px;right:72px;width:auto;padding:6px 10px;border-radius:13px;border-width:2px;max-height:40dvh}
+    #orders .ohead,#orders .oqhead,#orders .oq,#orders .oqmore{display:none}
+    #orders .ord{margin-top:0;padding:5px 8px}#orders .ord+.ord{margin-top:6px}
+    #orders .oname{font-size:12px}#orders .odrink{font-size:16px;flex-wrap:wrap;gap:6px}#orders .osize{font-size:13px;padding:2px 7px}#orders .ostate{font-size:12.5px}
+    body:has(#orders[style*="block"]):not(:has(#sheet.on)) #hint,body:has(#orders[style*="block"]):not(:has(#sheet.on)) #task{display:none!important}
+    /* hazırlama paneli: kullanılabilir alana sığar (üst: istenen sipariş + adımlar, orta: küçülen tuval, alt: ana düğme) */
+    #sheet{padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(62px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left))}
+    #sheet .wrap{display:flex;flex-direction:column;max-height:100%;padding:10px 12px 12px;border-radius:18px;position:relative}
+    #sheet .wrap>*{flex:none}
+    #sheet h3{font-size:18px;margin:0 0 2px}
+    #sheet h3.ptitle{display:none}
+    .shx{display:flex;align-items:center;justify-content:center;position:absolute;top:6px;right:6px;width:38px;height:38px;padding:0;border-radius:10px;font-size:18px;line-height:1;z-index:2}
+    .want{display:block;text-align:left;background:#fff;border-radius:12px;padding:6px 10px 7px;margin:0 0 6px;box-shadow:0 2px 0 #e2d3bd}
+    #sheetBody:has(.shx) .want{margin-right:44px}
+    .want .wname{font-size:12.5px;color:#8a7a68;font-weight:700}
+    .want .wdrink{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:20px;line-height:1.2}.want .wdrink b{color:#3a2414}
+    .want .osize{font-size:15px;font-weight:800;color:#fff;background:#b5533c;padding:2px 9px;border-radius:9px}
+    .want .otag{font-size:12.5px;font-weight:700;padding:2px 7px;border-radius:9px;background:#efe3d2;color:#5b3a22}.want .otag.milk{background:#e7f1fb;color:#2c5585}
+    .want .wbad{font-size:13px;color:#b5533c;font-weight:700;margin-top:2px}
+    .want .opat{height:7px;background:#eadfcf;border-radius:4px;margin-top:5px;overflow:hidden}.want .opat i{display:block;height:100%;width:100%;background:#5f9a4b}
+    .steps{margin:2px 0 6px;gap:4px}.steps span{font-size:11.5px;padding:2px 8px;white-space:nowrap}
+    #tut{height:calc(3 * 1.35em + 14px);overflow-y:auto;font-size:13.5px;line-height:1.35;padding:6px 10px;margin:2px 0 4px;max-width:none}
+    @media (max-width:359px){#tut{height:calc(4 * 1.35em + 14px)}}
+    #tut::before{display:inline;content:"Yıldız Teyze: ";font-size:inherit;font-weight:700;color:#8a6a4a;margin:0}
+    #closeup{width:100%;margin:2px auto;border-radius:12px}
+    .zbar{height:40px;margin:8px auto 2px}.zends{font-size:12px}.zleg{font-size:11px}.zleg i{margin:0 3px 0 5px}
+    button.big{font-size:21px;padding:14px;margin-top:8px;border-radius:16px;letter-spacing:1px}
+    .zres{font-size:18px!important;min-height:1.3em;line-height:1.3;margin-top:4px}
+    .hint{font-size:12.5px;margin-top:4px;min-height:0}.hint:empty{display:none}
+    #sheet .score{display:none}
+    .actbar{height:20px;margin:8px auto 4px}.acthint{font-size:15px}
+    #sheet .box{padding:8px 10px;margin:6px 0}#sheet .box h4{font-size:16px;margin:0 0 4px}#sheet .box .row{margin-top:2px}
+    #sheet .muted{font-size:13px}
+    #sheet .miss{font-size:14px;padding:8px 10px;margin:4px 0}#sheet .miss.mm{display:none}
+    .rvq{font-size:22px!important}.rvavg{display:none}
+    .rvrow{flex-direction:column;gap:8px;margin-top:8px}
+    .rvrow button.big{margin:0;max-width:none}
+    .rvrow button.sec{font-size:16px;padding:10px;letter-spacing:0}
+    /* sıra şeridi: panelin altında sabit yükseklikli bant (paneli örtmez) */
+    body:has(#sheet.on) #orders{top:auto;bottom:calc(6px + env(safe-area-inset-bottom));left:8px;right:8px;width:auto;height:48px;max-height:none;padding:4px 10px;overflow:hidden;display:flex!important;align-items:center;gap:10px;border-width:2px;border-radius:12px}
     body:has(#sheet.on) #orders .ohead,body:has(#sheet.on) #orders .ord{display:none}
-    body:has(#sheet.on) #orders .oqhead{margin-top:0;border-top:0;padding-top:0}
+    body:has(#sheet.on):has(#toast.on) #orders .oqhead,body:has(#sheet.on):has(#toast.on) #orders .oq,body:has(#sheet.on):has(#toast.on) #orders .oqmore{visibility:hidden}   /* v0.32: bildirim şerit bandında çıkınca altındaki sıra yazısı görünmesin (yazılar karışmasın) */
+    body:has(#sheet.on) .toast{background:#2b2117;transition:opacity .15s}
+    body:has(#sheet.on) #orders .oqhead{display:block;margin:0;border:0;padding:0;flex:none;font-size:12px;white-space:nowrap}
+    body:has(#sheet.on) #orders .oq{display:flex;flex:1 1 0;min-width:0;margin:0;flex-direction:column;align-items:stretch;gap:3px}
+    body:has(#sheet.on) #orders .oq span{min-width:0;font-size:11.5px;line-height:1.15;white-space:normal;font-weight:600}
+    body:has(#sheet.on) #orders .oq .opat{flex:none;height:6px}
+    body:has(#sheet.on) #orders .oq~.oq~.oq~.oq{display:none}
+    body:has(#sheet.on) #orders .oqmore{display:block;flex:none;font-weight:800;font-size:13px}
     body:has(#sheet.on) #orders:not(:has(.oq)){display:none!important}
-    body:has(#sheet.on #orders .oq) #sheet,body:has(#orders .oq):has(#sheet.on) #sheet{padding-bottom:calc(8px + 4.5em)}
+    /* pencereler: başlık + içerik kayar, düğme satırı kartın altında sabit; birincil düğme en üstte ve tam genişlik */
+    .overlay{padding:calc(52px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left))}
+    .overlay .card{max-height:100%;padding:12px 14px 0;font-size:15.5px;border-width:2px;border-radius:16px}
+    .overlay .card>:last-child{margin-bottom:12px}
+    .card h2{font-size:21px;padding-bottom:6px;margin-bottom:8px}.card h2 .x{font-size:18px;padding:4px 10px}
+    .card .box{padding:10px 12px;margin:10px 0}.card .box h4{font-size:17px}
+    .card .muted{font-size:14px}
+    .card table{font-size:15.5px}.card td{padding:8px 10px}.card td.num{width:1%}
+    .card>.row:last-child,#modalCard .mrow{position:sticky;bottom:0;z-index:3;margin:10px -14px 0!important;padding:10px 14px 12px;background:#f3ebdf;border-top:2px solid #e6d6bf;display:flex;flex-wrap:wrap;gap:8px;justify-content:stretch}
+    .card>.row:last-child:not(.col)>button,#modalCard .mrow:not(.col)>button{flex:1 1 0;min-width:0;min-height:46px;font-size:15px;padding:8px 10px;white-space:normal;line-height:1.2}
+    .card>.row:last-child:not(.col)>button.pri,#modalCard .mrow:not(.col)>button.pri{order:-1;flex:1 1 100%;font-size:17px;min-height:50px}
+    #modalCard h3{margin:0 0 8px}
+    .cash{padding:4px 12px;margin:2px auto 6px;gap:10px;border-radius:14px;border-width:2px}.cash span{font-size:23px}.cash svg{width:38px;height:22px}
+    .diff{padding:10px 12px}.diff b{font-size:19px}.diff span{font-size:14px}
+    /* Tedarik, Dükkan, Fiyatlar: tablo değil kart – üstte görsel+ad+stok, altta fiyat ve tam genişlik düğme */
+    #shopCard table,#hubCard table,#priceCard table,#shopCard tbody,#hubCard tbody,#priceCard tbody{display:block;border-spacing:0}
+    #shopCard tr,#hubCard tr,#priceCard tr{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:6px 10px;background:#fbf7f0;border-radius:14px;padding:10px;margin:8px 0}
+    #shopCard tr.need,#hubCard tr.need{background:rgba(181,83,60,.12)}
+    #shopCard td,#hubCard td,#priceCard td{display:block;padding:0!important;background:none!important;border-radius:0!important;white-space:normal!important;text-align:left!important;min-width:0}
+    #shopCard td:first-child,#hubCard td:first-child,#priceCard td:first-child{grid-column:1/-1}
+    #shopCard td:last-child button,#hubCard td:last-child button{width:100%}
+    #shopCard td:nth-child(2):empty,#hubCard td:nth-child(2):empty{display:none}
+    #shopCard td:nth-child(2):empty+td,#hubCard td:nth-child(2):empty+td{grid-column:1/-1}
+    #priceCard tr:has(th){display:none}
+    #priceCard td:last-child{grid-column:1/-1}
+    .plbl{display:inline;color:var(--soluk);font-size:14px;font-weight:600}
+    .pbtns{justify-content:stretch;gap:8px}.pbtns button{flex:1 1 0;min-width:0;padding:10px 4px!important}
+    .pinw{flex:1.3 1 0;min-width:0;justify-content:center;font-size:20px}.pinw .pin{width:100%;min-width:0;font-size:20px;text-align:left}
+    .card tr:hover{transform:none}
+    #shopCard td:first-child,#hubCard td:first-child{position:relative;padding-left:56px!important;min-height:38px}
+    #shopCard td:first-child .thumb,#hubCard td:first-child .thumb{position:absolute;left:0;top:0;float:none;width:46px;height:36px;margin:0;border-radius:9px}
+    #shopCard td b,#hubCard td b{font-size:15.5px}
+    .tabbar{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .tabbar button{border-radius:12px;justify-content:center;padding:8px 6px;min-width:0}
+    .tabbody{border-top-width:3px;margin-top:6px}
+    .hubhead{gap:6px 8px}.hubhead h2{font-size:21px}.hubhead .goal{font-size:15px;padding:6px 12px;margin-left:0}
+    #hubCard .box .row>button,#loanCard .row>button{flex:1 1 100%}
+    /* kayıt yuvaları: düğmeler metnin altında, metin sütunu geniş (başlık tek satır) */
+    .slot{flex-wrap:wrap;gap:8px 12px;padding:10px 12px}.slot .info{flex:1 1 0;min-width:0}
+    .slot .acts{flex:1 1 100%;flex-wrap:nowrap}.slot .acts button{flex:1 1 auto;padding:8px 12px;font-size:16px}
+    #menu{padding:calc(12px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom));gap:8px}
+    #menu .cup{display:none}
+    #menu .logo{width:min(150px,18dvh);height:min(150px,18dvh)}
+    #menu h1{font-size:min(48px,9dvh)}
+    #menu .mbtns button{padding-top:min(14px,1.8dvh);padding-bottom:min(14px,1.8dvh)}
   }
   /* §11 yatay telefon (alçak ekran): küçük, tek satır düzen */
   @media (orientation:landscape) and (max-height:520px){
@@ -246,16 +353,23 @@
     #menu{gap:6px}#menu .logo{width:70px;height:70px}#menu h1{font-size:44px}#menu .tag{font-size:13px;margin:0}#menu .mbtns{gap:6px}#menu .mbtns button{padding-top:8px;padding-bottom:8px}#menu .cup{width:min(140px,20vw)}
     body:has(#orders[style*="block"]) #sheet{padding-right:calc(min(250px,34vw) + 12px)}
     #sheet h3{font-size:15px;margin:0}#closeup{width:min(100%, calc(30vh * 640 / 340))}button.big{padding:9px;font-size:17px}.zbar{height:32px}
+    /* v0.30: yatay telefonda da pencerelerin düğme satırı kartın altında sabit (Devam/Kirayı öde/Günü başlat kaydırmadan görünür) */
+    .overlay{padding-top:44px}.overlay .card{max-height:calc(100dvh - 52px);padding-bottom:0}
+    .overlay .card>:last-child{margin-bottom:10px}
+    .card>.row:last-child,#modalCard .mrow{position:sticky;bottom:0;z-index:3;margin:8px -16px 0!important;padding:8px 16px 10px;background:#f3ebdf;border-top:2px solid #e6d6bf}
+    .rvrow{margin-top:4px}.rvrow button.big{margin-top:4px}
+    body:has(.overlay.on) .toast{top:6px;left:8px;right:120px;transform:none;max-width:none;max-height:36px;padding:4px 10px;z-index:12;overflow:hidden}
+    body:has(.overlay.on) #hud{visibility:hidden}
   }
 </style>
 </head>
 <body>
 <canvas id="scene"></canvas>
 <div id="hud" style="display:none">
-  <span class="pill"><b id="hDay">Pzt</b> · <b id="hClock">08:00</b></span>
+  <span class="pill clk"><b id="hDay">Pzt</b><span class="hwk" id="hWeek"></span> · <b id="hClock">08:00</b></span>
   <span class="pill" id="hRent"></span>
   <span class="pill money">₺<b id="hMoney">0</b></span>
-  <span class="pill">İtibar <b id="hRep">0</b></span>
+  <span class="pill rep">İtibar <b id="hRep">0</b></span>
   <span class="pill" id="hStars">★</span>
   <span class="pill next" id="hNext"></span>
   <span class="pill debt" id="hDebt" style="display:none"></span>
@@ -327,11 +441,11 @@
   </svg>
 </section>
 <div class="toast" id="toast"></div>
-<script>window.CB_VERSION = "0.29";</script>
-<script src="data.js?v=0.29"></script>
-<script src="audio.js?v=0.29"></script>
-<script src="scene.js?v=0.29"></script>
-<script src="closeup.js?v=0.29"></script>
-<script src="game.js?v=0.29"></script>
+<script>window.CB_VERSION = "0.33";</script>
+<script src="data.js?v=0.33"></script>
+<script src="audio.js?v=0.33"></script>
+<script src="scene.js?v=0.33"></script>
+<script src="closeup.js?v=0.33"></script>
+<script src="game.js?v=0.33"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.29",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.33",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -402,9 +402,9 @@ window.DATA = {
   extrasStart: { sleeve: 20, napkin: 60, sugar: 60, stirrer: 30, sweetener: 20, straw: 10 }, extrasLow: 10, extraTip: [1, 0.3, 0],   // v0.24: Yıldız Teyze'den kalan stok
   // §12 zorluk: Normal = belgedeki değerler
   difficulty: {
-    easy:   { label: "Kolay",  desc: "Müşteriler daha sabırlı, renkli bölgeler %10 geniş, tedarik %20 ucuz (daha çok kâr), ₺3.600 ile başla.", patience: 1.3,  zone: 1.10, cost: 0.80, startMoney: 400 },
+    easy:   { label: "Kolay",  desc: "Sabırlı müşteriler, renkli bölgeler %10 geniş, tedarik %20 ucuz.", patience: 1.3,  zone: 1.10, cost: 0.80, startMoney: 400 },
     normal: { label: "Normal", desc: "Oyunun dengelendiği zorluk.", patience: 1,    zone: 1,    cost: 1,    startMoney: 300 },
-    hard:   { label: "Zor",    desc: "Müşteriler sabırsız, renkli bölgeler %15 dar, tedarik %20 pahalı (az kâr), ₺2.250 ile başla.", patience: 0.75, zone: 0.85, cost: 1.20, startMoney: 250 }
+    hard:   { label: "Zor",    desc: "Sabırsız müşteriler, renkli bölgeler %15 dar, tedarik %20 pahalı.", patience: 0.75, zone: 0.85, cost: 1.20, startMoney: 250 }
   },
   badLines: ["Bunu içemem, almıyorum!", "Bu kahve mi şimdi? Para vermem!", "Berbat olmuş, kalsın.", "Yeniden yap ya da hiç yapma!", "Böyle kahve olmaz, gidiyorum."],
   noCupLines: ["Nasıl {s} bardağınız yok?!", "{S} bardak mı bitmiş? Olacak iş değil!", "Bardak yoksa ben de yokum!", "Bu dükkanda {s} bardak bile yok mu?"],
@@ -531,23 +531,22 @@ window.DATA = {
     // §10 ilk kahve öğreticisi: ilk müşteri Yıldız Teyze, adım adım
     first: "Yıldız Teyze tezgâhın önünde seni bekliyor. Hazır olunca ona dokun.",
     // §10 ilk espresso: Yıldız Teyze her adımı sözlü anlatır
-    espressoIntro: "<b>Önce espresso.</b> Bütün kahvelerin anası odur ve dört adımda yapılır: <b>öğüt, dozla, sıkıştır, çek</b>. Her adımda bir ibre var; ibre tam <b>koyu yeşilde</b> durduğunda basarsın. Bu iş ustalık ister evladım, sabırla öğrenilir.",
+    espressoIntro: "<b>Espresso 4 adımdır:</b> öğüt, dozla, sıkıştır, çek.",   // v0.30: telefonda kısa (ana talimat 1–2 satır)
     steps: {
-      grind:   "<b>1. Öğütme.</b> Çekirdeği çok kaba öğütürsen su hızlı geçer, kahve ekşi olur; çok ince öğütürsen tıkanır, acı olur. İbre gidip geliyor; tam ortadaki <b>koyu yeşile</b> gelince <b>ÖĞÜT</b>'e bas. Bu sefer ibreyi senin için orada bekleteceğim, sonra kendi gözünle yakalayacaksın.",
-      dose:    "<b>2. Dozlama.</b> Çift sepete 18 gram kahve koyacağız; bugün kahvecilerin çoğu espressoyu böyle, double (doppio) verir. Düğmeyi <b>basılı tut</b>; kahve dolar, terazi artar. Sakın erken bırakma, ibre <b>koyu yeşile gelene kadar</b> basılı tut.",
-      tamp:    "<b>3. Temperleme.</b> Kahveyi temper aletiyle düz ve eşit sıkıştırırız ki su her yerden aynı hızda geçsin; gevşek kalırsa su kanal açar, kahve sulu olur. Temper dairesi büyüyüp küçülüyor; siyah kenarı <b>koyu yeşil halkaya</b> gelince daireye ya da <b>BASTIR</b>'a dokun.",
-      extract: "<b>4. Çekme.</b> Portafiltreyi makineye taktık. <b>BAŞLAT</b>'a bas. İlk birkaç saniye kahve ıslanır (ön ıslatma), sonra akmaya başlar. Terazide 18 gramdan <b>36 gram</b> espresso, 25–30 saniyede: ibre <b>koyu yeşile</b> gelince <b>DURDUR</b>.",
-      milk:    "<b>Süt köpürtüyoruz.</b> Düğmeyi basılı tut: süt ısınır, ibre sağa ilerler. İbre koyu yeşildeyken (<b>60–65 °C</b>) bırak.",
-      art:     "<b>Latte art.</b> Basılı tut ve sütü dök; ibre doluluğu gösterir, koyu yeşilde bırak. Sonra kesim ibresi gidip gelir: koyu yeşildeyken <b>KES</b>."
+      grind:   "<b>1. Öğüt.</b> İbre <b>koyu yeşile</b> gelince <b>ÖĞÜT</b>'e bas.",
+      dose:    "<b>2. Dozla.</b> 18 gram koyacağız. <b>Basılı tut</b>, ibre <b>koyu yeşile</b> gelince bırak.",
+      tamp:    "<b>3. Sıkıştır.</b> Siyah kenar <b>koyu yeşil halkaya</b> gelince <b>BASTIR</b>'a dokun.",
+      extract: "<b>4. Çek.</b> <b>BAŞLAT</b>'a bas. 36 gram yaklaşık 27 saniyede akar; ibre <b>koyu yeşilde</b> <b>DURDUR</b>.",
+      milk:    "<b>Süt.</b> Basılı tut; ibre <b>koyu yeşildeyken</b> (60–65 °C) bırak.",
+      art:     "<b>Latte art.</b> Basılı tut, koyu yeşilde bırak; sonra koyu yeşilde <b>KES</b>."
     },
-    pressNow:   "<b>İşte şimdi!</b> İbre tam koyu yeşilde. Bas bakalım.",
-    extractEarly: "Erken durdurdun evladım! Kahvenin akmasını <b>beklemelisin</b>; ibre koyu yeşile gelince durdur. Hadi, bir daha <b>BAŞLAT</b>'a bas.",
+    pressNow:   "<b>İşte şimdi!</b> İbre koyu yeşilde, bas!",
+    extractEarly: "Erken durdurdun evladım. Kahvenin akmasını bekle; yine <b>BAŞLAT</b>'a bas.",
     tooEarly:   "Acele etme evladım. İbre <b>koyu yeşile</b> gelsin, öyle bas.",
-    release:    "<b>Şimdi bırak!</b> İbre koyu yeşilde; tam 18 gram oldu.",
-    holdRetry:  "Erken bıraktın, sepet yarım kaldı. Baştan alalım: düğmeyi <b>koyu yeşile gelene kadar</b> bırakmadan basılı tut.",
-    extractRun: "Bak, kahve akıyor. Önce koyu bal rengi gelir, sonra açık karamel rengi bir krema oluşur; güzel espresso böyle akar. İbreyi izle, <b>koyu yeşile</b> gelince durduracağız.",
+    release:    "<b>Şimdi bırak!</b> Tam 18 gram oldu.",
+    holdRetry:  "Erken bıraktın. Baştan: <b>koyu yeşile</b> gelene kadar <b>basılı tut</b>.",
+    extractRun: "Kahve akıyor: önce koyu bal rengi, sonra karamel krema. <b>Koyu yeşilde</b> durdur.",
     stopNow:    "<b>Şimdi durdur!</b> 36 gram, 27 saniye: tam kıvamında.",
-
 
     done: "Eline sağlık evladım, mis gibi olmuş! İlk espressonu yaptın, ilk paranı da kazandın. Artık ben gideyim; dükkan sana emanet. Müşteriler gerçek, sabırları var. Takıldığında tarif defterime bak."
   }
