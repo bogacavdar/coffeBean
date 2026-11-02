@@ -7,7 +7,11 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.35) – sonraki sürüm v0.36
+## Bekleyen paket (son yayın: v0.36)
+(boş)
+
+## v0.36 – YAYINLANDI (2 Kasım 2026, kullanıcı "paket çık" dedi)
+- Kullanıcı "bunları da düzelt": doküman §3 açılış tablosu ve §7 grup paragrafı yeni Türkçe adlarla güncellendi (Claude Docs rev 153 + HTML).
 - **Tarif açıldığı gün istenmez:** `spawnCustomer` menüsü `S.unlockDay[id] === S.day` olanları dışarıda bırakır (menü boş kalırsa hepsi); "yeni tarif daha sık" penceresi ertesi günden itibaren 3 gün.
 - **Tedarik yönlendirmesi:** `supplyNeedsFor(ids)` (özel malzeme/şeker, bardak < `cupMin`, inek sütü), `goSupply(keys, fromHub)`, `closeSupplyAside()`. Alet alımında menüye yeni giren tarif için eksik varsa pencere + "Tedarik'e git"; Tedarik'te ilgili satırlar `tr.focus` ile vurgulanır, "← Dükkana dön" Dükkan'ı yeniden açar. Yeni tarif penceresinde de (aletleri varsa) eksik malzemeler + düğme.
 - **Açılış sırası kolaydan zora:** 82 tarifin `unlockCups` ve `shop` değerleri yeniden dizildi (1★ 20, 2★ 23, 3★ 23, 4★ 14, 5★ 2). Alet yıldızı alt sınırı korunuyor. Taşınanlar: Sütlü Türk, Salep, Einspänner → 1★; Kopi, Mırra, Melange, Bombón, Irish, Bicerin, Piccolo, Gibraltar, Latte macchiato → 2★; şuruplu/soslu latteler (zencefilli, dirty chai, balkabaklı, naneli mocha, tuzlu karamel, caramel macchiato) ve Yunan frappé → 3★. Eski kayıtlarda eşiği geçilmiş ama açılmamış tarifler bir sonraki kontrolde açılabilir.

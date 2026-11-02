@@ -1,5 +1,13 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.36 – 2 Kasım 2026 (açılış sırası, geliştirmeler, Türkçe adlar)
+- **Yeni tarif açıldığı gün istenmiyor.** Müşteriler yeni tarifi ertesi günden itibaren ister, ilk 3 gün daha sık. Gün sonunda alet ve malzemeyi almaya vakit kalır.
+- **Tedarik'e yönlendirme:** Dükkan'da alet alınca menüye giren tarif için Tedarik'te eksik bir şey (şurup, sos, krem, bardak, süt) varsa pencere bunları listeler. "Tedarik'e git" ilgili satırları vurgulayarak Tedarik'i açar, "← Dükkana dön" geri getirir. Yeni tarif penceresinde de aynı uyarı ve düğme var.
+- **Tarifler kolaydan zora açılıyor:** her dükkanda önce bildiğin adımları tekrar eden tarifler, sonra yeni alet getirenler, en sonda süt, şurup ve sos isteyen çok adımlı tarifler. 1★ 20, 2★ 23, 3★ 23, 4★ 14, 5★ 2 tarif. Hiçbir tarif aletinin dükkanından önce gelmez.
+- **Bar yükseltmeleri 3 kademe:** öğütücü, terazi, temper, PID, termometreli sürahi ve döküm sürahisi 3 kez geliştirilir (×1,2 → ×1,35 → ×1,5), her kademe öncekinden pahalı. Otomatikleştirici 3/3'ten sonra açılır ve her zaman en pahalısı. Eskiden alınmış yükseltmeler 3/3 sayılır.
+- **Türkçe adlar:** Türkçe karşılığı olan 23 tarif Türkçe adıyla görünüyor (ör. Kremalı espresso, Viyana kahvesi, Baharatlı çay latte, Soğuk demleme kahve). Uluslararası adıyla bilinenler ve özel adlar aynı kaldı.
+- Mevcut kayıtta eşiği geçilmiş ama açılmamış tarifler bir sonraki satışta birlikte açılabilir.
+
 ## v0.35 – 2 Kasım 2026 (otomasyon, tarif seçimi, dükkan sıralı açılım)
 - **Otomatik aletler artık 100 puan veriyor** (önceden 85): otomatik öğütücü, tartılı öğütücü, otomatik temper, süper otomatik espresso makinesi, otomatik süt köpürtücü, Türk kahvesi makinesi, filtre kahve makinesi. Yardımcı baristanın kendi hazırladığı siparişler 85 puanda kaldı.
 - **Tarif seçimi gruplu ve alfabetik:** elle hazırlarken tarifler Espresso bazlı, Türk ve geleneksel, Demleme ve filtre, Soğuk ve buzlu, Kahvesiz gruplarında, her grup kendi içinde alfabetik görünüyor. Boş grup gösterilmiyor.
