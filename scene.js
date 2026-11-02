@@ -10,7 +10,7 @@ window.SCENE = (() => {
   // §12 grafik ayarları: ekran kartı (donanım hızlandırma) isteği + kalite (çözünürlük, efektler, kare hızı)
   const QUALITY = { high: { maxDpr: 2, scale: 1, fx: 2, fps: 0 }, medium: { maxDpr: 1.25, scale: 1, fx: 1, fps: 0 }, low: { maxDpr: 1, scale: .8, fx: 0, fps: 30 } };
   let Q = QUALITY.high, acc = 0;
-  function init(canvas, gpu = true) { cv = canvas; ctx = cv.getContext("2d", gpu ? { alpha: false, desynchronized: true } : { alpha: false, willReadFrequently: true }); }
+  function init(canvas, gpu = true) { cv = canvas; ctx = cv.getContext("2d", gpu ? { alpha: false } : { alpha: false, willReadFrequently: true }); }   // v0.34: desynchronized kaldırıldı – telefonda kare bitmeden ekrana basılıp kare sonunda çizilen balonlar yanıp sönüyordu
   function setQuality(q) { Q = QUALITY[q] || QUALITY.high; }
   let INS = { top: 0, right: 0 };                                                            // v0.30: dikey telefonda HUD'un alt kenarı (kamera ve balonlar bunun altında kalır)
   function setInsets(o) { INS = Object.assign({ top: 0, right: 0 }, o || {}); }

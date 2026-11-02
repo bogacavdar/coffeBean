@@ -1,5 +1,10 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.34 – 2 Kasım 2026 (telefonda yanıp sönen konuşma balonu)
+- **Konuşma balonu telefonda artık yanıp sönmüyor.** Ekran kartıyla çizimde tuval "eşzamansız" moddaydı. Bu modda telefon kareyi çizim bitmeden ekrana basabiliyor.
+- Kareye en son çizilen konuşma balonları ve rozetler bu yüzden bazı karelerde eksik görünüp yanıp sönüyordu. Bu mod kaldırıldı; her kare tamamlandıktan sonra gösteriliyor.
+- Hazırlama ekranındaki yakın plan çizimi için de aynısı yapıldı.
+
 ## v0.33 – 2 Kasım 2026 (dükkan ekrana sığıyor)
 - **Telefonu dik tutunca dükkanın tamamı görünüyor.** Duvar tabelası, raflar, tezgâh, vitrin, kapı ve masalar ekranın genişliğine göre ölçeklenir.
 - Sağdaki düğme sütununun üstünde yer varsa dükkan oraya, tam genişlikte yerleşir. Yoksa sütunun soluna sığar.

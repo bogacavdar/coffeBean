@@ -5,7 +5,7 @@ window.CLOSEUP = (() => {
   // §11: panel artık sahnenin ortasında büyük bir kart — tuval CSS'te büyütülür, burada mantıksal ızgara ona ölçeklenir (daha büyük, daha net).
   let maxDpr = 2, gpuOn = true;
   function setQuality(q, gpu) { maxDpr = q === "high" ? 2 : q === "medium" ? 1.25 : 1; if (gpu != null) gpuOn = gpu; }   // §12
-  function init(canvas) { if (!canvas || !canvas.getContext) return; cv = canvas; ctx = harden(cv.getContext("2d", gpuOn ? { desynchronized: true } : { willReadFrequently: true })); if (ctx) size(); }
+  function init(canvas) { if (!canvas || !canvas.getContext) return; cv = canvas; ctx = harden(cv.getContext("2d", gpuOn ? {} : { willReadFrequently: true })); if (ctx) size(); }
   // v0.24 sağlamlık: NaN / negatif yarıçap çizimi patlatmasın (arc/ellipse/arcTo negatif yarıçapta hata fırlatır)
   let small = false;                                                               // v0.30: telefonda dar tuval – okunmayan küçük yazılar gizlenir, okunması gerekenler büyür
   function harden(c) { if (!c || c.__cuSafe) return c; c.__cuSafe = 1; const A = c.arc, E = c.ellipse, AT = c.arcTo, R = v => Math.max(0, v) || 0, FT = c.fillText;

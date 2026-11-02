@@ -7,8 +7,12 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.33)
+## Bekleyen paket (son yayın: v0.34)
 (boş)
+
+## v0.34 – YAYINLANDI (2 Kasım 2026; kullanıcı telefonda "Merhaba…" balonunun yanıp söndüğünü bildirdi)
+- Sebep: `SCENE.init` ve `CLOSEUP.init` GPU açıkken 2D bağlamı `desynchronized: true` ile alıyordu. Bu modda kare bitmeden ekrana basılabiliyor; v0.30'dan beri balon/rozet/etiket kare sonunda (`layoutOverlays`) çizildiği için en çok onlar yanıp sönüyordu. Masaüstü testlerinde (yazılım çizimi, GPU kapalı) görünmüyordu.
+- Düzeltme: iki bağlamdan da `desynchronized` kaldırıldı. Başka değişiklik yok.
 
 ## v0.30–v0.33 – YAYINLANDI (2 Kasım 2026; kullanıcı telefonda dik ekran sorunlarını bildirdi)
 Not: v0.30–v0.32 kullanıcıya yalnız zip olarak gitmişti, GitHub'a gönderilmemişti (Kural 4 ihlali). Kullanıcı adreste hâlâ v0.29'u görünce dördü birlikte v0.33 olarak main'e gönderildi.
