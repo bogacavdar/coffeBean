@@ -7,8 +7,9 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.38)
-(boş)
+## Bekleyen paket (son yayın: v0.38) – sonraki sürüm v0.39
+- **Yakınlaştırma geri alındı, maket tam ortalı** (kullanıcı: "zoom olmadı, tam ortalanmamış"): portre kamerası maketin tamamını sığdırır; `UP = 215/40 + 0,36K` (tepe), `DN = 18K + 0,55` (dip), üst boşluk = alt boşluk = `(H − HU·TW)/2`, en az HUD altı ve `H − (iconTop − 66)`. `OX = (W − R)/2 − TW` (yatay orta). İkonlar altta kaldı.
+- Yalnız sözdizimi kontrolü (Kural 7). Doküman: Claude Docs rev 156 §11 + HTML.
 
 ## v0.38 – YAYINLANDI (2 Kasım 2026, kullanıcı "paket çık" dedi)
 - **Dik ekran: ikonlar altta sıra, dükkan ortada ve yakın** (kullanıcı: "hâlâ kötü"): `#icons` portrede yatay tam genişlik; `#hint`/`#task`/`#orders`/`#openDay` sıranın üstüne. `sceneInsets` sıra yatayken `right: 0`. Kamera: kutu BY0 3,6 (boş duvar üstü kırpılır), yakınlık ZW 1,3 / ZH 1,08, `OX = orta − 1,6·TW` (kapı x 8,2 görünür; sol raf/bitki ve sağ askı kırpılabilir). Balonlar `iconTop − 60` altına inmez.

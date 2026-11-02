@@ -75,16 +75,16 @@ window.SCENE = (() => {
     } else {                                                                       // dik telefon (v0.32): TÜM dükkan ekrana sığar (duvar tabelası, tezgâh, vitrin, kapı, masalar)
       // dükkanın ilgi kutusu (OX/OY'ye göre, TW biriminde): yatayda −8,4…+10,4 · dikeyde −3,7 (tabela tepesi) … +9,3 (ön masalar)
       const K = 0.6;                                                               // v0.37: dik ekranda kamera biraz daha yukarıdan bakar (TH/TW = 0,6)
-      const BX0 = 8.25, BW = 18.5, BY0 = 3.6, BH = 3.6 + 18 * K + .7;                // v0.38: kutu tabelanın üstünden başlar (boş duvar üstü kırpılır) … zemin ön köşesi + kalınlık
-      const R = INS.right || 0, iTop = INS.iconTop || H, top = Math.max(0, INS.top) + 52, bot = R ? H - 52 : Math.min(H - 52, iTop - 66);   // v0.38: ikonlar alttaysa ipucu/görev kartı bandı da boş kalır   // HUD + altındaki bildirim (toast) bandı boş kalır
-      const ZW = 1.3, ZH = 1.08;                                                   // v0.38: yakın plan: işlevsiz kenarlar (dış duvar uçları, boş duvar üstü) kırpılabilir; tezgâh, sıra, kapı ve masalar kadrajda
-      const fit = (x0, x1, y0, y1) => ({ tw: Math.min(70, (x1 - x0) / BW * ZW, (y1 - y0) / BH * ZH), x0, x1, y0, y1 });
-      const A = fit(8, W - 8, top, Math.min(bot, iTop - 6));                        // ikon sütununun üstünde, tam genişlik
-      const B = fit(8, W - R - 6, top, bot);                                        // ikon sütununun solunda, tam yükseklik
-      const f = A.tw >= B.tw ? A : B;
-      TW = Math.max(12, f.tw); TH = TW * K;
-      OX = (f.x0 + f.x1) / 2 - 1.6 * TW;                                            // yatayda tezgâh–kapı arası ortada; taşarsa soldaki raf/bitki ve sağdaki askı kırpılır, kapı (x 8,2) görünür kalır
-      OY = f.y0 + BY0 * TW + ((f.y1 - f.y0) - BH * TW) * .5;                        // dikeyde ortalı
+      // v0.39: yakınlaştırma yok; maketin tamamı görünür ve ekranda tam ortalanır:
+      // en üst nokta (arka duvar üst kesiti) ile ekranın üstü arası = en alt nokta (zeminin ön köşesi) ile ekranın altı arası
+      const UP = 215 / 40 + .36 * K, DN = 18 * K + .55, HU = UP + DN, WU = COLS + ROWS + .36;   // TW biriminde: tepe/dip yüksekliği, genişlik
+      const R = INS.right || 0, iTop = INS.iconTop || H;
+      const needTop = Math.max(0, INS.top) + 8, needBot = H - (R ? H - 52 : Math.min(H - 52, iTop - 66));   // HUD'un altı · ikon sırası + ipucu bandının üstü
+      const m0 = Math.max(needTop, needBot);                                         // eşit boşluk en az bu kadar olmalı
+      TW = Math.max(12, Math.min(70, (W - R - 16) / WU, (H - 2 * m0) / HU)); TH = TW * K;
+      const m = (H - HU * TW) / 2;                                                   // üst boşluk = alt boşluk
+      OX = (W - R) / 2 - TW;                                                         // maket yatayda ortalı (sol köşe −8,18 … sağ köşe +10,18)
+      OY = m + UP * TW;
     }
   }
   const iso = (x, y, z = 0) => [OX + (x - y) * TW, OY + (x + y) * TH - z * (TW / 40)];
