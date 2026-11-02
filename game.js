@@ -32,7 +32,7 @@ function newState(diff = "normal") {
     perfect: { espresso: 0 }, served: {}, unlocked: ["espresso"], taught: [],
     beans: { brazil: { kg: 1, boughtDay: 1 } }, bean: "brazil", milk: 0,
     equipment: {}, prices: {}, tipsLearned: [], regulars: {}, log: [],
-    debt: 0, staff: {}, decor: {}, streak: 0, milkDay: 1, traffic: {}, tools: {}, market: {}, loans: [], cups: Object.assign({}, D.startCups), extras: Object.fromEntries(Object.keys(D.extras).map(k => [k, typeof D.extrasStart === "object" ? (D.extrasStart[k] || 0) : D.extrasStart])), econ: D.econScale, lessonMig: 1, syr: {}, cbBrewing: 0
+    debt: 0, staff: {}, decor: {}, streak: 0, milkDay: 1, traffic: {}, tools: {}, market: {}, loans: [], cups: Object.assign({}, D.startCups), extras: Object.fromEntries(Object.keys(D.extras).map(k => [k, typeof D.extrasStart === "object" ? (D.extrasStart[k] || 0) : D.extrasStart])), econ: D.econScale, lessonMig: 1, decorFix: 1, syr: {}, cbBrewing: 0
   };
 }
 function save(slot) { if (!S) return; try { S.savedAt = Date.now(); localStorage.setItem(SLOT_KEY(slot || curSlot), JSON.stringify(S)); } catch (e) {} }
@@ -84,7 +84,8 @@ function autoSteps() { const set = new Set(); Object.keys(S.equipment).forEach(k
 // §5 latte art adımı 3★ dükkanda latte/cappuccino'ya eklenir
 function stepsFor(id) { const d = D.drinks[id]; const st = d.steps.slice(); if (d.art && shop().stars >= 3) { if (st.includes("pour")) st[st.indexOf("pour")] = "art"; else st.splice(st.indexOf(st.includes("swirl") ? "swirl" : "milk") + 1, 0, "art"); } return st; }   // v0.24: latte art dökümün kendisidir
 // §8 dekor dükkana özel: yalnızca bu dükkanın (stars) dekoru görünür ve etki eder
-const activeDecor = () => { const o = {}; Object.keys(S.decor || {}).forEach(k => { if (S.decor[k] && D.decor[k] && (D.decor[k].stars || 1) === shop().stars) o[k] = true; }); return o; };
+const decorOwned = id => { const v = (S.decor || {})[id], st = (D.decor[id] || {}).stars || 1; return v === true ? st === 1 : v === st; };   // v0.43: dekor ancak kendi dükkanında alındıysa sayılır (değer = alındığı dükkanın yıldızı)
+const activeDecor = () => { const o = {}; Object.keys(S.decor || {}).forEach(k => { if (D.decor[k] && decorOwned(k) && (D.decor[k].stars || 1) === shop().stars) o[k] = true; }); return o; };
 const decorMult = key => Object.keys(activeDecor()).reduce((m, k) => D.decor[k][key] ? m * D.decor[k][key] : m, 1);
 const th = key => { const u = SCENE.thumb && SCENE.thumb(key); return u ? `<img class="thumb" src="${u}" alt="">` : ""; };   // §8 satın alma listelerinde ürün görseli
 // §9 müşteri trafiği: sıra sınırı (X), günlük en fazla (Y), geliş sıklığı; Y ve sıklık dükkana özel 3 kademe
@@ -136,7 +137,7 @@ function pumpLessons() {
   if (!lessonQ.length) return;
   if ($("#ovModal").classList.contains("on")) { setTimeout(pumpLessons, 600); return; }
   const { key, then } = lessonQ.shift(), L = D.lessons[key];
-  modal(`<h3>📖 ${L.t}</h3><p class="muted" style="margin:-6px 0 6px">Yıldız Teyze'nin defterinden</p><p>${L.h}</p>`, [{ label: "Anladım", pri: true, fn: () => { if (then) then(); setTimeout(pumpLessons, 60); } }]);
+  modal(`<h3>📖 ${L.t}</h3><p class="muted" style="margin:-6px 0 6px">Yıldız Teyze'nin defterinden</p><p>${L.h}</p>`, [{ label: "Anladım", pri: true, fn: () => { if (then) then(); flowEvent("lesson:" + key); setTimeout(pumpLessons, 60); } }]);
 }
 function stepLessonKey(o, s) {                                                    // hazırlama adımının dersi (öğretici ve otomatik adımlar hariç)
   if (o.tutorial || o.assist || (o.auto && o.auto.has(s))) return null;
@@ -288,7 +289,7 @@ function checkAch(o, c, service) {
 function juryScore(sv) {                                                          // §13 yarışma: 3 jüri servisinin ortalaması → madalya
   if (!day || !day.juryScores) return; day.juryScores.push(sv); if (day.juryScores.length < D.competition.drinks.length) return;
   const avg = Math.round(day.juryScores.reduce((a, b) => a + b, 0) / day.juryScores.length), m = D.competition.medals.find(x => avg >= x.min);
-  day.juryScores = null;
+  day.juryScores = null; setTimeout(() => flowEvent("jury"), 2500);
   if (m) { S.money += m.money; S.rep += m.rep; (S.medals = S.medals || []).push({ day: S.day, name: m.name, icon: m.icon, avg }); if (m.name === "Altın") ach("gold"); S.log.push("Gün " + S.day + ": yarışma " + m.name + " madalya (" + avg + ")"); AUDIO.sfx("perfect"); }
   setTimeout(() => modal(`<h3>🏆 Barista yarışması</h3><p>Jüri ortalaması: <b>${avg}</b></p>${m ? `<p style="font-size:22px">${m.icon} <b>${m.name} madalya</b></p><p>Ödül: ₺${tl(m.money)} · +${m.rep} itibar</p>` : "<p>Bu sefer madalya yok. Haftaya yeniden dene!</p>"}`), 1400);
   renderHUD(); save();
@@ -340,7 +341,7 @@ function startDay() {
     if (day.dirty) msgs.push("🧽 Makine dün temizlenmedi: ekstraksiyon bugün daha zor");
     if (day.jury) msgs.push("🏆 Yarışma günü: ilk 3 müşteri jüri");
     if (msgs.length) toast(msgs.join(" · "));
-    const after = () => { if (!day) return; if (day.weather) lesson("weather"); if (day.dirty) lesson("dirty"); if (day.jury) lesson("jury"); };   // v0.42 §15
+    const after = () => { if (!day) return; flowEvent("calib"); if (day.weather) lesson("weather"); if (day.dirty) lesson("dirty"); if (day.jury) lesson("jury"); };   // v0.42 §15
     const skipOpen = window.CB_TEST_NOOPEN; window.CB_TEST_NOOPEN = false;   // akış testi: sabah açılışını atla
     if (S.day >= 2 && !skipOpen) lesson("machineOn", () => showMachineOn(() => lesson("calibration", () => showCalibration(after)))); else after(); }, 350);
   if (firstTime) {
@@ -485,7 +486,7 @@ function takeOrder(id) {
 // §7 seçim adımı: tarif + boy seçilir, seçilen bardak harcanır, adımlar boya göre kurulur
 function prepareOrder(o, drink, size, bean, milk, sugar) {
   bean = bean || "brazil"; milk = isMilky(drink) ? (milk || "cow") : null; sugar = D.drinks[drink].sugar ? (sugar || "sade") : null;
-  o.drink = drink; o.size = size; o.bean = bean; o.milk = milk; o.sugar = sugar; o.selecting = false;
+  o.drink = drink; o.size = size; o.bean = bean; o.milk = milk; o.sugar = sugar; o.selecting = false; if (!o.tutorial) flowEvent("prep", o);
   if (D.drinks[drink].noBean) bean = o.cust.bean || "brazil";                  // v0.24 kahvesiz tarif: çekirdek yok
   const sm0 = o.sel || {}, wm = o.cust.mods || {}; o.extra = !!sm0.extra && D.drinks[drink].steps.includes("extract"); o.takeaway = !!sm0.takeaway && /^cup/.test(SZ(size).cup);   // §13
   o.mismatch = drink !== o.cust.drink || size !== o.cust.size || bean !== (o.cust.bean || "brazil") || (milk || null) !== (o.cust.milk || null) || (sugar || null) !== (o.cust.sugar || null) || (!o.tutorial && (o.extra !== !!wm.extra || o.takeaway !== !!wm.takeaway));   // §6 çekirdek ve süt de doğru olmalı
@@ -600,7 +601,7 @@ function bgExtract(o, dt) {
 }
 function finishStep(o, score, tipKey) {
   AUDIO.stopLoops();
-  const s = o.steps[o.i]; o.scores[s] = score;
+  const s = o.steps[o.i]; o.scores[s] = score; flowEvent("step:" + s, o);
   if (score < 70 && tipKey && !S.tipsLearned.includes(tipKey)) { S.tipsLearned.push(tipKey); toast("📖 " + D.tips[tipKey]); }
   const el = $("#mgScore"); if (el) { el.textContent = D.minigames[s].name + ": " + score; el.className = "score " + (score >= 80 ? "good" : score < 70 ? "bad" : ""); }
   o.i++; o.phase = "ready"; o.v = 0; o.dir = 1; o.start = null; o.air = false; o.tex = 0; o.tgt = null; o.z = null; o.holdTick = null;   // yeni adım uiZone'da kurulur
@@ -649,7 +650,7 @@ function renderReview(o, tabs) {
     AUDIO.sfx("click"); save(); renderHUD(); renderBench(); };
 }
 function serve(o) {
-  if (!o.assist && !day.orders.includes(o)) return;
+  if (!o.assist && !day.orders.includes(o)) return; flowEvent("serve", o);
   const c = o.cust; const ct = D.customers[c.type] || { tip: 1, discount: null };   // Yıldız Teyze (§10): sabit tipte değil, normal müşteri değil
   let quality = orderQuality(o);                                                   // §4 tüm adımların ortalaması + §6 çekirdek
   const p = c.patienceMax ? c.patience / c.patienceMax : 1; const speedMult = 0.6 + 0.4 * clamp(p / 0.5, 0, 1);   // §7 hız çarpanı 1,0→0,6
@@ -815,7 +816,7 @@ function showLedger(dayNum, st, L, repDelta) {
   const go = () => { if (L.news) showNews(weekNo(dayNum), L.news, openRestock, backToLedger); else openRestock(); };
   $("#ledgerOk").onclick = () => { if (short) { takeLoan(need, D.economy.rentLoanDays); showLedger(dayNum, st, L, repDelta); return; }
     if (ctut) { if (S.cleanDay !== dayNum) return; $("#ovLedger").classList.remove("on"); teach("closing", "L:clean"); save();   // v0.42 §15 veda: Yıldız Teyze kapanıştan sonra gider
-      return modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.done}</p>`, [{ label: "Devam", pri: true, fn: go }]); }
+      return modal(`<h3>Yıldız Teyze</h3><p>${D.tutorial.done}</p>`, [{ label: "Devam", pri: true, fn: () => { go(); flowEvent("closing"); } }]); }
     $("#ovLedger").classList.remove("on"); go(); };
   if (!ctut && cb) lesson("clean");                                              // v0.42 §15 eski kayıt: temizlik dersi
 }
@@ -1260,7 +1261,7 @@ function hubContent() {
     return `<div class="box"><p class="muted">Bazı tarifler bu aletler olmadan yapılamaz. Dükkan büyüyünce yenisine taşınır.</p><table>${rows}</table></div>`;
   }
   if (hubTab === "loans") return `<div class="box">${loansHTML()}</div>`;
-  return `<div class="box"><p class="muted">Dekor yalnızca bu dükkanda görünür ve etki eder.</p><table>` + Object.entries(D.decor).filter(([, dc]) => (dc.stars || 1) === lv.stars).sort((a, b) => a[1].price - b[1].price).map(([id, dc]) => `<tr><td>${th("decor:" + id)}<b>${dc.name}</b><br><span class="muted">${dc.effect}</span></td><td>₺${tl(dc.price)}</td><td>${S.decor[id] ? "✓ dükkanda" : `<button data-dec="${id}" ${S.money < dc.price ? "disabled" : ""}>Satın al</button>`}</td></tr>`).join("") + `</table></div>`;
+  return `<div class="box"><p class="muted">Dekor yalnızca bu dükkanda görünür ve etki eder.</p><table>` + Object.entries(D.decor).filter(([, dc]) => (dc.stars || 1) === lv.stars).sort((a, b) => a[1].price - b[1].price).map(([id, dc]) => `<tr><td>${th("decor:" + id)}<b>${dc.name}</b><br><span class="muted">${dc.effect}</span></td><td>₺${tl(dc.price)}</td><td>${decorOwned(id) ? "✓ dükkanda" : `<button data-dec="${id}" ${S.money < dc.price ? "disabled" : ""}>Satın al</button>`}</td></tr>`).join("") + `</table></div>`;
 }
 function renderHub() {
   const lv = shop(), flow = dayFlow === "hub";
@@ -1282,7 +1283,7 @@ function renderHub() {
     const now = S.unlocked.filter(x => hasTools(x) && !before.has(x)), need = supplyNeedsFor(now);   // v0.36: alet tarifi menüye aldıysa ve Tedarik'ten bir şey gerekiyorsa oraya yönlendir
     if (now.length && need.length) modal(`<h3>${now.map(x => D.drinks[x].name).join(", ")} artık menüde</h3><p>Müşterilerin bu kahveyi isteyebilmesi için Tedarik'ten şunları almalısın:</p><ul>${need.map(n => `<li><b>${n.txt}</b></li>`).join("")}</ul><p class="muted">Almazsan müşteriler bu kahveyi istemez ya da bardak yoksa gider.</p>`,
       [{ label: "Sonra" }, { label: "Tedarik'e git", pri: true, fn: () => goSupply(need.map(n => n.key), true) }]); });
-  R.querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const id = b.dataset.dec; if (S.money < D.decor[id].price) return; buy(D.decor[id].price, () => { S.decor[id] = true; }); re(); showPurchase("decor:" + id, D.decor[id].name); });
+  R.querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const id = b.dataset.dec; if (S.money < D.decor[id].price) return; buy(D.decor[id].price, () => { S.decor[id] = shop().stars; }); re(); showPurchase("decor:" + id, D.decor[id].name); });
   R.querySelectorAll("[data-tr]").forEach(b => b.onclick = () => { const k = b.dataset.tr, T = S.traffic[S.shopLevel] = Object.assign({ cust: 0, freq: 0 }, S.traffic[S.shopLevel]);
     if (T[k] >= 3 || S.money < shop().tierCost[T[k]]) return; const nm = D.traffic[k][T[k]]; buy(shop().tierCost[T[k]], () => { S.log.push("Gün " + S.day + ": " + nm); T[k]++; }); re(); showPurchase("tr:" + k + T[k], nm); });
   const hi = $("#hire"); if (hi) hi.onclick = () => { S.staff.assistant = true; S.log.push("Gün " + S.day + ": yardımcı barista işe alındı"); save(); re(); showPurchase("staff", "Yardımcı barista"); };
@@ -1329,7 +1330,7 @@ function renderPrices() {                                                       
   R.querySelectorAll("[data-pi]").forEach(i => i.onchange = () => { const v = Math.floor(+i.value); if (v > 0) set(i.dataset.pi, v); else renderPrices(); });
   const px = $("#prX"); if (px) px.onclick = () => closeOverlay("#ovPrice");
   const pbk = $("#prBack"); if (pbk) pbk.onclick = () => { dayFlow = "hub"; $("#ovPrice").classList.remove("on"); renderHub(); openOverlay("#ovHub"); };
-  $("#prNext").onclick = () => { if (!flow) return closeOverlay("#ovPrice"); dayFlow = null; mandatoryRestock = false; $("#ovPrice").classList.remove("on"); startDay(); };
+  $("#prNext").onclick = () => { if (!flow) return closeOverlay("#ovPrice"); flowEvent("prices"); dayFlow = null; mandatoryRestock = false; $("#ovPrice").classList.remove("on"); startDay(); };
 }
 
 // --- §8 Kahve borsası: haftalık değişim + gazete ---
@@ -1479,6 +1480,7 @@ function cheatAutoOrder() {
 }
 function cheatEndDay() { if (!day) return toast("Gün başlamadı"); AUDIO.stopLoops(); day.toSpawn = 0; day.orders = []; day.asst = null; day.customers = []; day.tutorialActive = false; renderBench(); endDay(); }
 const CHEATS = [
+  ["✓ Akış testi tamam", () => { if (!curFlow) return toast("Şu an bir akış testinde değilsin"); flowDone(); }], ["↩ Akış test listesi", () => { curFlow = null; goMenu(); showFlowTests(); }],
   ["💰 +₺1000", () => { S.money += 1000; }], ["⭐ +50 itibar", () => { S.rep += 50; }], ["🎓 +100 XP", () => { S.xp += 100; checkUnlocks(); }],
   ["☕ Siparişi kendisi yap", cheatAutoOrder], ["🚶 Müşteri getir", () => { if (!day) return toast("Önce günü başlat"); day.tutorialActive = false; spawnCustomer(); layout(); }],
   ["🌙 Günü bitir", cheatEndDay], ["🏠 Kira gününe atla", () => { if (day) return toast("Gün içinde değil, gün aralarında kullan"); S.day = Math.ceil(S.day / 7) * 7; }],
@@ -1555,16 +1557,32 @@ const FLOWS = [
   ["A29", "Tarif görselleri galerisi (82 tarif)", () => showDrinkGallery()]
 ];
 function showDrinkGallery() {                                                     // v0.43 §16 akış testi: tüm tariflerin bitiş görselleri
-  modal(`<h3>☕ Tarif görselleri</h3><p class="muted">Dokun: büyük görseli aç.</p><div class="ftgal">${Object.keys(D.drinks).map(id => `<button data-dg="${id}"><img src="${drinkThumb(id)}" alt=""><span>${D.drinks[id].name}</span></button>`).join("")}</div>`, [{ label: "Kapat" }]);
+  modal(`<h3>☕ Tarif görselleri</h3><p class="muted">Dokun: büyük görseli aç.</p><div class="ftgal">${Object.keys(D.drinks).map(id => `<button data-dg="${id}"><img src="${drinkThumb(id)}" alt=""><span>${D.drinks[id].name}</span></button>`).join("")}</div>`, [{ label: "Bitti ✓", pri: true, fn: () => { if (curFlow === "A29") flowDone(); } }]);
   document.querySelectorAll("[data-dg]").forEach(b => b.onclick = () => { const id = b.dataset.dg;
     modal(`<h3>${D.drinks[id].name}</h3><canvas id="dgCv" style="width:100%;aspect-ratio:480/250;border-radius:12px"></canvas>`, [{ label: "← Galeri", pri: true, fn: () => setTimeout(showDrinkGallery, 0) }]);
     setTimeout(() => { const cv = $("#dgCv"); if (!cv) return; CLOSEUP.init(cv); CLOSEUP.served(id, 92); }, 30); });
 }
-Object.keys(D.minigames).filter(k => Object.keys(D.drinks).some(id => stepsForLv(id, k === "pour" ? 0 : 2).includes(k))).forEach((k, i) => FLOWS.push(["M" + (i + 1), D.minigames[k].name + " (" + k + ")", () => tsStep(k)]));
+Object.keys(D.minigames).filter(k => Object.keys(D.drinks).some(id => stepsForLv(id, k === "pour" ? 0 : 2).includes(k))).forEach((k, i) => FLOWS.push(["M" + (i + 1), D.minigames[k].name + " (" + k + ")", () => tsStep(k), "step:" + k]));
+// v0.43 akış testi: test edilen akış bitince kendiliğinden tiklenir ve listeye dönülür (hile panelinde elle "tamam" da var)
+const FLOW_EV = { A1: "closing", A2: "closing", A3: "calib", A4: "calib", A5: "prices", A6: "prep", A7: (e, o) => e === "serve" && o && o.cust.mods && (o.cust.mods.extra || o.cust.mods.takeaway),
+  A8: (e, o) => e === "serve" && o && o.cust.type === "critic", A9: (e, o) => e === "serve" && o && o.cust.type === "tourist", A10: (e, o) => e === "serve" && o && o.cust.type === "influencer",
+  A11: "jury", A12: "lesson:rush", A13: "lesson:dirty", A14: "lesson:weather", A15: "lesson:weather", A16: "lesson:loyal",
+  A17: "step:extract", A18: "step:grind", A19: "step:dose", A20: "step:milk", A21: "step:milk", A22: "step:art", A23: "step:tkfoam" };
+let curFlow = null, lastFlow = null;
+const flowDoneSet = () => { try { return new Set(JSON.parse(LSG("cb_flowDone") || "[]")); } catch (e) { return new Set(); } };
+function flowEvent(ev, data) { if (!curFlow) return; const f = FLOWS.find(x => x[0] === curFlow), want = FLOW_EV[curFlow] || (f && f[3]); if (!want) return;
+  if (typeof want === "function" ? want(ev, data) : want === ev) flowDone(); }
+function flowDone() { if (!curFlow) return; const code = curFlow; curFlow = null; lastFlow = code; const st = flowDoneSet(); st.add(code); LSS("cb_flowDone", JSON.stringify([...st]));
+  toast("🧪 " + code + " test edildi ✓ · listeye dönülüyor"); AUDIO.sfx("perfect");
+  setTimeout(() => { $("#ovModal").classList.remove("on"); if (S) goMenu(); showFlowTests(); }, 1600); }
 function showFlowTests() {
-  modal(`<h3>🧪 Akış testi</h3><p class="muted">Her test ayrı bir deneme kaydında açılır; gerçek yuvaların değişmez. Bitince Çıkış → Ana menüye dön. Kodu (A3, M12…) yazarak geri bildirim ver.</p>
-    <div class="ftlist">${FLOWS.map(([c, n], i) => (i === 0 ? "<h4>Akışlar</h4>" : c === "M1" ? "<h4>Mini oyunlar (her biri ilk kez dersiyle)</h4>" : "") + `<button data-ft="${i}"><b>${c}</b> ${n}</button>`).join("")}</div>`, [{ label: "Kapat" }]);
-  document.querySelectorAll("[data-ft]").forEach(b => b.onclick = () => { $("#ovModal").classList.remove("on"); AUDIO.sfx("open"); try { FLOWS[+b.dataset.ft][2](); } catch (e) { console.error(e); toast("Test açılamadı: " + e.message); } });
+  const done = flowDoneSet();
+  modal(`<h3>🧪 Akış testi <span class="muted" style="font-size:14px;font-weight:600">${done.size}/${FLOWS.length} tamam</span></h3><p class="muted">Her test ayrı bir deneme kaydında açılır; gerçek yuvaların değişmez. Test edilince kendiliğinden ✓ alır ve buraya döner (hile panelinde "✓ Akış testi tamam" ile elle de bitirebilirsin). Kodu (A3, M12…) yazarak geri bildirim ver.</p>
+    <div class="ftlist">${FLOWS.map(([c, n], i) => (i === 0 ? "<h4>Akışlar</h4>" : c === "M1" ? "<h4>Mini oyunlar (her biri ilk kez dersiyle)</h4>" : "") + `<button data-ft="${i}" class="${done.has(c) ? "ftdone" : ""}" ${c === lastFlow ? 'id="ftLast"' : ""}><b>${c}</b> ${n}${done.has(c) ? '<i class="ftok">✓</i>' : ""}</button>`).join("")}</div>`,
+    [{ label: "Tikleri sıfırla", fn: () => { LSS("cb_flowDone", "[]"); lastFlow = null; setTimeout(showFlowTests, 0); } }, { label: "Kapat", pri: true }]);
+  document.querySelectorAll("[data-ft]").forEach(b => b.onclick = () => { $("#ovModal").classList.remove("on"); AUDIO.sfx("open"); const F = FLOWS[+b.dataset.ft]; curFlow = F[0]; lastFlow = F[0];
+    try { F[2](); curFlow = F[0]; } catch (e) { console.error(e); toast("Test açılamadı: " + e.message); } });
+  const l = $("#ftLast"); if (l) setTimeout(() => l.scrollIntoView({ block: "center" }), 30);
 }
 function refreshOpenScreen() {                                                    // hile sonrası açık gün sonu ekranını yenile
   const on = x => $(x).classList.contains("on");
@@ -1671,7 +1689,7 @@ function renderGameMenu() {
     [{ label: "Vazgeç" }, { label: "Ana menüye dön", pri: true, fn: goMenu }]);
 }
 function goMenu() {
-  AUDIO.stopLoops(); cancelAnimationFrame(raf); day = null; save();
+  curFlow = null; AUDIO.stopLoops(); cancelAnimationFrame(raf); day = null; save();
   ["#ovGameMenu", "#ovBook", "#ovSettings", "#ovLedger"].forEach(x => $(x).classList.remove("on"));
   mandatoryRestock = false; dayFlow = null; firstSupply = false; ["#ovShop", "#ovHub", "#ovPrice", "#ovLoan", "#ovGoal"].forEach(x => $(x).classList.remove("on")); $("#sheet").classList.remove("on");
   ["#hud", "#hint", "#icons", "#task", "#openDay", "#orders"].forEach(x => $(x).style.display = "none");
@@ -1686,6 +1704,9 @@ function begin(state, slot) {
     S.money = m(S.money); S.debt = m(S.debt); (S.loans || []).forEach(l => { l.amount = m(l.amount); l.owe = m(l.owe); l.rem = m(l.rem); });
     if (S.priceTL) Object.keys(S.priceTL).forEach(k => S.priceTL[k] = m(S.priceTL[k])); S.econ = K; }
   S.equipment = S.equipment || {};
+  if (!S.decorFix) { S.decorFix = 1; let refund = 0;                              // v0.43: eski kayıtta alındığı dükkan bilinmeyen üst dükkan dekoru → para iadesi, yeniden alınabilir
+    Object.keys(S.decor || {}).forEach(k => { const dc = D.decor[k]; if (S.decor[k] === true && dc && (dc.stars || 1) > 1) { refund += dc.price; delete S.decor[k]; } });
+    if (refund) { S.money += refund; setTimeout(() => toast("Eski kayıttaki üst dükkan dekorları iade edildi: +₺" + tl(refund) + " · kendi dükkanlarında yeniden alınabilir"), 1200); } }
   if (!S.fridgeFix) { S.fridgeFix = true; if (S.shopLevel === 0 && !S.fridgePaid) delete S.equipment.fridge; }   // v0.27: buzdolabı yine satın alınır; v0.24–0.26'da 1★'da bedava verilen geri alınır
   S.extras = S.extras || {}; if (S.syr && S.syr.sugarx) { S.extras.sugar = (S.extras.sugar || 0) + S.syr.sugarx; delete S.syr.sugarx; }   // v0.24 tek şeker stoku
   if (S.milk == null) S.milk = 0; mandatoryRestock = false; S.bean = "brazil"; if (!S.milkAlt) S.milkAlt = {};
