@@ -7,8 +7,10 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.37)
-(boş)
+## Bekleyen paket (son yayın: v0.37) – sonraki sürüm v0.38
+- **Dik ekran: ikonlar altta sıra, dükkan ortada ve yakın** (kullanıcı: "hâlâ kötü"): `#icons` portrede yatay tam genişlik; `#hint`/`#task`/`#orders`/`#openDay` sıranın üstüne. `sceneInsets` sıra yatayken `right: 0`. Kamera: kutu BY0 3,6 (boş duvar üstü kırpılır), yakınlık ZW 1,3 / ZH 1,08, `OX = orta − 1,6·TW` (kapı x 8,2 görünür; sol raf/bitki ve sağ askı kırpılabilir). Balonlar `iconTop − 60` altına inmez.
+- Kullanıcı ekran görüntüsü testlerini durdurdu; bu tur yalnız sözdizimi kontrolü (Kural 7).
+- Doküman: Claude Docs rev 155 §11 + HTML.
 
 ## v0.37 – YAYINLANDI (2 Kasım 2026, kullanıcı "paket çık" dedi)
 - **Dik ekranda dükkan maket** (kullanıcı: "çok büyük ve boş"): `drawRoom` portrede `EX = 0`, duvar `WTOP = 215`, zemin kalınlığı (z −22) ve duvar üst kesitleri; arka plan koyu radyal gradyan. Kamera `TH = TW × 0,6`, kutu BX0 8,25 / BW 18,5 / BY0 215/40+0,25 / BH = BY0 + 18×0,6 + 0,7. Kullanıcı sorun bildirdiği için 320/360/390 px ekran görüntüsü ve denetim yapıldı (Kural 7 istisnası).

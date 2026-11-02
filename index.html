@@ -230,15 +230,16 @@
     .toast{top:calc(var(--hudb,56px) + 6px);left:8px;right:8px;transform:none;max-width:none;font-size:13px;line-height:1.3;padding:7px 12px;border-radius:14px}
     body:has(#sheet.on) .toast{top:auto;right:8px;bottom:calc(6px + env(safe-area-inset-bottom));min-height:40px;max-height:48px;display:flex;align-items:center;justify-content:center;z-index:12;font-size:12.5px;line-height:1.25}
     body:has(.overlay.on) .toast{top:calc(6px + env(safe-area-inset-top));bottom:auto;right:110px;min-height:0;max-height:42px;font-size:12px;line-height:1.25;padding:5px 10px;z-index:12;display:block}
-    #task{top:auto;bottom:calc(40px + env(safe-area-inset-bottom));left:8px;font-size:12px;padding:5px 10px;max-width:calc(100vw - 86px)}
-    #openDay{top:auto;left:calc(50% - 31px);bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);font-size:17px;padding:12px 22px;white-space:nowrap}
-    #hint{left:8px;bottom:calc(10px + env(safe-area-inset-bottom));font-size:11px;max-width:calc(100vw - 86px)}
-    #icons{right:calc(8px + env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));gap:7px}
-    .icon{width:54px;height:54px;border-radius:15px;font-size:10.5px}
+    #task{top:auto;bottom:calc(98px + env(safe-area-inset-bottom));left:8px;font-size:12px;padding:5px 10px;max-width:calc(100vw - 16px)}
+    #openDay{top:auto;left:50%;bottom:calc(132px + env(safe-area-inset-bottom));transform:translateX(-50%);font-size:17px;padding:12px 22px;white-space:nowrap}
+    #hint{left:8px;bottom:calc(70px + env(safe-area-inset-bottom));font-size:11px;max-width:calc(100vw - 16px)}
+    /* v0.38: dik ekranda ikonlar altta tek sıra (tam genişlik); dükkan ortada, üstü serbest */
+    #icons{left:calc(8px + env(safe-area-inset-left));right:calc(8px + env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));flex-direction:row;justify-content:space-between;gap:6px}
+    .icon{flex:1 1 0;min-width:0;width:auto;height:54px;border-radius:15px;font-size:10.5px}
     .icon svg{width:26px;height:26px}
     .pOnly{display:inline}.dOnly{display:none}
     /* panel kapalıyken bekleyen sipariş: altta, ikon sütununun solunda kompakt kart (müşterileri ve ikonları örtmez) */
-    #orders{top:auto;bottom:calc(8px + env(safe-area-inset-bottom));left:8px;right:72px;width:auto;padding:6px 10px;border-radius:13px;border-width:2px;max-height:40dvh}
+    #orders{top:auto;bottom:calc(70px + env(safe-area-inset-bottom));left:8px;right:8px;width:auto;padding:6px 10px;border-radius:13px;border-width:2px;max-height:40dvh}
     #orders .ohead,#orders .oqhead,#orders .oq,#orders .oqmore{display:none}
     #orders .ord{margin-top:0;padding:5px 8px}#orders .ord+.ord{margin-top:6px}
     #orders .oname{font-size:12px}#orders .odrink{font-size:16px;flex-wrap:wrap;gap:6px}#orders .osize{font-size:13px;padding:2px 7px}#orders .ostate{font-size:12.5px}

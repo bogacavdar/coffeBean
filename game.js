@@ -154,7 +154,7 @@ const canOpenDay = () => !!S && !day && !dayFlow && !mandatoryRestock && !endCtx
 const portraitPhone = () => matchMedia("(orientation:portrait) and (max-width:620px)").matches;
 const smallPhone = () => portraitPhone() || matchMedia("(orientation:landscape) and (max-height:520px)").matches;   // hazırlama paneli sığdırma: dikey + yatay telefon
 function sceneInsets() { if (!SCENE.setInsets) return; const h = $("#hud"), r = h && h.style.display !== "none" ? h.getBoundingClientRect() : null; const ic = $("#icons"), ir = portraitPhone() && ic && ic.style.display !== "none" ? ic.getBoundingClientRect() : null;
-  SCENE.setInsets({ top: r ? r.bottom : 0, right: ir ? Math.max(0, innerWidth - ir.left) : 0, iconTop: ir ? ir.top : 0 });   // v0.30: balon/etiketler sağdaki ikon sütununun solunda kalır
+  const row = ir && ir.width > ir.height; SCENE.setInsets({ top: r ? r.bottom : 0, right: ir && !row ? Math.max(0, innerWidth - ir.left) : 0, iconTop: ir ? ir.top : 0 });   // v0.38: ikonlar altta sıra olunca sağ boşluk yok   // v0.30: balon/etiketler sağdaki ikon sütununun solunda kalır
   if (r) document.documentElement.style.setProperty("--hudb", Math.round(r.bottom) + "px"); }
 
 // ---------- Açılım (§3, §9) ----------

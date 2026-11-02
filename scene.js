@@ -23,7 +23,7 @@ window.SCENE = (() => {
   // Böylece müşteriler yürürken birbirinin önünden geçince hiçbir şey kare kare yanıp sönmez; çakışma da olmaz.
   const vis = new Map(), REAPPEAR = 450, FADE = 160;
   function layoutOverlays() {
-    const portrait = W < H, X0 = 8, X1 = W - 8, Y0 = (portrait ? INS.top : 0) + 4, Y1 = H - 8, now = performance.now();
+    const portrait = W < H, X0 = 8, X1 = W - 8, Y0 = (portrait ? INS.top : 0) + 4, Y1 = portrait && !INS.right && INS.iconTop ? INS.iconTop - 60 : H - 8, now = performance.now();   // v0.38: alttaki ikon sırası ve ipucu bandı
     const ICO = portrait && INS.right ? { x: W - INS.right - 6, y: (INS.iconTop || 0) - 6, w: INS.right + 6, h: H } : null;   // v0.32: yalnız ikon sütununun kendisi yasak
     const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
     const inside = r => r.x >= X0 - .5 && r.x + r.w <= X1 + .5 && r.y >= Y0 - .5 && r.y + r.h <= Y1 + .5 && !(ICO && hit(r, ICO));
@@ -75,15 +75,16 @@ window.SCENE = (() => {
     } else {                                                                       // dik telefon (v0.32): TÜM dükkan ekrana sığar (duvar tabelası, tezgâh, vitrin, kapı, masalar)
       // dükkanın ilgi kutusu (OX/OY'ye göre, TW biriminde): yatayda −8,4…+10,4 · dikeyde −3,7 (tabela tepesi) … +9,3 (ön masalar)
       const K = 0.6;                                                               // v0.37: dik ekranda kamera biraz daha yukarıdan bakar (TH/TW = 0,6)
-      const BX0 = 8.25, BW = 18.5, BY0 = 215 / 40 + .25, BH = 215 / 40 + .25 + 18 * K + .7;   // maketin kutusu: duvar üstü … zemin ön köşesi + kalınlık
-      const top = Math.max(0, INS.top) + 52, bot = H - 52, R = INS.right || 0, iTop = INS.iconTop || H;   // HUD + altındaki bildirim (toast) bandı boş kalır
-      const fit = (x0, x1, y0, y1) => ({ tw: Math.min(70, (x1 - x0) / BW, (y1 - y0) / BH), x0, x1, y0, y1 });
+      const BX0 = 8.25, BW = 18.5, BY0 = 3.6, BH = 3.6 + 18 * K + .7;                // v0.38: kutu tabelanın üstünden başlar (boş duvar üstü kırpılır) … zemin ön köşesi + kalınlık
+      const R = INS.right || 0, iTop = INS.iconTop || H, top = Math.max(0, INS.top) + 52, bot = R ? H - 52 : Math.min(H - 52, iTop - 66);   // v0.38: ikonlar alttaysa ipucu/görev kartı bandı da boş kalır   // HUD + altındaki bildirim (toast) bandı boş kalır
+      const ZW = 1.3, ZH = 1.08;                                                   // v0.38: yakın plan: işlevsiz kenarlar (dış duvar uçları, boş duvar üstü) kırpılabilir; tezgâh, sıra, kapı ve masalar kadrajda
+      const fit = (x0, x1, y0, y1) => ({ tw: Math.min(70, (x1 - x0) / BW * ZW, (y1 - y0) / BH * ZH), x0, x1, y0, y1 });
       const A = fit(8, W - 8, top, Math.min(bot, iTop - 6));                        // ikon sütununun üstünde, tam genişlik
       const B = fit(8, W - R - 6, top, bot);                                        // ikon sütununun solunda, tam yükseklik
       const f = A.tw >= B.tw ? A : B;
       TW = Math.max(12, f.tw); TH = TW * K;
-      OX = f.x0 + BX0 * TW + ((f.x1 - f.x0) - BW * TW) / 2;
-      OY = f.y0 + BY0 * TW + Math.max(0, ((f.y1 - f.y0) - BH * TW) * .5);          // boş alanın ortasında
+      OX = (f.x0 + f.x1) / 2 - 1.6 * TW;                                            // yatayda tezgâh–kapı arası ortada; taşarsa soldaki raf/bitki ve sağdaki askı kırpılır, kapı (x 8,2) görünür kalır
+      OY = f.y0 + BY0 * TW + ((f.y1 - f.y0) - BH * TW) * .5;                        // dikeyde ortalı
     }
   }
   const iso = (x, y, z = 0) => [OX + (x - y) * TW, OY + (x + y) * TH - z * (TW / 40)];
