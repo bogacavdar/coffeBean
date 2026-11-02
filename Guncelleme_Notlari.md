@@ -1,5 +1,11 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.37 – 2 Kasım 2026 (dik ekranda dükkan maketi)
+- **Telefon dik tutulunca dükkan artık bir maket gibi:** zemin ve duvarlar dükkanın kendi sınırında bitiyor, zeminin önünde kalınlık ve duvarların üstünde kesit var, dışı koyu kahverengi fon. Dükkan dev ve boş bir salon gibi görünmüyor.
+- Kamera biraz daha yukarıdan bakıyor; maket ekrana sığdırılıp boş alanın ortasına yerleşiyor, sağdaki düğmelerle çakışmıyor.
+- **Hazırlamaya başla altta sabit:** gruplu tarif listesi uzayınca küçük telefonlarda düğme aşağıda kalıyordu; artık liste ne kadar uzun olursa olsun görünüyor.
+- Yatay ekran ve bilgisayar görünümü değişmedi.
+
 ## v0.36 – 2 Kasım 2026 (açılış sırası, geliştirmeler, Türkçe adlar)
 - **Yeni tarif açıldığı gün istenmiyor.** Müşteriler yeni tarifi ertesi günden itibaren ister, ilk 3 gün daha sık. Gün sonunda alet ve malzemeyi almaya vakit kalır.
 - **Tedarik'e yönlendirme:** Dükkan'da alet alınca menüye giren tarif için Tedarik'te eksik bir şey (şurup, sos, krem, bardak, süt) varsa pencere bunları listeler. "Tedarik'e git" ilgili satırları vurgulayarak Tedarik'i açar, "← Dükkana dön" geri getirir. Yeni tarif penceresinde de aynı uyarı ve düğme var.

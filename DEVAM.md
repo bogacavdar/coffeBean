@@ -7,7 +7,10 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.36) – sonraki sürüm v0.37
+## Bekleyen paket (son yayın: v0.37)
+(boş)
+
+## v0.37 – YAYINLANDI (2 Kasım 2026, kullanıcı "paket çık" dedi)
 - **Dik ekranda dükkan maket** (kullanıcı: "çok büyük ve boş"): `drawRoom` portrede `EX = 0`, duvar `WTOP = 215`, zemin kalınlığı (z −22) ve duvar üst kesitleri; arka plan koyu radyal gradyan. Kamera `TH = TW × 0,6`, kutu BX0 8,25 / BW 18,5 / BY0 215/40+0,25 / BH = BY0 + 18×0,6 + 0,7. Kullanıcı sorun bildirdiği için 320/360/390 px ekran görüntüsü ve denetim yapıldı (Kural 7 istisnası).
 - **Denetimde bulundu (v0.35'ten):** 320 px'te gruplu tarif listesi uzayınca "Hazırlamaya başla" kaydırma istiyordu → `#selGo` `position: sticky` (altta sabit), grup aralıkları sıkılaştı. Denetim: 320×568 ve 390×844, 62 ekran, 0 ihlal.
 - Doküman: Claude Docs rev 154 §11 paragraf + HTML.
