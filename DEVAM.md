@@ -7,7 +7,13 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.38) – sonraki sürüm v0.39
+## Bekleyen paket (son yayın: v0.39)
+(boş)
+
+## v0.39 – YAYINLANDI (2 Kasım 2026, kullanıcı "hepsini ekle paket çık" dedi)
+- 13 öneri: §13 (Claude Docs rev 157–166 + HTML). Kod: `showCalibration`, `dayZoneMult` (kalibrasyon ×0,8, kirli makine ×0,85), `c.mods`/`o.extra`/`o.takeaway` (seçimde "Ekstralar", yanlışsa mismatch), özel tipler `critic/tourist/influencer/jury` (`D.customers[*].special`, `D.specialChance`), `S.buzz`, `S.cleanDay` + kapanışta Temizle, `S.loyal`, `rollWeather` + `wIcon`, yarışma `S.compDay/compWeek` + `juryScore`, `ach/checkAch` + `D.achievements`, titreşim (`cb_haptic`), portrede tarif grupları yatay kaydırma, `wallShelf2` (sağ duvar rafı) + TH_ITEMS, `araclar/telefon-denetimi.js`.
+- Dik ekran: yakınlaştırma geri alındı, maket tam ortalı (aşağıdaki not).
+- Kontrol: sözdizimi + 3 günlük hile modunda kısa hata taraması (sayfa hatası 0). Kural 7 gereği ayrıntılı test yapılmadı.
 - **Yakınlaştırma geri alındı, maket tam ortalı** (kullanıcı: "zoom olmadı, tam ortalanmamış"): portre kamerası maketin tamamını sığdırır; `UP = 215/40 + 0,36K` (tepe), `DN = 18K + 0,55` (dip), üst boşluk = alt boşluk = `(H − HU·TW)/2`, en az HUD altı ve `H − (iconTop − 66)`. `OX = (W − R)/2 − TW` (yatay orta). İkonlar altta kaldı.
 - Yalnız sözdizimi kontrolü (Kural 7). Doküman: Claude Docs rev 156 §11 + HTML.
 

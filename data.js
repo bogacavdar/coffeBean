@@ -1,6 +1,6 @@
 // data.js – Tüm içerik tasarım dokümanından (Kural 2). Kod değişmeden içerik buradan eklenir (§12).
 window.DATA = {
-  version: "0.38",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
+  version: "0.39",   // §12: sayfadaki CB_VERSION ile aynı olmalı; değilse oyun kendini yeniden yükler
   // §3 – Kahve öğrenme ağacı (MVP). Açılış: satılan toplam kahve sayısı (unlockCups, kümülatif artan fark) + gerekirse dükkan seviyesi (shop).
   // §8 prototip kalibrasyonu (erişilebilirlik): fiyatlar yükseltildi ki ilk seviye geliştirmeler daha ulaşılabilir olsun.
   drinks: {
@@ -246,8 +246,36 @@ window.DATA = {
     student:  { name: "Öğrenci",         patience: 82, extras: { sugar: 2.2, stirrer: 1.8, straw: 3, napkin: 1.2, sweetener: 0.4 }, priceSens: 1.0, qualitySens: 0.6, tip: 0.4, discount: 0.8 },
     elder:    { name: "Yaşlı teyze",     patience: 105, extras: { sweetener: 9, sugar: 0.5, napkin: 1.5, stirrer: 1.6, straw: 0.4 }, priceSens: 0.6, qualitySens: 0.7, tip: 1.0 },
     geek:     { name: "Kahve meraklısı", patience: 60, extras: { sugar: 0.1, sweetener: 0.1, stirrer: 0.2, napkin: 0.8 }, priceSens: 0.2, qualitySens: 1.0, tip: 1.6 },
-    regular:  { name: "Düzenli müşteri", patience: 75, extras: {}, priceSens: 0.5, qualitySens: 0.8, tip: 1.2 }
+    regular:  { name: "Düzenli müşteri", patience: 75, extras: {}, priceSens: 0.5, qualitySens: 0.8, tip: 1.2 },
+    // v0.39 §13 özel müşteriler (2★'tan, gelenlerin %6'sı; normal seçimde çıkmaz)
+    critic:     { name: "Eleştirmen", special: true, patience: 55, extras: { napkin: 1 }, priceSens: 0, qualitySens: 1.0, tip: 0 },
+    tourist:    { name: "Turist",     special: true, patience: 90, extras: { sugar: 1.5, napkin: 1.2, straw: 1.5 }, priceSens: 0.2, qualitySens: 0.6, tip: 1.5 },
+    influencer: { name: "Fenomen",    special: true, patience: 65, extras: { straw: 2, napkin: 1 }, priceSens: 0.3, qualitySens: 0.9, tip: 1.2 },
+    jury:       { name: "Jüri",       special: true, jury: true, patience: 140, extras: {}, priceSens: 0, qualitySens: 1.0, tip: 0 }
   },
+  // v0.39 §13
+  specialChance: 0.06,
+  calibration: { drift: [["coarse", 0.4], ["fine", 0.4], ["ok", 0.2]], penalty: 0.8, xp: 5,
+    shot: { coarse: "Deneme shot'ı 19 saniyede aktı; ince ve ekşi.", fine: "Deneme shot'ı 36 saniyede damla damla aktı; acı ve yanık.", ok: "Deneme shot'ı 27 saniyede aktı; dengeli ve tatlı." },
+    answer: { coarse: "finer", fine: "coarser", ok: "keep" } },
+  backflushPenalty: 0.85,
+  mods: { extraChance: 0.15, takeawayChance: 0.2, extraPrice: 0.25, extraBean: 0.009, takeawayFee: 5, fromDay: 3 },
+  loyalty: { need: 3, patience: 1.2, tip: 1.3 },
+  weather: { saturdayCrowd: 1.3, rain: { p: 0.25, hot: 1.5, iced: 0.3, icon: "🌧", name: "Yağmurlu" }, hot: { p: 0.25, iced: 2.5, icon: "☀️", name: "Sıcak" }, crowd: { icon: "👥", name: "Kalabalık" } },
+  competition: { drinks: [["espresso", "double"], ["cappuccino", "M"], ["latte", "M"]], medals: [{ min: 95, name: "Altın", icon: "🥇", money: 9000, rep: 10 }, { min: 85, name: "Gümüş", icon: "🥈", money: 4500, rep: 5 }, { min: 70, name: "Bronz", icon: "🥉", money: 2000, rep: 2 }] },
+  achievements: [
+    { id: "perfect1", name: "İlk mükemmel", desc: "İlk mükemmel servis" },
+    { id: "esp50", name: "Espresso ustası", desc: "50 mükemmel espresso" },
+    { id: "serve100", name: "Yüz fincan", desc: "100 servis" },
+    { id: "serve500", name: "Beş yüz fincan", desc: "500 servis" },
+    { id: "art95", name: "İlk latte art", desc: "Latte art adımında 95+" },
+    { id: "tradAll", name: "Gelenek bekçisi", desc: "Tüm Türk ve geleneksel kahveleri servis et" },
+    { id: "special1", name: "Özel konuk", desc: "İlk özel müşteriye servis" },
+    { id: "shop3", name: "Semt favorisi", desc: "3★ dükkana ulaş" },
+    { id: "shop5", name: "Kahve evi", desc: "5★ dükkana ulaş" },
+    { id: "gold", name: "Şampiyon barista", desc: "Yarışmada altın madalya" }
+  ],
+
 
   // §6 – Çekirdekler (MVP: 2). qualityMod kaliteyi etkiler; tolMod espresso aralığını.
   // §6 çekirdekler fiyatı etkiler (mult = satış fiyatı çarpanı); unlock = dükkan yıldızı, cups = toplam satış eşiği, grindT = öğütme hedefi
@@ -419,7 +447,10 @@ window.DATA = {
     elder:    ["Evladım bana bir {d} yapıver.", "Kızım, bir {d} olsun.", "Yavrum bir {d} rica edeyim."],
     geek:     ["Çekirdek ne? Bir {d} alayım.", "Bugünkü öğütümle bir {d} lütfen.", "Bir {d}, ekstraksiyonu 28 saniye olsun."],
     regular:  ["Her zamankinden, bir {d}.", "Bildiğin gibi, bir {d}.", "Yine ben! Bir {d} lütfen."],
-    tourist:  ["Sende var {d}?", "Ben istemek bir {d}."]   // ileride turist müşteri tipi için (şimdilik kullanılmıyor)
+    tourist:  ["Sende var {d}?", "Ben istemek bir {d}.", "Merhaba! {d}, lütfen… doğru söyledim mi?", "Bir {d} please… yani lütfen."],   // v0.39 turist
+    critic:   ["Bir {d}. Ve lütfen özenli olsun, not alıyorum.", "{d} alayım; bakalım ününüz hak edilmiş mi."],
+    influencer: ["Bir {d}! Takipçilerim için fotoğrafını çekeceğim.", "{d} rica edeyim, canlı yayındayım!"],
+    jury:     ["Jüri adına bir {d}, lütfen.", "Yarışma tarifi: {d}."]
   },
   // §4 – Sipariş sonu değerlendirme: ortalama puana göre etiket ve rastgele müşteri yorumu
   reviews: [

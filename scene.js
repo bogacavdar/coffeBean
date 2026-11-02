@@ -2,7 +2,8 @@
 // Sahne durumu: müşteriler iso koordinatta yürür (pos → target), uçuşan yazılar (fx) burada çizilir.
 window.SCENE = (() => {
   const PAL = { wall: "#e6dccb", wallDark: "#c8bca8", oak: ["#a3784f", "#8d6440", "#7a5536"], counterTop: "#2f2219", counterFront: "#5b4231", steel: "#c9ccd0", steelDark: "#7d8187", shadow: "rgba(25,15,8,.38)" };
-  const TYPE_COLOR = { business: ["#2e3442", "#1a1e28"], elder: ["#9a7f9a", "#6b566b"], student: ["#6f8a4a", "#4a6130"], geek: ["#8a5a3a", "#5a3a22"], regular: ["#a0493c", "#6c2f27"], nejla: ["#7a4f7a", "#4e2f4e"] };
+  const TYPE_COLOR = { business: ["#2e3442", "#1a1e28"], elder: ["#9a7f9a", "#6b566b"], student: ["#6f8a4a", "#4a6130"], geek: ["#8a5a3a", "#5a3a22"], regular: ["#a0493c", "#6c2f27"], nejla: ["#7a4f7a", "#4e2f4e"],
+    critic: ["#1f1f24", "#0e0e12"], tourist: ["#2f86a6", "#1d5a72"], influencer: ["#d0508a", "#93305e"], jury: ["#c9a24a", "#8a6a2a"] };   // v0.39 özel müşteriler
   let cv, ctx, W, H, hits = [], TW = 40, TH = 20, OX = 0, OY = 0, time = 0;
   const COLS = 10, ROWS = 8;
   const DOOR = { x: 8.2, y: 0 };                 // sağ duvardaki kapı (iso koordinat)
@@ -167,7 +168,7 @@ window.SCENE = (() => {
     prism(0, 5.2, .45, 2.4, 4, "#7a5536", "#5c3f28", "#6b4a30", 76);
     for (let i = 0; i < 4; i++) { prism(.05, 5.35 + i * .55, .35, .4, 26, i % 2 ? "#c9a46a" : "#b89055", "#8f6e3f", i % 2 ? "#a98a52" : "#9a7746", 80);
       wallText("L", 5.55 + i * .55, 92, "☕", 7, "rgba(60,35,15,.7)", null, "400"); }
-    backCounter(st); brewBar(st); wallShelf(st);
+    backCounter(st); brewBar(st); wallShelf(st); wallShelf2(st);
     barista(.42, 1.75, st.baristaBusy);
     if (st.assistant) staff(.42, 3.0, st.asstBusy);
     // ön tezgâh (dükkanla uzar)
@@ -224,6 +225,21 @@ window.SCENE = (() => {
     if (show("aeropress")) cyl(.18, 3.35, .045, 18, "#5a5a60", Z, "#2b2b30");
     if (show("chemex")) { cyl(.18, 3.62, .07, 9, "#dfeef3", Z, "#e8dcc8"); cyl(.18, 3.62, .05, 9, "#c9a46a", Z + 9, "#f4f1ea"); }
     if (show("phin")) cyl(.18, 3.9, .05, 7, "#c9ccd0", Z, "#9ea2a7");
+  }
+  // ---- v0.39 §13: sağ duvarda ikinci raf (vitrinin üstü): geleneksel ve demleme aletleri
+  function wallShelf2(st, only) {
+    const f = Object.assign({}, st.equipment || {}, st.tools || {}), show = k => only ? only === k : !!f[k];
+    const keys = ["sandStove", "dallah", "clayPot", "clothFilter", "indianFilter", "kalita", "coldDripTower", "frother"];
+    if (!only && !keys.some(k => f[k])) return; const Z = 150, X = i => .55 + i * .45, Y = .18;
+    if (!only) prism(.3, 0, 3.6, .36, 4, "#7a5536", "#55391f", "#664629", Z - 4);
+    if (show("sandStove")) prism(X(0) - .14, Y - .12, .28, .24, 8, "#e2c48a", "#8a6a3a", "#a07a48", Z);
+    if (show("dallah")) { cyl(X(1), Y, .07, 14, "#c9a24a", Z, "#e0bd62"); const [tx, ty] = iso(X(1) + .06, Y, Z + 10); ctx.strokeStyle = "#a8832e"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(tx + 6 * TW / 40, ty - 5 * TW / 40); ctx.stroke(); }
+    if (show("clayPot")) cyl(X(2), Y, .09, 10, "#a0522d", Z, "#7a3a1f");
+    if (show("clothFilter")) { cyl(X(3), Y, .05, 3, "#c9ccd0", Z + 10); cyl(X(3), Y, .035, 9, "#efe6d4", Z + 1, "#e2d6bf"); }
+    if (show("indianFilter")) { cyl(X(4), Y, .06, 8, "#c9ccd0", Z); cyl(X(4), Y, .06, 8, "#d6d9dd", Z + 8, "#9ea2a7"); }
+    if (show("kalita")) { cyl(X(5), Y, .06, 4, "#d6d9dd", Z); cyl(X(5), Y, .08, 6, "#e8e6e1", Z + 4, "#c9a46a"); }
+    if (show("coldDripTower")) { cyl(X(6), Y, .05, 26, "#dfeef3", Z, "#b8c8cf"); cyl(X(6), Y, .04, 4, "#5a3a22", Z + 6); }
+    if (show("frother")) cyl(X(7), Y, .045, 12, "#2b2b30", Z, "#c9ccd0");
   }
   // ---- §3 soğuk bar (tezgâhın ucu): dondurma dolabı, buz makinesi, blender, cold brew kavanozu, sifon, nitro musluğu
   function coldStation(st, CL, only) {
@@ -500,6 +516,8 @@ window.SCENE = (() => {
     "tool:syrupPump": [.18, 1.75, 168, () => wallShelf({}, "syrupPump")], "tool:creamSiphon": [.18, 2.35, 166, () => wallShelf({}, "creamSiphon")], "tool:whisk": [.18, 2.6, 162, () => wallShelf({}, "whisk")],
     "tool:shaker": [.18, 2.85, 165, () => wallShelf({}, "shaker")], "tool:mokaPot": [.18, 3.1, 165, () => wallShelf({}, "mokaPot")], "tool:aeropress": [.18, 3.35, 165, () => wallShelf({}, "aeropress")],
     "tool:chemex": [.18, 3.62, 164, () => wallShelf({}, "chemex")], "tool:phin": [.18, 3.9, 160, () => wallShelf({}, "phin")],
+    "tool:sandStove": [.55, .18, 154, () => wallShelf2({}, "sandStove")], "tool:dallah": [1.0, .18, 158, () => wallShelf2({}, "dallah")], "tool:clayPot": [1.45, .18, 155, () => wallShelf2({}, "clayPot")], "tool:clothFilter": [1.9, .18, 156, () => wallShelf2({}, "clothFilter")],
+    "tool:indianFilter": [2.35, .18, 158, () => wallShelf2({}, "indianFilter")], "tool:kalita": [2.8, .18, 155, () => wallShelf2({}, "kalita")], "tool:coldDripTower": [3.25, .18, 162, () => wallShelf2({}, "coldDripTower")], "tool:frother": [3.7, .18, 156, () => wallShelf2({}, "frother")],
     "tool:iceCreamFridge": [1.33, 8.4, 20, () => coldStation({}, 7, "iceCreamFridge")], "tool:iceMachine": [1.95, 8.43, 20, () => coldStation({}, 7, "iceMachine")], "tool:blender": [1.22, 8.3, 16, () => coldStation({}, 7, "blender")],
     "tool:coldBrewJar": [1.5, 8.35, 10, () => coldStation({}, 7, "coldBrewJar")], "tool:siphon": [1.8, 8.35, 14, () => coldStation({}, 7, "siphon")], "tool:nitroTap": [2.11, 8.26, 16, () => coldStation({}, 7, "nitroTap")],
     "tool:kettle": [.2, 3.95, 42, () => backCounter({}, "kettle")], "tool:milkKit": [.2, 4.32, 42, () => backCounter({}, "milkKit")],

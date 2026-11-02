@@ -1,5 +1,21 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.39 – 2 Kasım 2026 (13 yenilik + dik ekranda tam ortalı dükkan)
+- **Dik ekranda dükkan tam ortada:** v0.38'deki yakınlaştırma geri alındı. Dükkanın tamamı görünüyor; tepesinin ekranın üstüne uzaklığı, alt köşesinin ekranın altına uzaklığına eşit. Butonlar altta kaldı.
+- **Sabah kalibrasyonu:** 2. günden itibaren her sabah bir deneme shot'ı; "Daha ince / Böyle kalsın / Daha kaba" doğru seçilirse +5 XP, yanlışsa o gün öğütme ve ekstraksiyon hedefleri daralır.
+- **Sipariş ekstraları:** 3. günden itibaren bazı müşteriler ekstra shot (+%25) ya da paket servis (+₺5) ister; seçim ekranındaki "Ekstralar" kutusundan işaretlenir. Burada içilenler gün sonunda bulaşık sayısına yazılır.
+- **Özel müşteriler (2★'tan):** Eleştirmen (itibarı ±20 oynatır), Turist (bozuk Türkçe, bol bahşiş), Fenomen (mükemmel servis ertesi gün +3 müşteri getirir).
+- **Makine temizliği:** gün kapanışında "Temizle" düğmesi; unutulursa ertesi gün ekstraksiyon zorlaşır.
+- **Sadakat:** bir müşteri tipine art arda 3 mükemmel servis → o tip sadık (♥): daha sabırlı, daha çok bahşiş.
+- **Hava ve günler:** Cumartesi kalabalık; yağmurlu günler sıcak, sıcak günler buzlu kahve getirir. Simgesi saatin yanında.
+- **Barista yarışması (5★):** Dükkan'dan haftada bir katıl; ertesi günün ilk 3 müşterisi jüri. Altın ₺9.000, gümüş ₺4.500, bronz ₺2.000.
+- **Başarımlar:** 10 rozet; Defter'de madalyalar ve sadık müşterilerle birlikte.
+- **Titreşim:** hedef çubuğunda mükemmel ve kaçtı titreşimi; Ayarlar'dan kapatılabilir.
+- **Tek elle seçim:** dik ekranda tarif grupları tek sıra, yana kayar.
+- **Raftaki yeni aletler:** kum ocağı, dallah, toprak çömlek, bez filtre, Hint filtresi, Kalita, Kyoto kulesi, soğuk köpürtücü sağ duvardaki rafta görünür.
+- **Telefon denetim betiği:** `araclar/telefon-denetimi.js` (isteğe bağlı).
+- **Tasarım belgesi:** eski ekonomi, ekipman, kira ve kredi tabloları güncel değerlerle değiştirildi.
+
 ## v0.38 – 2 Kasım 2026 (dik ekranda butonlar altta, dükkan ortada)
 - **Butonlar alta alındı:** telefon dik tutulunca Defter, Tedarik, Fiyatlar, Menü ve Ayarlar ekranın altında tam genişlikte tek sıra. İpucu şeridi, günlük görev, bekleyen sipariş kartı ve Günü başlat bu sıranın üstünde.
 - **Dükkan ortada ve daha yakın:** dükkan ekranın ortasında, öncekinden 1,3 kat yakın. Oyunu etkilemeyen kenarlar (boş duvar üstü, soldaki raf ve bitki, sağdaki askı) kırpılabiliyor; tezgâh, sıra, kapı ve masalar her zaman görünüyor.
