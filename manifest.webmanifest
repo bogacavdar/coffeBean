@@ -2,7 +2,7 @@
   "name": "CoffeBean",
   "short_name": "CoffeBean",
   "description": "Kahve dükkanı oyunu: espresso çekmeyi öğren, dükkanı büyüt.",
-  "id": "./",
+  "id": "/coffeBean/",
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",

@@ -1,6 +1,7 @@
 # CoffeBean – Güncelleme Notları
 
-## v0.47 – (yayın bekliyor)
+## v0.47 – 13 Kasım 2026 (kritik: uygulama olarak yükleme)
+- **CoffeBean ve Purple Light artık ayrı uygulama olarak yüklenebiliyor.** İki oyunun uygulama kimliği aynı çıkıyordu; Chrome ikisini tek uygulama sanıyor, biri yüklenince diğerinin yerine geçiyordu (adı CoffeBean, içi Purple Light). CoffeBean'in kimliği artık kendi klasörü. Eski karışık uygulamayı kaldırıp oyunu kendi adresinden yeniden yüklemek gerekiyor.
 - **Telefonda hile paneli:** artık ekranın sol üstünde, üst bilgi çubuğunun altında açılıyor; düğmeler büyüdü. Panel ekranın alt kenarından uzak duruyor, sürüklerken de oraya inmiyor (telefonun uygulama değiştirme hareketiyle çakışmasın). Daha önce alt köşeye kaydedilmiş yer sıfırlanıyor.
 
 ## v0.46 – 2 Kasım 2026 (sadeleşme + sahne düzeltmeleri)

@@ -7,7 +7,11 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
-## Bekleyen paket (son yayın: v0.46)
+## Bekleyen paket (son yayın: v0.47)
+- (boş)
+
+## v0.47 – YAYINLANDI (13 Kasım 2026, kullanıcı "ikisini de hemen yayınla")
+- **PWA kimliği (kritik, kullanıcı bildirdi):** `manifest.webmanifest` `"id": "./"` Chrome'da start_url'in kökenine (`https://bogacavdar.github.io/`) çözülüyordu; Purple Light'ınki de aynı → iki oyun tek uygulama sayılıyordu. `"id": "/coffeBean/"` yapıldı (Purple Light reposunda da `/purple-light/`). Doküman §12 PWA notu güncellendi.
 - **Telefonda hile paneli (kullanıcı bildirdi):** panel sol altta küçük açılıyor, alttan sürüklemek telefonun uygulama değiştirme hareketine takılıyordu. Telefonda (`max-width:620px` ya da dokunmatik + alçak ekran) panel sol üstte, HUD'ın altında (`top: güvenli alan + 92px`), 200 px genişlikte, düğmeler 14 px yazı / en az 40 px yükseklik; `max-height` alt 120 px'i boş bırakır. `renderCheats`: kayıtlı yer (`cb_cheatPos`) ekran dışında ya da alt bölgedeyse yok sayılır ve silinir; sürüklerken alt kenardan en az 120 px (dokunmatik) uzak tutulur. Doküman (hile modu) güncellendi.
 
 ## v0.46 – YAYINLANDI (2 Kasım 2026, kullanıcı "hepsini yap paket çık")
