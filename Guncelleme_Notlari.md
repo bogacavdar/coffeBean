@@ -1,5 +1,8 @@
 # CoffeBean – Güncelleme Notları
 
+## v0.47 – (yayın bekliyor)
+- **Telefonda hile paneli:** artık ekranın sol üstünde, üst bilgi çubuğunun altında açılıyor; düğmeler büyüdü. Panel ekranın alt kenarından uzak duruyor, sürüklerken de oraya inmiyor (telefonun uygulama değiştirme hareketiyle çakışmasın). Daha önce alt köşeye kaydedilmiş yer sıfırlanıyor.
+
 ## v0.46 – 2 Kasım 2026 (sadeleşme + sahne düzeltmeleri)
 - **Kaldırıldı:** sabah makineyi açma, sabah kalibrasyonu ve gece temizliği (kirli makine dahil) oyundan, öğreticiden ve akış testlerinden tamamen çıktı. Gün doğrudan açılıyor; Yıldız Teyze ilk gün espressoyu ve kapanışı (kira + defter) öğretiyor.
 - **Akış testi numaraları değişti:** A1 ilk gün, A2 ilk kapanış, A3 gün sonu … dükkan görünümleri A21–A25, tarif galerisi A26. Attığın tikler yeni numaralarına taşınıyor.

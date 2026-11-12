@@ -8,7 +8,7 @@ Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılı
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
 ## Bekleyen paket (son yayın: v0.46)
-- (boş)
+- **Telefonda hile paneli (kullanıcı bildirdi):** panel sol altta küçük açılıyor, alttan sürüklemek telefonun uygulama değiştirme hareketine takılıyordu. Telefonda (`max-width:620px` ya da dokunmatik + alçak ekran) panel sol üstte, HUD'ın altında (`top: güvenli alan + 92px`), 200 px genişlikte, düğmeler 14 px yazı / en az 40 px yükseklik; `max-height` alt 120 px'i boş bırakır. `renderCheats`: kayıtlı yer (`cb_cheatPos`) ekran dışında ya da alt bölgedeyse yok sayılır ve silinir; sürüklerken alt kenardan en az 120 px (dokunmatik) uzak tutulur. Doküman (hile modu) güncellendi.
 
 ## v0.46 – YAYINLANDI (2 Kasım 2026, kullanıcı "hepsini yap paket çık")
 - **v0.46 adayı** (tasarım §17, Claude Docs rev 174 + HTML): kullanıcı "makineyi açı ve sabah kalibrasyonunu komple kaldır öğreticiden test modundan her şeyden". Silindi: `showMachineOn`, `showCalibration`, `day.calShift` (grind hedefi), `day.opening` + takeOrder engeli, `D.calibration`, `D.tutorial.openIntro/openWrong/calIntro/calWrong/openDone/openSay` (yerine `firstSay`), `D.lessons.machineOn/calibration`, `CB_TEST_NOOPEN` / `tsDay` noOpen, `flowEvent("calib")`. intro/done metinleri güncellendi. Akış testi A3/A4 silindi, A5–A29 → A3–A27 (`cb_flowV` "2" göçü tikleri kaydırır). `araclar/telefon-denetimi.js` açılış adımları çıkarıldı.

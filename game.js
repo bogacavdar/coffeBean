@@ -1559,11 +1559,15 @@ function renderCheats() {
   if (!S || !cheatOn()) { el.style.display = "none"; return; }
   el.style.display = ""; el.innerHTML = `<div class="chead" id="cheatToggle">🧪 Hileler ${el.dataset.min ? "▸" : "▾"}</div>` + (el.dataset.min ? "" : CHEATS.map(([n], i) => `<button data-ch="${i}">${n}</button>`).join(""));
   // tut-sürükle: başlıktan tutup taşı (kısa dokunuş = küçült/büyüt); yer hatırlanır
-  try { const p = JSON.parse(LSG("cb_cheatPos") || "null"); if (p) Object.assign(el.style, { left: p.x + "px", top: p.y + "px", right: "auto", bottom: "auto", transform: "none" }); } catch (e) {}
+  const touch = matchMedia("(pointer:coarse)").matches, bottomGap = touch ? 120 : 40;   // telefonda alt kenar uygulama değiştirme hareketine ayrılır
+  Object.assign(el.style, { left: "", top: "", right: "", bottom: "", transform: "" });
+  try { const p = JSON.parse(LSG("cb_cheatPos") || "null");
+    if (p && p.x >= 0 && p.x < innerWidth - 60 && p.y >= 0 && p.y < innerHeight - bottomGap - 60) Object.assign(el.style, { left: p.x + "px", top: p.y + "px", right: "auto", bottom: "auto", transform: "none" });
+    else if (p) LSS("cb_cheatPos", "null"); } catch (e) {}   // ekran dışı ya da alt bölgedeki eski yer yok sayılır
   const h = $("#cheatToggle"); let drag = null;
   h.onpointerdown = e => { const r = el.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, moved: false }; try { h.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); };
   h.onpointermove = e => { if (!drag) return; if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 6) drag.moved = true; if (!drag.moved) return;
-    const x = clamp(e.clientX - drag.dx, 0, innerWidth - el.offsetWidth), y = clamp(e.clientY - drag.dy, 0, innerHeight - 40);
+    const x = clamp(e.clientX - drag.dx, 0, innerWidth - el.offsetWidth), y = clamp(e.clientY - drag.dy, 0, Math.max(0, innerHeight - bottomGap - Math.min(el.offsetHeight, 160)));
     Object.assign(el.style, { left: x + "px", top: y + "px", right: "auto", bottom: "auto", transform: "none" }); };
   h.onpointerup = h.onpointercancel = () => { if (!drag) return; const moved = drag.moved; drag = null;
     if (moved) { const r = el.getBoundingClientRect(); LSS("cb_cheatPos", JSON.stringify({ x: Math.round(r.left), y: Math.round(r.top) })); return; }
