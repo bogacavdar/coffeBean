@@ -7,6 +7,10 @@ Son güncelleme: 2026-11-02
 Paket yalnızca kullanıcı "paket çık" deyince (ya da kritik/acil) çıkılır; paket = zip + açılabilir bağlantı + doküman HTML'i + güncelleme notları + GitHub (Kural 5–6).
 Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı istediğinde/hata bildirdiğinde (Kural 7).
 
+## Godot ile yeniden tasarım (25 Kasım 2026, kullanıcı: "Bu oyunu baştan tasarlayacağız, Godot ile")
+- Önce tasarım belgesi (kullanıcı kararı). Canlı belge: Claude Docs "CoffeBean (Godot) – Tasarım Dokümanı" (https://claude.ai/artifact/Tui7jHaqSYzWy4qGNiCUrb); HTML: `godot/Tasarim_Dokumani_Godot.html` (dal `godot-tasarim`, main'e alınmadı).
+- Belge onay bekliyor: §3 öneriler ve §10 açık sorular (görsel tarz, depo, web sürümünün durumu, ilk platform, dil, ad, kayıt taşıma). Onaydan önce Godot kodu yazılmaz (Kural 2).
+
 ## Bekleyen paket (son yayın: v0.47)
 - (boş)
 
