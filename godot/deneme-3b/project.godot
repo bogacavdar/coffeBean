@@ -3,9 +3,9 @@ config_version=5
 
 [application]
 
-config/name="CoffeBean Birinci Şahıs Deneme"
+config/name="CoffeBean Gerçekçi Deneme"
 config/version="0.1-deneme"
-run/main_scene="res://fp.tscn"
+run/main_scene="res://fp_real.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.png"
 
