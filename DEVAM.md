@@ -9,6 +9,7 @@ Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı i
 
 ## Godot ile yeniden tasarım (25 Kasım 2026, kullanıcı: "Bu oyunu baştan tasarlayacağız, Godot ile")
 - Önce tasarım belgesi (kullanıcı kararı). Canlı belge: Claude Docs "CoffeBean (Godot) – Tasarım Dokümanı" (https://claude.ai/artifact/Tui7jHaqSYzWy4qGNiCUrb); HTML: `godot/Tasarim_Dokumani_Godot.html` (dal `godot-tasarim`, main'e alınmadı).
+- Kararlar (25 Kasım 2026): görseller canlı 3B (sabit izometrik kamera); mobilya/dekor KayKit CC0 paketleri, karakter adayı Quaternius, kahve aletleri bizden. Godot sürümü web'de yayınlanmaz; platformlar Windows, Mac, Android, iPhone. Kural 4 (GitHub Pages) yalnız web v0.47 için. Bulut ortamında Godot 4.7.2 + dışa aktarım şablonları kurulu (/home/claude/tools/godot).
 - Belge onay bekliyor: §3 öneriler ve §10 açık sorular (görsel tarz, depo, web sürümünün durumu, ilk platform, dil, ad, kayıt taşıma). Onaydan önce Godot kodu yazılmaz (Kural 2).
 
 ## Bekleyen paket (son yayın: v0.47)
