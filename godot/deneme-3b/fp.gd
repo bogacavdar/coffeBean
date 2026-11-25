@@ -351,43 +351,6 @@ func collider(pos: Vector3, size: Vector3, id := "") -> StaticBody3D:
 	return b
 
 
-func make_portafilter(parent: Node3D) -> Node3D:
-	var pf := Node3D.new()
-	parent.add_child(pf)
-	cyl(pf, Vector3.ZERO, 0.058, 0.05, STEEL, 0.25, 0.8)
-	rbox(pf, Vector3(0, 0, 0.17), Vector3(0.05, 0.04, 0.24), DARK, 0.02)
-	return pf
-
-
-func make_cup_mesh(parent: Node3D, full: bool) -> Node3D:
-	var c := Node3D.new()
-	parent.add_child(c)
-	cyl(c, Vector3(0, 0.01, 0), 0.11, 0.02, WHITE, 0.3)
-	cyl(c, Vector3(0, 0.07, 0), 0.07, 0.11, WHITE, 0.3)
-	if full:
-		cyl(c, Vector3(0, 0.115, 0), 0.062, 0.01, Color("8a5a35"), 0.2)
-	return c
-
-
-func build_props() -> void:
-	# portafiltre makinede
-	pf_on_machine = make_portafilter(self)
-	pf_on_machine.position = MACHINE + Vector3(0, 0.27, -0.3)
-	pf_on_machine.rotation_degrees.y = 180.0
-	# fincan yığını
-	for i in 3:
-		make_cup_mesh(self, false).position = Vector3(-3.2, 1.0 + i * 0.12, -1.1)
-	# temper istasyonu
-	rbox(self, Vector3(-1.32, 1.02, -1.15), Vector3(0.22, 0.04, 0.22), Color("3a2a20"), 0.02)
-	cyl(self, Vector3(-1.32, 1.07, -1.15), 0.058, 0.03, STEEL, 0.25, 0.8)
-	cyl(self, Vector3(-1.32, 1.15, -1.15), 0.025, 0.14, WOOD, 0.5)
-	# etkileşim kutuları (katman 2)
-	collider(MACHINE + Vector3(0, 0.3, -0.1), Vector3(0.8, 0.6, 0.6), "machine")
-	collider(Vector3(-1.65, 1.35, -1.1), Vector3(0.3, 0.7, 0.3), "grinder")
-	collider(Vector3(-1.32, 1.1, -1.15), Vector3(0.24, 0.2, 0.24), "tamper")
-	collider(Vector3(-3.2, 1.15, -1.1), Vector3(0.26, 0.36, 0.26), "cups")
-	cup.visible = false
-
 
 func build_lights() -> void:
 	var sun := DirectionalLight3D.new()
@@ -439,7 +402,7 @@ func build_ui() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	info = Label.new()
-	info.text = "CoffeBean · birinci şahıs deneme\nWASD yürü · fare bak · E ya da sol tık: etkileşim · Esc: fareyi bırak"
+	info.text = "CoffeBean · birinci şahıs deneme\nWASD yürü · fare bak · E / sol tık: etkileşim · Boşluk: tamam · R: kaşık · Esc: fareyi bırak"
 	info.position = Vector2(20, 14)
 	style(info, 20)
 	layer.add_child(info)
@@ -484,6 +447,7 @@ func build_ui() -> void:
 	gauge_needle.size = Vector2(4, 48)
 	gauge_needle.position.y = 34
 	gauge.add_child(gauge_needle)
+	build_game_ui(layer)
 
 
 func style(l: Label, size: int) -> void:
@@ -493,14 +457,158 @@ func style(l: Label, size: int) -> void:
 	l.add_theme_constant_override("outline_size", 8)
 
 
+# ---------- espresso istasyonu (belge §5, "Birinci şahıs espresso") ----------
+const KNOCK := Vector3(-1.98, 1.0, -1.25)
+const GRINDER_SCALE := Vector3(-1.65, 1.0, -1.32)
+const STATION := Vector3(-1.3, 1.0, -1.2)
+const PF_SPOT := {"tek": Vector3(-2.98, 1.0, -1.32), "double": Vector3(-2.98, 1.0, -1.04)}
+const CUP_SPOT := {"tek": Vector3(-3.28, 1.0, -1.32), "double": Vector3(-3.28, 1.0, -1.02)}
+const DOSE := {"tek": 9.0, "double": 18.0}
+const YIELD := {"tek": 18.0, "double": 36.0}
+const FLOW := {"tek": 0.82, "double": 1.64}    # g/sn, ön ıslatmadan sonra (~27 sn'de hedef)
+const PREINFUSE := 5.5
+
+var order_size := "double"
+var stage := "pick_pf"      # pick_pf, to_grinder, dosing, to_station, wdt_done, tamped, locked, cup_on, pulling, pulled, cup_taken, used
+var mode := ""              # dose, wdt, tamp, lock, pull
+var held_size := ""         # elde tutulan portafiltre/fincanın boyu
+var cup_size := ""
+var wrong := false
+var step_scores: Array[float] = []
+var dose_g := 0.0
+var wdt_cells: Array[float] = []
+var wdt_cursor := Vector2.ZERO
+var wdt_time := 0.0
+var bubble_pos := Vector2.ZERO
+var bubble_vel := Vector2.ZERO
+var tamp_time := 0.0
+var tamp_acc := 0.0
+var lock_px := 0.0
+var pull_t := 0.0
+var pull_g := 0.0
+var pf_nodes := {}
+var cup_nodes := {}
+var placed_cup: Node3D
+var placed_fill: MeshInstance3D
+var locked_pf: Node3D
+var scale_pf: Node3D
+var panel: Control
+var panel_title: Label
+var panel_text: Label
+var rng := RandomNumberGenerator.new()
+
+
+func make_portafilter(parent: Node3D, size: String, dosed := false) -> Node3D:
+	var pf := Node3D.new()
+	parent.add_child(pf)
+	cyl(pf, Vector3.ZERO, 0.058, 0.05, STEEL, 0.25, 0.8)
+	rbox(pf, Vector3(0, 0, 0.17), Vector3(0.05, 0.04, 0.24), DARK, 0.02)
+	if size == "tek":
+		cyl(pf, Vector3(0, -0.04, 0), 0.008, 0.04, STEEL, 0.25, 0.8)
+	else:
+		cyl(pf, Vector3(-0.018, -0.04, 0), 0.008, 0.04, STEEL, 0.25, 0.8)
+		cyl(pf, Vector3(0.018, -0.04, 0), 0.008, 0.04, STEEL, 0.25, 0.8)
+	if dosed:
+		cyl(pf, Vector3(0, 0.022, 0), 0.05, 0.012, COFFEE, 0.95)
+	return pf
+
+
+func make_cup(parent: Node3D, size: String, fill := 0.0) -> Node3D:
+	var c := Node3D.new()
+	parent.add_child(c)
+	var r := 0.045 if size == "tek" else 0.06
+	var h := 0.06 if size == "tek" else 0.085
+	cyl(c, Vector3(0, 0.006, 0), r + 0.035, 0.012, WHITE, 0.3)
+	cyl(c, Vector3(0, 0.012 + h * 0.5, 0), r, h, WHITE, 0.3)
+	var handle := MeshInstance3D.new()
+	var tm := TorusMesh.new()
+	tm.inner_radius = 0.015
+	tm.outer_radius = 0.03
+	handle.mesh = tm
+	handle.material_override = mat(WHITE, 0.3)
+	handle.rotation_degrees = Vector3(90, 0, 0)
+	handle.position = Vector3(r + 0.012, 0.012 + h * 0.55, 0)
+	c.add_child(handle)
+	if fill > 0.0:
+		cyl(c, Vector3(0, 0.012 + h * fill * 0.85, 0), r - 0.006, 0.006, Color("8a5a35"), 0.2)
+	return c
+
+
+func build_props() -> void:
+	cup.visible = false
+	for s in ["tek", "double"]:
+		var pf := make_portafilter(self, s)
+		pf.position = PF_SPOT[s] + Vector3(0, 0.03, 0)
+		pf.rotation_degrees.y = 180.0
+		pf_nodes[s] = pf
+		collider(PF_SPOT[s] + Vector3(0, 0.05, -0.08), Vector3(0.14, 0.12, 0.3), "pf_" + s)
+		var stack := Node3D.new()
+		stack.position = CUP_SPOT[s]
+		add_child(stack)
+		for i in 3:
+			make_cup(stack, s).position.y = i * (0.075 if s == "tek" else 0.1)
+		cup_nodes[s] = stack
+		collider(CUP_SPOT[s] + Vector3(0, 0.15, 0), Vector3(0.18, 0.3, 0.18), "cup_" + s)
+	# öğütücü terazisi, telve kutusu, dağıtma + temper istasyonu
+	rbox(self, GRINDER_SCALE + Vector3(0, 0.012, 0.1), Vector3(0.2, 0.024, 0.16), Color("1f1f22"), 0.01)
+	rbox(self, GRINDER_SCALE + Vector3(0, 0.03, 0.19), Vector3(0.1, 0.03, 0.01), Color("7fd0a0"), 0.004)
+	rbox(self, KNOCK + Vector3(0, 0.08, 0), Vector3(0.2, 0.16, 0.2), Color("1f1a17"), 0.03)
+	cyl(self, KNOCK + Vector3(0, 0.15, 0), 0.012, 0.18, Color("cfc7b8"), 0.5)
+	rbox(self, STATION + Vector3(0, 0.02, 0), Vector3(0.26, 0.04, 0.24), Color("3a2a20"), 0.02)
+	cyl(self, STATION + Vector3(-0.06, 0.07, 0.05), 0.045, 0.03, STEEL, 0.25, 0.8)
+	cyl(self, STATION + Vector3(-0.06, 0.14, 0.05), 0.02, 0.12, WOOD, 0.5)
+	cyl(self, STATION + Vector3(0.07, 0.1, -0.05), 0.012, 0.12, WOOD, 0.5)
+	collider(Vector3(-1.65, 1.35, -1.15), Vector3(0.3, 0.7, 0.4), "grinder")
+	collider(STATION + Vector3(0, 0.1, 0), Vector3(0.28, 0.2, 0.26), "station")
+	collider(KNOCK + Vector3(0, 0.1, 0), Vector3(0.22, 0.2, 0.22), "knock")
+	collider(MACHINE + Vector3(0, 0.3, -0.1), Vector3(0.8, 0.6, 0.6), "machine")
+
+
+func build_game_ui(layer: CanvasLayer) -> void:
+	panel = Control.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.position = Vector2(-190, -230)
+	panel.size = Vector2(380, 380)
+	panel.visible = false
+	panel.draw.connect(draw_panel)
+	layer.add_child(panel)
+	panel_title = Label.new()
+	panel_title.position = Vector2(-120, -30)
+	panel_title.size = Vector2(620, 34)
+	panel_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	style(panel_title, 26)
+	panel.add_child(panel_title)
+	panel_text = Label.new()
+	panel_text.position = Vector2(-160, 390)
+	panel_text.size = Vector2(700, 80)
+	panel_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	style(panel_text, 22)
+	panel.add_child(panel_text)
+
+
 # ---------- oyuncu ----------
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		yaw -= event.relative.x * 0.0025
-		pitch = clamp(pitch - event.relative.y * 0.0025, -1.3, 1.2)
-		apply_look()
-	elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		var rel: Vector2 = event.relative
+		if mode == "wdt":
+			wdt_cursor = (wdt_cursor + rel * 0.9).limit_length(150.0)
+		elif mode == "tamp":
+			bubble_pos -= rel * 0.8
+		elif mode == "lock":
+			lock_px += max(rel.x, 0.0)
+		elif mode == "":
+			yaw -= rel.x * 0.0025
+			pitch = clamp(pitch - rel.y * 0.0025, -1.3, 1.2)
+			apply_look()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		elif mode == "dose" and event.keycode == KEY_R:
+			dose_g = max(dose_g - 0.2, 0.0)
+		elif mode == "dose" and event.keycode == KEY_SPACE:
+			finish_dose()
+		elif mode == "wdt" and event.keycode == KEY_SPACE:
+			finish_wdt()
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		get_viewport().set_input_as_handled()
@@ -508,10 +616,11 @@ func _input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	var dir := Vector3.ZERO
-	if Input.is_physical_key_pressed(KEY_W): dir.z -= 1
-	if Input.is_physical_key_pressed(KEY_S): dir.z += 1
-	if Input.is_physical_key_pressed(KEY_A): dir.x -= 1
-	if Input.is_physical_key_pressed(KEY_D): dir.x += 1
+	if mode == "":
+		if Input.is_physical_key_pressed(KEY_W): dir.z -= 1
+		if Input.is_physical_key_pressed(KEY_S): dir.z += 1
+		if Input.is_physical_key_pressed(KEY_A): dir.x -= 1
+		if Input.is_physical_key_pressed(KEY_D): dir.x += 1
 	dir = (player.transform.basis * dir).normalized() * 2.6
 	player.velocity.x = dir.x
 	player.velocity.z = dir.z
@@ -528,93 +637,139 @@ func update_look_target() -> void:
 	look_id = ""
 	if hit and hit.collider.has_meta("id"):
 		look_id = hit.collider.get_meta("id")
-	if g_active == "":
+	if mode == "":
 		prompt.text = action_text(look_id)
+
+
+func size_name(s: String) -> String:
+	return "tek" if s == "tek" else "double"
 
 
 func action_text(id: String) -> String:
 	match id:
-		"machine":
-			if pf_state == "locked_empty" and held_kind == "": return "E: Portafiltreyi al"
-			if pf_state == "held_tamped": return "E: Portafiltreyi tak"
-			if held_kind == "cup" and cup_state == "held_empty" and pf_state in ["locked_ready", "locked_empty"]: return "E: Fincanı makineye koy"
-			if pf_state == "locked_ready" and cup_state == "under": return "E: Çekimi başlat"
-			if cup_state == "full" and held_kind == "": return "E: Fincanı al"
-			if pf_state == "locked_ready" and cup_state == "none": return "Önce bir fincan koy"
+		"pf_tek", "pf_double":
+			var s := id.substr(3)
+			if stage == "pick_pf" and held_kind == "":
+				return "E: %s portafiltreyi al" % ("Tek ağızlı (tek sepet)" if s == "tek" else "Çift ağızlı (double sepet)")
 		"grinder":
-			if pf_state == "held_empty": return "E basılı tut: Öğüt (hedef 18 g)"
-		"tamper":
-			if pf_state == "held_ground": return "E basılı tut: Temperle (hedef 15 kg)"
-		"cups":
-			if held_kind == "" and cup_state == "none": return "E: Fincan al"
+			if stage == "to_grinder": return "E: Portafiltreyi teraziye koy ve öğüt"
+		"station":
+			if stage == "to_station": return "E: İğneyle dağıt (WDT)"
+			if stage == "wdt_done": return "E: Temperle"
+		"machine":
+			if stage == "tamped": return "E: Portafiltreyi grup başına tak"
+			if stage == "locked" and held_kind == "cup": return "E: Fincanı terazili tepsiye koy"
+			if stage == "locked" and held_kind == "": return "Önce bir fincan al"
+			if stage == "cup_on": return "E: Çekimi başlat"
+			if stage == "pulled" and held_kind == "": return "E: Fincanı al"
+			if stage == "used" and held_kind == "": return "E: Portafiltreyi çıkar"
+		"cup_tek", "cup_double":
+			var s2 := id.substr(4)
+			if stage == "locked" and held_kind == "":
+				return "E: %s fincanı al" % ("Tek espresso" if s2 == "tek" else "Double espresso")
+		"knock":
+			if held_kind == "pf_used": return "E: Telveyi boşalt"
 		"customer":
-			if cup_state == "held_full" and cstate == "wait": return "E: Kahveyi ver"
-			if cstate == "wait": return "Sipariş: espresso"
+			if stage == "cup_taken" and cstate == "wait": return "E: Kahveyi ver"
+			if cstate == "wait": return "Sipariş: %s espresso" % size_name(order_size)
 	return ""
 
 
 func _process(delta: float) -> void:
 	walk_t += delta
 	customer_tick(delta)
-	if g_active != "":
-		gauge_tick(delta)
-		return
-	if Input.is_action_just_pressed("interact") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		interact(look_id)
+	match mode:
+		"dose": dose_tick(delta)
+		"wdt": wdt_tick(delta)
+		"tamp": tamp_tick(delta)
+		"lock": lock_tick(delta)
+		"pull": pull_tick(delta)
+		"":
+			if Input.is_action_just_pressed("interact") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+				interact(look_id)
+	if panel.visible:
+		panel.queue_redraw()
 
 
 func interact(id: String) -> void:
 	var t := action_text(id)
-	if t == "" or not t.begins_with("E"):
+	if not t.begins_with("E"):
 		return
-	match t:
-		"E: Portafiltreyi al":
-			pf_on_machine.visible = false
-			hold("pf")
-			pf_state = "held_empty"
-		"E basılı tut: Öğüt (hedef 18 g)":
-			start_gauge("grind", "Öğütme", 0.0, 24.0, 18.0, 5.0, " g", true)
-		"E basılı tut: Temperle (hedef 15 kg)":
-			start_gauge("tamp", "Temperleme", 0.0, 30.0, 15.0, 11.0, " kg", true)
-		"E: Portafiltreyi tak":
-			drop_held()
-			pf_on_machine.visible = true
-			pf_state = "locked_ready"
-		"E: Fincan al":
-			hold("cup")
-			cup_state = "held_empty"
-		"E: Fincanı makineye koy":
-			drop_held()
-			cup.visible = true
-			cup_fill.visible = false
-			cup_state = "under"
-		"E: Çekimi başlat":
-			cup_state = "brewing"
-			stream.visible = true
-			cup_fill.visible = true
-			start_gauge("pull", "Ekstraksiyon (4× hızlı)", 0.0, 45.0, 27.5, 4.0, " sn", false)
-		"E: Fincanı al":
-			cup.visible = false
-			steam.emitting = false
-			hold("cup_full")
-			cup_state = "held_full"
-		"E: Kahveyi ver":
-			serve()
+	if id.begins_with("pf_") and stage == "pick_pf":
+		held_size = id.substr(3)
+		if held_size != order_size: wrong = true
+		pf_nodes[held_size].visible = false
+		hold("pf", held_size)
+		stage = "to_grinder"
+	elif id == "grinder":
+		drop_held()
+		scale_pf = make_portafilter(self, held_size)
+		scale_pf.position = GRINDER_SCALE + Vector3(0, 0.07, 0.02)
+		scale_pf.rotation_degrees.y = 180.0
+		dose_g = 0.0
+		open_panel("dose", "Terazide doz")
+	elif id == "station" and stage == "to_station":
+		wdt_cells.clear()
+		for i in 144:
+			wdt_cells.append(rng.randf_range(0.35, 1.0))
+		wdt_cursor = Vector2.ZERO
+		wdt_time = 0.0
+		open_panel("wdt", "Dağıtma (WDT)")
+	elif id == "station" and stage == "wdt_done":
+		bubble_pos = Vector2.ZERO
+		bubble_vel = Vector2.RIGHT.rotated(rng.randf() * TAU) * 220.0
+		tamp_time = 0.0
+		tamp_acc = 0.0
+		open_panel("tamp", "Temperleme")
+	elif id == "machine" and stage == "tamped":
+		lock_px = 0.0
+		open_panel("lock", "Portafiltreyi kilitle")
+	elif id.begins_with("cup_") and stage == "locked":
+		cup_size = id.substr(4)
+		if cup_size != order_size: wrong = true
+		hold("cup", cup_size)
+	elif id == "machine" and stage == "locked" and held_kind == "cup":
+		drop_held()
+		placed_cup = make_cup(self, cup_size)
+		placed_cup.position = CUP_POS + Vector3(0, 0.005, 0)
+		stage = "cup_on"
+	elif id == "machine" and stage == "cup_on":
+		pull_t = 0.0
+		pull_g = 0.0
+		stream.visible = false
+		open_panel("pull", "Çekim")
+	elif id == "machine" and stage == "pulled":
+		placed_cup.queue_free()
+		steam.emitting = false
+		hold("cup_full", cup_size)
+		stage = "cup_taken"
+	elif id == "machine" and stage == "used":
+		locked_pf.queue_free()
+		hold("pf_used", held_size)
+	elif id == "knock":
+		drop_held()
+		pf_nodes[held_size].visible = true
+		prompt_flash("Tak tak! Telve boşaldı.")
+		stage = "pick_pf" if cstate == "none" or cstate == "wait" else "pick_pf"
+	elif id == "customer":
+		serve()
 
 
-func hold(kind: String) -> void:
+func prompt_flash(text: String) -> void:
+	info.text = "CoffeBean · birinci şahıs deneme\n" + text
+
+
+func hold(kind: String, size: String) -> void:
 	drop_held()
 	held_kind = kind
 	held = Node3D.new()
 	cam.add_child(held)
 	held.position = Vector3(0.32, -0.3, -0.6)
-	if kind == "pf":
-		var pf := make_portafilter(held)
+	if kind.begins_with("pf"):
+		var pf := make_portafilter(held, size, kind != "pf" or stage != "pick_pf")
 		pf.rotation_degrees.y = 25
-		if pf_state != "held_empty":
-			cyl(pf, Vector3(0, 0.02, 0), 0.05, 0.02, COFFEE, 0.9)
 	else:
-		make_cup_mesh(held, kind == "cup_full").position.y = -0.05
+		make_cup(held, size, 1.0 if kind == "cup_full" else 0.0).position.y = -0.06
 
 
 func drop_held() -> void:
@@ -624,85 +779,176 @@ func drop_held() -> void:
 	held_kind = ""
 
 
-# ---------- gösterge (Kural 9) ----------
-func start_gauge(id: String, title: String, vmin: float, vmax: float, target: float, speed: float, unit: String, hold_mode: bool) -> void:
-	g_active = id
-	g_min = vmin
-	g_max = vmax
-	g_target = target
-	g_speed = speed
-	g_unit = unit
-	g_hold = hold_mode
-	g_value = vmin
-	gauge.visible = true
-	gauge_label.text = title
-	var w := gauge_bar.size.x
-	var pct_speed := speed / (vmax - vmin)   # çubuk / sn
-	var wins := [WIN_YELLOW, WIN_LIGHT, WIN_DARK]
-	for i in 3:
-		var half: float = pct_speed * wins[i] * w
-		var cx := (target - vmin) / (vmax - vmin) * w
-		gauge_zones[i].position.x = cx - half
-		gauge_zones[i].size.x = half * 2.0
-	prompt.text = "Hedefte bırak" if hold_mode else "E: Durdur"
+func open_panel(m: String, title: String) -> void:
+	mode = m
+	panel.visible = true
+	panel_title.text = title
+	prompt.text = ""
+	gauge.visible = false
 
 
-func gauge_tick(delta: float) -> void:
-	var running := Input.is_action_pressed("interact") if g_hold else true
-	if running:
-		g_value = min(g_value + g_speed * delta, g_max)
-	gauge_needle.position.x = (g_value - g_min) / (g_max - g_min) * gauge_bar.size.x - 2
-	gauge_label.text = "%s: %.1f%s" % [gauge_label.text.split(":")[0], g_value, g_unit]
-	if g_active == "pull":
-		fill_cup(clamp(g_value / g_target, 0.0, 1.0))
-	var finished := false
-	if g_hold and not Input.is_action_pressed("interact"):
-		finished = true
-	if not g_hold and Input.is_action_just_pressed("interact"):
-		finished = true
-	if g_value >= g_max:
-		finished = true
-	if finished:
-		finish_gauge()
-
-
-func score_of(v: float) -> float:
-	var secs: float = abs(v - g_target) / g_speed
-	if secs <= WIN_DARK: return 100.0
-	if secs <= WIN_LIGHT: return 88.0
-	if secs <= WIN_YELLOW: return 72.0
-	return 0.0
-
-
-func finish_gauge() -> void:
-	var sc := score_of(g_value)
-	scores.append(sc)
+func close_panel(score: float, label: String) -> void:
+	step_scores.append(score)
+	mode = ""
+	panel.visible = false
 	var names := {100.0: "Mükemmel!", 88.0: "Güzel", 72.0: "İyi", 0.0: "Kaçtı"}
-	gauge_label.text = "%s  (%.1f%s)" % [names[sc], g_value, g_unit]
-	match g_active:
-		"grind":
-			pf_state = "held_ground"
-			hold("pf")
+	var nm: String = names.get(score, "%d puan" % int(score))
+	prompt_flash("%s: %s" % [label, nm])
+
+
+# --- 2. terazide doz: öğüt + ince ayar (ibre yok; sapmaya göre puan) ---
+func dose_tick(delta: float) -> void:
+	var target: float = DOSE[held_size]
+	if Input.is_action_pressed("interact"):
+		dose_g += 2.2 * delta
+	dose_g = min(dose_g, target + 6.0)
+	panel_text.text = "Terazi: %.1f g   (hedef %.0f g)\nE basılı: öğüt · E kısa: +0,2 g · R: kaşıkla −0,2 g · Boşluk: Tamam" % [dose_g, target]
+
+
+func finish_dose() -> void:
+	var dev: float = abs(dose_g - DOSE[held_size])
+	var sc: float = 100.0 if dev <= 0.2 else (88.0 if dev <= 0.5 else (72.0 if dev <= 1.0 else 0.0))
+	scale_pf.queue_free()
+	hold("pf_dosed", held_size)
+	stage = "to_station"
+	close_panel(sc, "Doz %.1f g" % dose_g)
+
+
+# --- 3. dağıtma (WDT): daire çizerek yüzeyi düzle ---
+func wdt_tick(delta: float) -> void:
+	wdt_time += delta
+	var even := 0
+	for i in wdt_cells.size():
+		var c := Vector2((i % 12) - 5.5, (i / 12) - 5.5) * 25.0
+		if c.distance_to(wdt_cursor) < 38.0:
+			wdt_cells[i] = move_toward(wdt_cells[i], 0.0, delta * 2.2)
+		if wdt_cells[i] < 0.12:
+			even += 1
+	var pct: float = float(even) / wdt_cells.size()
+	panel_text.text = "Fareyi daire çizerek gezdir · düzlenen %%%d · %.0f sn kaldı · Boşluk: bitir" % [int(pct * 100), max(8.0 - wdt_time, 0.0)]
+	if wdt_time >= 8.0 or pct >= 0.97:
+		finish_wdt()
+
+
+func finish_wdt() -> void:
+	var even := 0
+	for v in wdt_cells:
+		if v < 0.12: even += 1
+	var pct: float = float(even) / wdt_cells.size()
+	var sc: float = 100.0 if pct >= 0.95 else (88.0 if pct >= 0.85 else (72.0 if pct >= 0.7 else 0.0))
+	stage = "wdt_done"
+	close_panel(sc, "Dağıtma %%%d" % int(pct * 100))
+
+
+# --- 4. temperleme: su terazisinin kabarcığını ortada tut ---
+## Kural 9: halka yarıçapları kabarcığın kayma hızıyla orantılı (hız × zaman penceresi).
+func tamp_rings() -> Array:
+	var v := bubble_vel.length()
+	return [v * WIN_YELLOW, v * WIN_LIGHT, v * WIN_DARK]
+
+
+func tamp_tick(delta: float) -> void:
+	tamp_time += delta
+	bubble_vel = bubble_vel.rotated(rng.randf_range(-2.5, 2.5) * delta)
+	bubble_pos += bubble_vel * delta
+	bubble_pos = bubble_pos.limit_length(150.0)
+	var r: Array = tamp_rings()
+	var d: float = bubble_pos.length()
+	var sc: float = 100.0 if d <= r[2] else (88.0 if d <= r[1] else (72.0 if d <= r[0] else 0.0))
+	tamp_acc += sc * delta
+	panel_text.text = "Temper bastırılıyor… kabarcığı fareyle ortada tut  (%.1f sn)" % max(2.0 - tamp_time, 0.0)
+	if tamp_time >= 2.0:
+		var avg: float = tamp_acc / tamp_time
+		stage = "tamped"
+		hold("pf_dosed", held_size)
+		close_panel(round(avg), "Temperleme")
+
+
+# --- 5. takma: fareyi sağa çekerek kilitle (hareket adımı) ---
+func lock_tick(_delta: float) -> void:
+	var f: float = clamp(lock_px / 260.0, 0.0, 1.0)
+	panel_text.text = "Fareyi sağa çekerek portafiltreyi çevir  %%%d" % int(f * 100)
+	if f >= 1.0:
+		drop_held()
+		locked_pf = make_portafilter(self, held_size, true)
+		locked_pf.position = MACHINE + Vector3(0, 0.27, -0.3)
+		locked_pf.rotation_degrees.y = 180.0
+		stage = "locked"
+		mode = ""
+		panel.visible = false
+		prompt_flash("Portafiltre kilitlendi")
+
+
+# --- 6. çekim: terazi + renk izlenir, hedef gramda durdurulur ---
+func pull_tick(delta: float) -> void:
+	pull_t += delta
+	var rate: float = FLOW[held_size]
+	if pull_t > PREINFUSE:
+		pull_g += rate * delta
+		stream.visible = true
+	var target: float = YIELD[held_size]
+	var top := MACHINE.y + 0.25
+	var cup_top := CUP_POS.y + (0.07 if cup_size == "tek" else 0.095)
+	(stream.mesh as CylinderMesh).height = max(top - cup_top, 0.01)
+	stream.position = Vector3(CUP_POS.x, (top + cup_top) * 0.5, CUP_POS.z)
+	var f: float = pull_g / target
+	var col: Color = COFFEE.lerp(Color("a8743f"), clamp((f - 0.55) * 2.0, 0.0, 1.0)).lerp(Color("d9b36a"), clamp((f - 1.0) * 4.0, 0.0, 1.0))
+	(stream.material_override as StandardMaterial3D).albedo_color = col
+	panel_text.text = "Terazi %.1f g  ·  %.0f sn   (hedef %.0f g, ~27 sn)\nKahvenin rengi açılınca hedefe yaklaşıyorsun · E: Durdur" % [pull_g, pull_t, target]
+	if Input.is_action_just_pressed("interact") or pull_g >= target * 1.6:
+		stream.visible = false
+		var secs: float = abs(pull_g - target) / rate
+		var sc: float = 100.0 if secs <= WIN_DARK else (88.0 if secs <= WIN_LIGHT else (72.0 if secs <= WIN_YELLOW else 0.0))
+		placed_cup.queue_free()
+		placed_cup = make_cup(self, cup_size, clamp(pull_g / target, 0.2, 1.0))
+		placed_cup.position = CUP_POS + Vector3(0, 0.005, 0)
+		steam.position = CUP_POS + Vector3(0, 0.12, 0)
+		steam.emitting = true
+		stage = "pulled"
+		close_panel(sc, "Çekim %.1f g · %.0f sn" % [pull_g, pull_t])
+
+
+# ---------- paneller ----------
+func draw_panel() -> void:
+	var c := Vector2(190, 190)
+	match mode:
+		"dose":
+			panel.draw_rect(Rect2(40, 120, 300, 160), Color(0.1, 0.1, 0.11, 0.9))
+			var target: float = DOSE[held_size]
+			panel.draw_string(ThemeDB.fallback_font, Vector2(70, 225), "%.1f g" % dose_g, HORIZONTAL_ALIGNMENT_LEFT, -1, 72, Color("7fd0a0") if abs(dose_g - target) <= 0.5 else Color("f3e6cf"))
+		"wdt":
+			panel.draw_circle(c, 165.0, Color(0.15, 0.1, 0.07, 0.92))
+			for i in wdt_cells.size():
+				var p := c + Vector2((i % 12) - 5.5, (i / 12) - 5.5) * 25.0
+				if p.distance_to(c) > 150.0: continue
+				var v := wdt_cells[i]
+				panel.draw_circle(p, 6.0 + v * 9.0, Color(0.33, 0.2, 0.12).lerp(Color(0.18, 0.11, 0.07), 1.0 - v))
+			panel.draw_circle(c + wdt_cursor, 6.0, Color("e9e1d3"))
+			panel.draw_arc(c + wdt_cursor, 38.0, 0, TAU, 32, Color(1, 1, 1, 0.35), 2.0)
 		"tamp":
-			pf_state = "held_tamped"
-			hold("pf")
+			panel.draw_circle(c, 165.0, Color(0.85, 0.92, 0.75, 0.9))
+			var r: Array = tamp_rings()
+			panel.draw_circle(c, r[0], Color("e2c044"))
+			panel.draw_circle(c, r[1], Color("8fcf6a"))
+			panel.draw_circle(c, r[2], Color("2f8a3a"))
+			panel.draw_circle(c + bubble_pos, 16.0, Color(1, 1, 1, 0.85))
+			panel.draw_arc(c + bubble_pos, 16.0, 0, TAU, 24, Color(0.3, 0.4, 0.3), 2.0)
+		"lock":
+			var a: float = -PI * 0.75 + clamp(lock_px / 260.0, 0.0, 1.0) * PI * 0.5
+			panel.draw_circle(c, 110.0, Color(0.55, 0.56, 0.58, 0.9))
+			panel.draw_line(c, c + Vector2.from_angle(a) * 160.0, Color("2e2622"), 26.0)
 		"pull":
-			stream.visible = false
-			steam.emitting = true
-			cup_state = "full"
-			pf_state = "locked_used"
-	g_active = ""
-	get_tree().create_timer(1.6).timeout.connect(func(): if g_active == "": gauge.visible = false)
-
-
-func fill_cup(f: float) -> void:
-	var h := 0.01 + 0.085 * f
-	(cup_fill.mesh as CylinderMesh).height = h
-	cup_fill.position.y = 0.025 + h * 0.5
-	var top := 1.0 + 0.25
-	var bottom := CUP_POS.y + 0.025 + h
-	(stream.mesh as CylinderMesh).height = max(top - bottom, 0.01)
-	stream.position = Vector3(CUP_POS.x, (top + bottom) * 0.5, CUP_POS.z)
+			var target: float = YIELD[held_size]
+			var x0 := -100.0
+			var w := 580.0
+			var vmax := target * 1.6
+			panel.draw_rect(Rect2(x0, 300, w, 34), Color(0.12, 0.09, 0.07, 0.9))
+			var rate: float = FLOW[held_size]
+			var cx := x0 + target / vmax * w
+			for z in [[WIN_YELLOW, Color("e2c044")], [WIN_LIGHT, Color("8fcf6a")], [WIN_DARK, Color("2f8a3a")]]:
+				var half: float = rate * z[0] / vmax * w
+				panel.draw_rect(Rect2(cx - half, 300, half * 2.0, 34), z[1])
+			panel.draw_rect(Rect2(x0 + min(pull_g, vmax) / vmax * w - 2, 294, 4, 46), Color.WHITE)
 
 
 # ---------- müşteri ----------
@@ -714,6 +960,7 @@ func spawn_customer() -> void:
 	var body := collider(Vector3(0, 1.0, 0), Vector3(0.7, 2.0, 0.5), "customer")
 	body.reparent(customer, false)
 	n_customer += 1
+	order_size = "double" if rng.randf() < 0.55 else "tek"
 	cstate = "walk_in"
 
 
@@ -726,7 +973,7 @@ func customer_tick(delta: float) -> void:
 				cstate = "wait"
 				customer.rotation.y = PI
 				pose(customer, 0.0)
-				show_bubble("Bir espresso lütfen!")
+				show_bubble("Bir %s espresso lütfen!" % size_name(order_size))
 		"walk_out":
 			if walk_to(customer, DOOR, delta):
 				customer.queue_free()
@@ -774,57 +1021,68 @@ func show_bubble(text: String) -> void:
 
 func serve() -> void:
 	drop_held()
-	cup_state = "none"
-	pf_state = "locked_empty"
 	var avg := 0.0
-	for s in scores:
+	for s in step_scores:
 		avg += s
-	avg = avg / max(scores.size(), 1)
-	scores.clear()
+	avg = avg / max(step_scores.size(), 1)
+	step_scores.clear()
 	var say := "Bunu içemem!"
-	if avg >= 95: say = "İçtiğim en iyi espresso!"
+	if wrong: say = "Ben bunu istemedim!"
+	elif avg >= 95: say = "İçtiğim en iyi espresso!"
 	elif avg >= 80: say = "Çok lezzetli, eline sağlık!"
 	elif avg >= 60: say = "İdare eder."
 	elif avg >= 40: say = "Biraz acı olmuş."
-	show_bubble("%s  (%%%d)" % [say, int(round(avg))])
+	show_bubble("%s  (%%%d)" % [say, int(round(avg))] if not wrong else say)
+	wrong = false
+	stage = "used"
+	prompt_flash("Portafiltreyi çıkar ve telve kutusunda boşalt")
 	cstate = "leaving"
 	get_tree().create_timer(1.8).timeout.connect(func(): cstate = "walk_out")
 
 
 # ---------- ekran görüntüsü (yalnız kontrol için) ----------
+func shot(dir: String, name: String) -> void:
+	await get_tree().create_timer(0.35).timeout
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(dir + "/" + name)
+
+
 func auto_shots(dir: String) -> void:
 	await get_tree().create_timer(4.5).timeout
-	await RenderingServer.frame_post_draw
-	get_viewport().get_texture().get_image().save_png(dir + "/fp1_tezgah.png")
-	yaw = PI - 0.2
-	pitch = -0.6
-	player.position = Vector3(-1.9, 0.05, -2.05)
-	apply_look()
-	pf_state = "held_empty"
-	pf_on_machine.visible = false
-	hold("pf")
-	start_gauge("grind", "Öğütme", 0.0, 24.0, 18.0, 5.0, " g", true)
-	g_value = 15.2
-	gauge_needle.position.x = (g_value) / 24.0 * gauge_bar.size.x - 2
-	g_active = ""
-	prompt.text = "Hedefte bırak"
-	await get_tree().create_timer(0.3).timeout
-	await RenderingServer.frame_post_draw
-	get_viewport().get_texture().get_image().save_png(dir + "/fp2_ogutme.png")
-	gauge.visible = false
-	drop_held()
-	pf_on_machine.visible = true
-	pf_state = "locked_ready"
-	cup.visible = true
-	cup_state = "under"
+	await shot(dir, "fp1_siparis.png")
+	look_id = "pf_double"
+	interact("pf_double")
+	player.position = Vector3(-1.65, 0.05, -2.0)
 	yaw = PI
-	pitch = -0.62
-	player.position = Vector3(-2.45, 0.05, -2.05)
+	pitch = -0.7
 	apply_look()
-	stream.visible = true
-	cup_fill.visible = true
-	fill_cup(0.6)
-	await get_tree().create_timer(0.3).timeout
-	await RenderingServer.frame_post_draw
-	get_viewport().get_texture().get_image().save_png(dir + "/fp3_cekim.png")
+	interact("grinder")
+	dose_g = 17.6
+	await shot(dir, "fp2_doz.png")
+	finish_dose()
+	interact("station")
+	for k in 40:
+		wdt_cursor = Vector2.from_angle(k * 0.5) * (40.0 + k * 2.5)
+		wdt_tick(0.05)
+	await shot(dir, "fp3_dagitma.png")
+	finish_wdt()
+	interact("station")
+	bubble_pos = Vector2(18, -10)
+	await shot(dir, "fp4_temper.png")
+	mode = ""
+	panel.visible = false
+	stage = "tamped"
+	player.position = Vector3(-2.45, 0.05, -2.05)
+	pitch = -0.6
+	apply_look()
+	interact("machine")
+	lock_px = 300.0
+	lock_tick(0.0)
+	interact("cup_double")
+	interact("machine")
+	interact("machine")
+	pull_t = 20.0
+	pull_g = 24.0
+	pull_tick(0.016)
+	await shot(dir, "fp5_cekim.png")
 	get_tree().quit()
