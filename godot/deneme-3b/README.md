@@ -1,7 +1,6 @@
-# CoffeBean birinci şahıs denemesi – gerçekçi görünüm (Godot 4.7.2)
+# CoffeBean birinci şahıs denemesi v3 (Godot 4.7.2)
 
-Ana sahne `fp_real.tscn` (`fp_real.gd`, oynanış `fp.gd`'den gelir).
-- Modeller ve dokular: Poly Haven (CC0) – `ph/`, `tex/` (kopya kaynağı: ezEngine/store-sample ve nahobbs5/CyberWave-2199, lisans `ph/LICENSE_store-sample.txt`).
-- İnsanlar: Microsoft Rocketbox (MIT) – `people/`, lisans `people/LICENSE_Rocketbox_MIT.txt`.
-- Espresso makinesi, öğütücü, istasyon eşyaları kodla (`fp_real.gd`).
-- Eski denemeler: `fp.tscn` (oyuncak görünüm), `main.tscn` (izometrik).
+Ana sahne `fp_v3.tscn` (`fp_v3.gd` → `fp_real.gd` → `fp.gd`).
+- v3: barista elleri; göstergeler sahnede (öğütücü terazisi, temperdeki su terazisi, tepsideki terazi + basınç ibresi, sürahi termometresi); süt köpürtme ve dökme; latte ve cappuccino siparişleri (belge §5).
+- Modeller ve dokular: Poly Haven (CC0) – `ph/`, `tex/`. İnsanlar: Microsoft Rocketbox (MIT) – `people/`.
+- Windows derlemesi: `.github/workflows/godot-windows.yml` her gönderimde https://github.com/bogacavdar/coffeBean/releases/download/godot-deneme/CoffeBean_Godot_Deneme_Windows.zip adresini yeniler.
