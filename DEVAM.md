@@ -16,7 +16,7 @@ Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı i
 - Depo: aynı depo (`bogacavdar/coffeBean`, `godot/` klasörü). Amaç oyunun tamamını Godot'ya taşımak: v1.0 = 82 tarif, 5 dükkan.
 - Web sürümü v0.47'de donduruldu, hata düzeltmesi de almaz. KURALLAR Kural 4 ve 6 Godot'ya göre yeniden yazıldı; CLAUDE.md'deki Pages kuralı kaldırıldı.
 - Espresso "bir tık daha hızlı dolsun": akış ×1,25 (tek 1,025 / double 2,05 g/sn, ~23 sn). Kural 9 gereği bölgeler aynı oranda genişler (koyu yeşil yarı genişliği tek 0,028 g, double 0,055 g).
-- Geliştirme planı (Claude Docs): https://claude.ai/artifact/Hjw3yV9CtTRsWq4VXGWo3h — sıradaki iş Faz 1.
+- Geliştirme planı (Claude Docs): https://claude.ai/artifact/Hjw3yV9CtTRsWq4VXGWo3h — "Taşıma adımları" sekmesi (27 Kasım 2026, kullanıcı: eski oyunun her şeyi yavaş yavaş taşınacak): T1–T18, her adım belge → kod → derleme → kullanıcı oynar → onay. Sıradaki iş T1 (iskelet, ana menü, kayıt).
 
 ## Bekleyen paket (son Godot derlemesi: deneme v3, 89d478d)
 - Espresso akışı ×1,25 (`godot/deneme-3b/fp.gd` FLOW, terazi metni ~23 sn); tasarım belgesi Espresso satırları + Web sürümü + §10 Depo/Web kararları; KURALLAR Kural 4/6; tasarım HTML'i yenilendi.
