@@ -465,7 +465,7 @@ const PF_SPOT := {"tek": Vector3(-2.98, 1.0, -1.32), "double": Vector3(-2.98, 1.
 const CUP_SPOT := {"tek": Vector3(-3.28, 1.0, -1.32), "double": Vector3(-3.28, 1.0, -1.02)}
 const DOSE := {"tek": 9.0, "double": 18.0}
 const YIELD := {"tek": 18.0, "double": 36.0}
-const FLOW := {"tek": 0.82, "double": 1.64}    # g/sn, ön ıslatmadan sonra (~27 sn'de hedef)
+const FLOW := {"tek": 1.025, "double": 2.05}    # g/sn, ön ıslatmadan sonra (~23 sn'de hedef; tasarım: ×1,25)
 const PREINFUSE := 5.5
 
 var order_size := "double"
@@ -894,7 +894,7 @@ func pull_tick(delta: float) -> void:
 	var f: float = pull_g / target
 	var col: Color = COFFEE.lerp(Color("a8743f"), clamp((f - 0.55) * 2.0, 0.0, 1.0)).lerp(Color("d9b36a"), clamp((f - 1.0) * 4.0, 0.0, 1.0))
 	(stream.material_override as StandardMaterial3D).albedo_color = col
-	panel_text.text = "Terazi %.1f g  ·  %.0f sn   (hedef %.0f g, ~27 sn)\nKahvenin rengi açılınca hedefe yaklaşıyorsun · E: Durdur" % [pull_g, pull_t, target]
+	panel_text.text = "Terazi %.1f g  ·  %.0f sn   (hedef %.0f g, ~23 sn)\nKahvenin rengi açılınca hedefe yaklaşıyorsun · E: Durdur" % [pull_g, pull_t, target]
 	if Input.is_action_just_pressed("interact") or pull_g >= target * 1.6:
 		stream.visible = false
 		var secs: float = abs(pull_g - target) / rate

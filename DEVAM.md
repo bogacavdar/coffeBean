@@ -1,6 +1,6 @@
 # DEVAM.md – İlerleme ve Devam Notları
 
-Son güncelleme: 2026-11-02
+Son güncelleme: 2026-11-26
 
 ## Öncelik hatırlatması
 "Acilen" / "kritik" denilen her istek, bu dosyadaki her şeyin önüne geçer (bkz. KURALLAR.md, Kural 3).
@@ -12,8 +12,14 @@ Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı i
 - Kararlar (25 Kasım 2026): görseller canlı 3B (sabit izometrik kamera); mobilya/dekor KayKit CC0 paketleri, karakter adayı Quaternius, kahve aletleri bizden. Godot sürümü web'de yayınlanmaz; platformlar Windows, Mac, Android, iPhone. Kural 4 (GitHub Pages) yalnız web v0.47 için. Bulut ortamında Godot 4.7.2 + dışa aktarım şablonları kurulu (/home/claude/tools/godot).
 - Belge onay bekliyor: §3 öneriler ve §10 açık sorular (görsel tarz, depo, web sürümünün durumu, ilk platform, dil, ad, kayıt taşıma). Onaydan önce Godot kodu yazılmaz (Kural 2).
 
-## Bekleyen paket (son yayın: v0.47)
-- (boş)
+## Kararlar (26 Kasım 2026, kullanıcı)
+- Depo: aynı depo (`bogacavdar/coffeBean`, `godot/` klasörü). Amaç oyunun tamamını Godot'ya taşımak: v1.0 = 82 tarif, 5 dükkan.
+- Web sürümü v0.47'de donduruldu, hata düzeltmesi de almaz. KURALLAR Kural 4 ve 6 Godot'ya göre yeniden yazıldı; CLAUDE.md'deki Pages kuralı kaldırıldı.
+- Espresso "bir tık daha hızlı dolsun": akış ×1,25 (tek 1,025 / double 2,05 g/sn, ~23 sn). Kural 9 gereği bölgeler aynı oranda genişler (koyu yeşil yarı genişliği tek 0,028 g, double 0,055 g).
+- Geliştirme planı (Claude Docs): https://claude.ai/artifact/Hjw3yV9CtTRsWq4VXGWo3h — sıradaki iş Faz 1.
+
+## Bekleyen paket (son Godot derlemesi: deneme v3, 89d478d)
+- Espresso akışı ×1,25 (`godot/deneme-3b/fp.gd` FLOW, terazi metni ~23 sn); tasarım belgesi Espresso satırları + Web sürümü + §10 Depo/Web kararları; KURALLAR Kural 4/6; tasarım HTML'i yenilendi.
 
 ## v0.47 – YAYINLANDI (13 Kasım 2026, kullanıcı "ikisini de hemen yayınla")
 - **PWA kimliği (kritik, kullanıcı bildirdi):** `manifest.webmanifest` `"id": "./"` Chrome'da start_url'in kökenine (`https://bogacavdar.github.io/`) çözülüyordu; Purple Light'ınki de aynı → iki oyun tek uygulama sayılıyordu. `"id": "/coffeBean/"` yapıldı (Purple Light reposunda da `/purple-light/`). Doküman §12 PWA notu güncellendi.

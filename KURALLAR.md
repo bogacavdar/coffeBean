@@ -19,11 +19,10 @@ Bu dosya projenin değişmez çalışma kurallarını tutar. Her oturumun başı
 - Bu durumda yanıt en kısa yoldan verilir: tek satır bilgi + teslimat. Uzun gerekçe yazılmaz.
 - Acil istek bittikten sonra yarım kalan işe kaldığı yerden dönülür ve DEVAM.md güncellenir.
 
-## Kural 4 – Oyun her zaman GitHub Pages adresinden oynanabilir olmalı (paket çıkıldığında)
-- Oyunun tek resmi oynanabilir adresi: **https://bogacavdar.github.io/coffebean/** (GitHub Pages, `main` dalına her gönderimde `.github/workflows/pages.yml` ile yayınlanır).
-- Her paket çıkışında değişiklikler `main`'e gönderilir ve yayın bitene kadar beklenir; adreste **yeni sürüm numarası görünmeden** paket "hazır" denmez.
-- Claude artifact / claude.ai bağlantısı oyunun oynanabilir hali olarak kullanılmaz ve verilmez.
-- Sadece zip göndermek eksik teslimattır.
+## Kural 4 – Web sürümü donduruldu (26 Kasım 2026, kullanıcı: "web ile işimiz kalmadı")
+- Web sürümü https://bogacavdar.github.io/coffeBean/ adresinde v0.47 olarak kalır; yeni özellik de hata düzeltmesi de almaz, GitHub Pages'e yeni yayın yapılmaz.
+- Bütün geliştirme Godot sürümünde (`godot/` klasörü, aynı depo) yapılır. Godot sürümü web'de yayınlanmaz; oynanabilir hali Windows (sonra Android, Mac, iPhone) derlemesidir ve sabit indirme bağlantısıyla verilir: https://github.com/bogacavdar/coffeBean/releases/download/godot-deneme/CoffeBean_Godot_Deneme_Windows.zip
+- Claude artifact / claude.ai bağlantısı oyunun oynanabilir hali olarak verilmez. Sadece zip göndermek eksik teslimattır: derleme GitHub Actions'ta üretilip bağlantı yenilenmeden paket "hazır" denmez.
 
 ## Kural 5 – Paket yalnızca kullanıcı "paket çık" deyince çıkılır
 - Kullanıcı **"paket çık"** demeden ya da bir konunun **kritik/acil** olduğunu söylemeden paket ÇIKILMAZ.
@@ -31,15 +30,14 @@ Bu dosya projenin değişmez çalışma kurallarını tutar. Her oturumun başı
 - Her ara turda kullanıcıya sadece kısa bir "yapıldı, pakete eklendi" bilgisi verilir.
 - "Paket çık" denince bekleyen her şey birlikte gönderilir (Kural 6).
 
-## Kural 6 – Her paketin içeriği
+## Kural 6 – Her paketin içeriği (Godot)
 Her paket çıkışında kullanıcıya şunların hepsi birlikte iletilir:
-1. Oyunun **zip** dosyası,
-2. Oyunun **GitHub Pages bağlantısı** (https://bogacavdar.github.io/coffebean/; `main`'e gönderilip yayının bittiği ve sürümün göründüğü doğrulanır),
-3. Tasarım belgesinin **HTML** hali (`Tasarim_Dokumani.html`),
-4. Kısa **güncelleme notları** (`Guncelleme_Notlari.md`: sürüm, tarih, bu pakette ne değişti).
+1. Derlemenin **indirme bağlantısı** (Windows; Faz 1'den sonra Android APK da). Değişiklikler GitHub'a gönderilir, Actions derlemesinin başarıyla bittiği ve bağlantının yeni sürümü verdiği doğrulanır,
+2. Tasarım belgesinin **HTML** hali (`godot/Tasarim_Dokumani_Godot.html`),
+3. Kısa **güncelleme notları** (`Guncelleme_Notlari.md`: sürüm, tarih, bu pakette ne değişti).
 
-Her pakette sürüm numarası 3 yerde güncellenir (önbellek sorunu olmasın diye): `index.html`'deki `window.CB_VERSION`, betiklerin `?v=` değerleri ve `data.js`'teki `version`.
-GitHub reposuna gönderim paketin zorunlu parçasıdır (Kural 4); gönderilmeyen paket çıkmış sayılmaz.
+Sürüm numarası `project.godot`'taki `config/version` ve oyun içindeki sürüm etiketinde güncellenir.
+GitHub reposuna gönderim paketin zorunlu parçasıdır; gönderilmeyen paket çıkmış sayılmaz.
 
 ## Kural 7 – Testi kullanıcı yapar
 - Normal geliştirme sürecinde test için kaynak ayrılmaz: Claude geliştirir, testleri kullanıcı yapar.
@@ -58,4 +56,4 @@ GitHub reposuna gönderim paketin zorunlu parçasıdır (Kural 4); gönderilmeye
 ## Genel çalışma düzeni
 - Her oturum: `KURALLAR.md` → `DEVAM.md` → iş.
 - Her oturum sonunda `DEVAM.md` güncellenir (ne bitti, ne kaldı, açık sorular).
-- Prototip tek sayfa HTML5 + vanilla JS; içerik verisi `data.js` içinde (dokümanın 12. bölümü).
+- Oyun Godot 4.7 ile yazılır (`godot/`); içerik verisi web v0.47'nin `data.js`'inden dönüştürülür. Web dosyaları (index.html, game.js, data.js…) donmuş kaynak olarak durur.
