@@ -1,0 +1,4840 @@
+{
+ "version": "0.47",
+ "drinks": {
+  "espresso": {
+   "name": "Espresso",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 1,
+   "req": null,
+   "unlockCups": 0,
+   "shop": 1,
+   "price": 90,
+   "cost": 18,
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "card": "18 g kahve → 36 g espresso (1:2), 25–30 sn. Ekşi tat = çok hızlı aktı, öğütümü incelt. Acı tat = çok yavaş aktı, öğütümü kabalaştır."
+  },
+  "americano": {
+   "name": "Americano",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 6,
+   "shop": 1,
+   "price": 100,
+   "cost": 18,
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "water"
+   ],
+   "card": "Espresso üstüne sıcak su (yaklaşık 1:3–1:5). Kremayı korumak istersen önce su, sonra espresso: o da long black."
+  },
+  "lungo": {
+   "name": "Lungo",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 4,
+   "shop": 1,
+   "price": 90,
+   "cost": 18,
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "ratio": 3,
+   "profile": {
+    "grind": -12
+   },
+   "card": "Uzun espresso: 18 g → ~54 g (1:3), 35–40 sn. Daha hafif, daha acımsı."
+  },
+  "ristretto": {
+   "name": "Ristretto",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 14,
+   "shop": 1,
+   "price": 90,
+   "cost": 18,
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "ratio": 1.5,
+   "profile": {
+    "grind": 12,
+    "extractZone": 0.75
+   },
+   "card": "Kısa espresso: 18 g → ~27 g (1:1,5), 18–22 sn. Daha yoğun, daha tatlı."
+  },
+  "macchiato": {
+   "name": "Macchiato",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 3,
+   "req": "espresso",
+   "unlockCups": 50,
+   "shop": 1,
+   "price": 115,
+   "cost": 25,
+   "needs": [
+    "milkKit"
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour"
+   ],
+   "milk": "dollop",
+   "milkL": 0.03,
+   "card": "Espresso üzerine bir kaşık süt köpüğü. 'Lekelenmiş' demektir."
+  },
+  "cortado": {
+   "name": "Cortado",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 52,
+   "shop": 1,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "milkKit"
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour"
+   ],
+   "milk": "micro",
+   "milkL": 0.06,
+   "card": "Espresso ile eşit miktarda süt (1:1), az köpük. Küçük bardakta servis."
+  },
+  "latte": {
+   "name": "Caffè latte",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 48,
+   "shop": 1,
+   "art": true,
+   "price": 145,
+   "cost": 35,
+   "needs": [
+    "milkKit"
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl"
+   ],
+   "milk": "micro",
+   "milkL": 0.2,
+   "card": "Espresso + bol süt, ince mikro köpük (~1 cm). Latte art bu dokuyla yapılır."
+  },
+  "turkish": {
+   "name": "Türk kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 22,
+   "shop": 1,
+   "price": 110,
+   "cost": 18,
+   "needs": [
+    "cezve"
+   ],
+   "sugar": true,
+   "steps": [
+    "tkdose",
+    "tkstir",
+    "tkfoam",
+    "tkserve"
+   ],
+   "cezve": {},
+   "card": "Cezvede, çok ince çekilmiş 7 g kahve + 70 ml soğuk su (+ şeker). Kısık ateşte karıştırmadan ısıt; köpük kabarınca taşmadan ocaktan al, köpüğü fincana paylaştır. Yanında bir bardak su ve lokumla servis edilir. Sade, az, orta ya da şekerli."
+  },
+  "frenchpress": {
+   "name": "Pres kahve",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 32,
+   "shop": 1,
+   "price": 115,
+   "cost": 18,
+   "needs": [
+    "frenchPress",
+    "kettle"
+   ],
+   "steps": [
+    "fpdose",
+    "fpwater",
+    "fpsteep",
+    "fpplunge"
+   ],
+   "card": "French press demlikte: kaba çekilmiş kahve (1:15) + 93 °C su. 4 dakika demle, pistonu yavaşça bastır. Yağlı, gövdeli bir fincan."
+  },
+  "filter": {
+   "name": "Filtre kahve",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 36,
+   "shop": 1,
+   "price": 115,
+   "cost": 18,
+   "needs": [
+    "v60",
+    "kettle"
+   ],
+   "steps": [
+    "fdose",
+    "bloom",
+    "pourover"
+   ],
+   "card": "V60 ile: orta-ince çekim, kâğıt filtre. Önce az suyla 30 sn ön ıslatma (bloom), sonra merkezden dışa dairesel dök. Temiz ve berrak."
+  },
+  "longblack": {
+   "name": "Long black",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 8,
+   "shop": 1,
+   "price": 100,
+   "cost": 18,
+   "steps": [
+    "water",
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "card": "Önce bardakta sıcak su, üstüne espresso. Americano'nun tersi; krema bozulmadan kalır."
+  },
+  "conpanna": {
+   "name": "Kremalı espresso",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 40,
+   "shop": 1,
+   "price": 115,
+   "cost": 18,
+   "needs": [
+    "creamSiphon"
+   ],
+   "uses": [
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "cream"
+   ],
+   "card": "Espresso üstüne bir tepe krem şanti. İtalyanca 'kremalı'."
+  },
+  "romano": {
+   "name": "Limonlu espresso",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 18,
+   "shop": 1,
+   "price": 110,
+   "cost": 18,
+   "uses": [
+    [
+     "lemon",
+     1
+    ]
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "garnish"
+   ],
+   "card": "Espresso, fincan kenarına sürülen bir parça limon kabuğuyla servis edilir."
+  },
+  "flatwhite": {
+   "name": "Flat white",
+   "sizes": [
+    "S",
+    "M"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 54,
+   "shop": 1,
+   "art": true,
+   "price": 145,
+   "cost": 35,
+   "needs": [
+    "milkKit"
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour"
+   ],
+   "milk": "micro",
+   "milkL": 0.12,
+   "card": "Avustralya/Yeni Zelanda. Çift ristretto + ince, parlak mikro köpük; latte'den küçük ve daha güçlü."
+  },
+  "piccolo": {
+   "name": "Piccolo latte",
+   "sizes": [
+    "S"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 76,
+   "shop": 2,
+   "price": 125,
+   "cost": 25,
+   "needs": [
+    "milkKit"
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour"
+   ],
+   "milk": "micro",
+   "ratio": 1.5,
+   "milkL": 0.08,
+   "card": "Küçük bardakta ristretto + ılık mikro köpük süt. Minik bir latte."
+  },
+  "cafeaulait": {
+   "name": "Sütlü filtre kahve",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "filter",
+   "unlockCups": 92,
+   "shop": 2,
+   "price": 125,
+   "cost": 25,
+   "needs": [
+    "v60",
+    "kettle",
+    "milkKit"
+   ],
+   "steps": [
+    "fdose",
+    "bloom",
+    "pourover",
+    "milk",
+    "pour"
+   ],
+   "milk": "hot",
+   "milkL": 0.15,
+   "card": "Fransız usulü: filtre kahve ve köpüksüz sıcak süt eşit miktarda, geniş bir kâsede."
+  },
+  "vanillalatte": {
+   "name": "Vanilyalı latte",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 97,
+   "shop": 2,
+   "price": 160,
+   "cost": 45,
+   "needs": [
+    "milkKit",
+    "syrupPump"
+   ],
+   "pump": "vanilla",
+   "uses": [
+    [
+     "vanilla",
+     "pump"
+    ]
+   ],
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl"
+   ],
+   "milk": "micro",
+   "milkL": 0.2,
+   "card": "Bardağa vanilya şurubu, üstüne espresso ve mikro köpük süt."
+  },
+  "redeye": {
+   "name": "Espressolu filtre kahve",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "filter",
+   "unlockCups": 100,
+   "shop": 2,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "v60",
+    "kettle"
+   ],
+   "steps": [
+    "fdose",
+    "bloom",
+    "pourover",
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "card": "Filtre kahvenin içine bir shot espresso. Uykusuz geceler için."
+  },
+  "mocha": {
+   "name": "Caffè mocha",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 107,
+   "shop": 2,
+   "price": 170,
+   "cost": 45,
+   "needs": [
+    "milkKit",
+    "syrupPump",
+    "creamSiphon"
+   ],
+   "pump": "choco",
+   "uses": [
+    [
+     "choco",
+     "pump"
+    ],
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl",
+    "cream"
+   ],
+   "milk": "micro",
+   "milkL": 0.18,
+   "card": "Çikolata sosu + espresso + süt, üstüne krem şanti."
+  },
+  "sutluturk": {
+   "name": "Sütlü Türk kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 26,
+   "shop": 1,
+   "price": 125,
+   "cost": 25,
+   "needs": [
+    "cezve"
+   ],
+   "sugar": true,
+   "milkUse": true,
+   "milkL": 0.07,
+   "steps": [
+    "tkdose",
+    "tkstir",
+    "tkfoam",
+    "tkserve"
+   ],
+   "cezve": {
+    "liquid": "milk"
+   },
+   "card": "Suyun yerine sütle pişirilen Türk kahvesi; daha yumuşak ve kremamsı."
+  },
+  "caramelmac": {
+   "name": "Karamelli macchiato",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 215,
+   "shop": 3,
+   "price": 170,
+   "cost": 45,
+   "needs": [
+    "milkKit",
+    "syrupPump"
+   ],
+   "pump": "vanilla",
+   "drizzle": "caramel",
+   "milkL": 0.2,
+   "uses": [
+    [
+     "vanilla",
+     "pump"
+    ],
+    [
+     "caramel",
+     1
+    ]
+   ],
+   "steps": [
+    "pump",
+    "milk",
+    "pour",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "drizzle"
+   ],
+   "milk": "foam",
+   "card": "Vanilya şurubu, köpüklü süt, espresso en üste 'leke' gibi, üstüne karamel ızgarası."
+  },
+  "menengic": {
+   "name": "Menengiç kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 69,
+   "shop": 2,
+   "price": 125,
+   "cost": 25,
+   "needs": [
+    "cezve"
+   ],
+   "milkUse": true,
+   "milkL": 0.1,
+   "noBean": true,
+   "sugar": true,
+   "uses": [
+    [
+     "menengic",
+     1
+    ]
+   ],
+   "steps": [
+    "mndose",
+    "tkstir",
+    "tkfoam",
+    "tkserve"
+   ],
+   "cezve": {
+    "liquid": "milk",
+    "powder": "menengic"
+   },
+   "card": "Kafeinsiz Güneydoğu klasiği: menengiç (yabani fıstık) ezmesi sütle cezvede pişirilir. İçinde kahve yoktur."
+  },
+  "saltcaramel": {
+   "name": "Tuzlu karamelli latte",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 209,
+   "shop": 3,
+   "price": 180,
+   "cost": 45,
+   "needs": [
+    "milkKit",
+    "syrupPump"
+   ],
+   "pump": "saltcar",
+   "milkL": 0.2,
+   "drizzle": "saltcar",
+   "uses": [
+    [
+     "saltcar",
+     "pump"
+    ],
+    [
+     "saltcar",
+     1
+    ]
+   ],
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl",
+    "drizzle"
+   ],
+   "milk": "micro",
+   "card": "Tuzlu karamel sosu + espresso + süt, üstüne tuzlu karamel ızgarası."
+  },
+  "dibek": {
+   "name": "Dibek kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 65,
+   "shop": 2,
+   "price": 115,
+   "cost": 18,
+   "needs": [
+    "cezve"
+   ],
+   "sugar": true,
+   "steps": [
+    "tkdose",
+    "tkstir",
+    "tkfoam",
+    "tkserve"
+   ],
+   "cezve": {
+    "powder": "spiced"
+   },
+   "card": "Taş dibekte dövülmüş, Türk kahvesinden iri kahve; cezvede pişirilir, daha yumuşak ve aromalıdır. Bazı karışımlarda süt tozu ve kakao bulunur."
+  },
+  "affogato": {
+   "name": "Affogato",
+   "sizes": [
+    "affo1",
+    "affo2"
+   ],
+   "level": 3,
+   "req": "espresso",
+   "unlockCups": 110,
+   "shop": 2,
+   "price": 160,
+   "cost": 45,
+   "needs": [
+    "iceCreamFridge"
+   ],
+   "uses": [
+    [
+     "icecream",
+     "scoop"
+    ]
+   ],
+   "steps": [
+    "scoop",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "pourshot"
+   ],
+   "card": "Kaseye vanilyalı dondurma, üstüne sıcak espresso dökülür. İtalyanca 'boğulmuş'."
+  },
+  "icedamericano": {
+   "name": "Buzlu americano",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 3,
+   "req": "americano",
+   "unlockCups": 140,
+   "shop": 3,
+   "price": 115,
+   "cost": 18,
+   "needs": [
+    "iceMachine"
+   ],
+   "steps": [
+    "ice",
+    "coldwater",
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "card": "Buzlu bardağa önce soğuk su, espresso en üste; krema katman olarak kalır."
+  },
+  "icedlatte": {
+   "name": "Buzlu latte",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 145,
+   "shop": 3,
+   "price": 155,
+   "cost": 35,
+   "needs": [
+    "iceMachine"
+   ],
+   "milkUse": true,
+   "milkL": 0.15,
+   "steps": [
+    "ice",
+    "coldmilk",
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "card": "Buz + soğuk süt, üstüne espresso; katmanlar yavaşça karışır."
+  },
+  "moka": {
+   "name": "Moka kahve",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 120,
+   "shop": 3,
+   "price": 115,
+   "cost": 18,
+   "needs": [
+    "mokaPot"
+   ],
+   "brewer": "moka",
+   "steps": [
+    "mokafill",
+    "fdose",
+    "mokaheat"
+   ],
+   "card": "İtalyan moka potunda: alt hazneye vanaya kadar su, sepete kahve (silme doldur, bastırma); ocakta 'fokurdama' başlayınca ocaktan al."
+  },
+  "aeropress": {
+   "name": "AeroPress kahve",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "filter",
+   "unlockCups": 127,
+   "shop": 3,
+   "price": 125,
+   "cost": 18,
+   "needs": [
+    "aeropress",
+    "kettle"
+   ],
+   "brewer": "aeropress",
+   "steps": [
+    "fdose",
+    "fpwater",
+    "apsteep",
+    "appress"
+   ],
+   "card": "Kahve + 85 °C su, 1,5 dakika demle, pistonla yavaşça bastır. Temiz ve tatlı."
+  },
+  "cubano": {
+   "name": "Küba kahvesi",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 3,
+   "req": "espresso",
+   "unlockCups": 165,
+   "shop": 3,
+   "price": 115,
+   "cost": 18,
+   "needs": [
+    "whisk"
+   ],
+   "uses": [
+    [
+     "sugar",
+     2
+    ]
+   ],
+   "whiskBowl": "cubano",
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "whisk"
+   ],
+   "card": "Küba usulü: şeker potada beklerken espressonun ilk damlaları üstüne alınıp çırpılır, köpüklü 'espuma' olur; kalan espresso üstüne dökülür."
+  },
+  "bombon": {
+   "name": "Kondanse sütlü espresso",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 3,
+   "req": "espresso",
+   "unlockCups": 95,
+   "shop": 2,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "syrupPump"
+   ],
+   "pump": "condensed",
+   "uses": [
+    [
+     "condensed",
+     "pump"
+    ]
+   ],
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "card": "İspanya: cam bardağa yoğunlaştırılmış süt, üstüne espresso; iki katman."
+  },
+  "marocchino": {
+   "name": "Marocchino",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 232,
+   "shop": 3,
+   "price": 145,
+   "cost": 35,
+   "needs": [
+    "milkKit",
+    "cocoa",
+    "syrupPump"
+   ],
+   "pump": "choco",
+   "uses": [
+    [
+     "choco",
+     1
+    ]
+   ],
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour",
+    "cocoa"
+   ],
+   "milk": "foam",
+   "milkL": 0.05,
+   "card": "Torino: çikolata sosu + espresso + süt köpüğü + kakao, küçük cam bardakta."
+  },
+  "melange": {
+   "name": "Viyana melanjı",
+   "sizes": [
+    "S",
+    "M"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 90,
+   "shop": 2,
+   "price": 155,
+   "cost": 35,
+   "needs": [
+    "milkKit"
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour"
+   ],
+   "milk": "foam",
+   "milkL": 0.12,
+   "card": "Viyana klasiği: yumuşak espresso + sıcak süt + bol süt köpüğü, bir bardak suyla. Krem şantili olanı Viyana kahvesidir (Einspänner)."
+  },
+  "dalgona": {
+   "name": "Dalgona kahve",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 3,
+   "req": "espresso",
+   "unlockCups": 136,
+   "shop": 3,
+   "price": 145,
+   "cost": 25,
+   "needs": [
+    "whisk",
+    "iceMachine"
+   ],
+   "milkUse": true,
+   "milkL": 0.15,
+   "noBean": true,
+   "uses": [
+    [
+     "instant",
+     1
+    ],
+    [
+     "sugar",
+     2
+    ]
+   ],
+   "whiskBowl": "dalgona",
+   "steps": [
+    "whisk",
+    "ice",
+    "coldmilk",
+    "spoontop"
+   ],
+   "card": "Hazır kahve + şeker + sıcak su çırpılıp köpük yapılır, buzlu sütün üstüne kaşıkla konur."
+  },
+  "espressotonic": {
+   "name": "Espresso tonik",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 3,
+   "req": "espresso",
+   "unlockCups": 160,
+   "shop": 3,
+   "price": 155,
+   "cost": 35,
+   "needs": [
+    "iceMachine"
+   ],
+   "uses": [
+    [
+     "tonic",
+     1
+    ],
+    [
+     "lemon",
+     1
+    ]
+   ],
+   "steps": [
+    "ice",
+    "tonic",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "garnish"
+   ],
+   "card": "Buz + tonik, espresso yavaşça üstüne dökülür ki katman kalsın; limon dilimiyle."
+  },
+  "frappuccino": {
+   "name": "Karamel frappé",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 354,
+   "shop": 4,
+   "price": 190,
+   "cost": 45,
+   "needs": [
+    "blender",
+    "iceMachine",
+    "syrupPump",
+    "creamSiphon"
+   ],
+   "milkUse": true,
+   "milkL": 0.15,
+   "pump": "caramel",
+   "drizzle": "caramel",
+   "uses": [
+    [
+     "caramel",
+     "pump"
+    ],
+    [
+     "caramel",
+     1
+    ],
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "ice",
+    "coldmilk",
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "blend",
+    "cream",
+    "drizzle"
+   ],
+   "card": "Buz, süt, karamel şurubu ve espresso blenderda pürüzsüz olana kadar çekilir; krem şanti ve karamel ızgarası."
+  },
+  "mochafrappe": {
+   "name": "Mocha frappé",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 365,
+   "shop": 4,
+   "price": 190,
+   "cost": 45,
+   "needs": [
+    "blender",
+    "iceMachine",
+    "syrupPump",
+    "creamSiphon"
+   ],
+   "milkUse": true,
+   "milkL": 0.15,
+   "pump": "choco",
+   "drizzle": "choco",
+   "uses": [
+    [
+     "choco",
+     "pump"
+    ],
+    [
+     "choco",
+     1
+    ],
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "ice",
+    "coldmilk",
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "blend",
+    "cream",
+    "drizzle"
+   ],
+   "card": "Çikolata sosu, buz, süt ve espresso blenderda; üstüne krem şanti ve çikolata."
+  },
+  "greekfrappe": {
+   "name": "Yunan frappé",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 2,
+   "req": "espresso",
+   "unlockCups": 131,
+   "shop": 3,
+   "price": 125,
+   "cost": 18,
+   "needs": [
+    "shaker",
+    "iceMachine"
+   ],
+   "noBean": true,
+   "uses": [
+    [
+     "instant",
+     1
+    ],
+    [
+     "sugar",
+     1
+    ]
+   ],
+   "steps": [
+    "shakeit",
+    "ice",
+    "coldwater"
+   ],
+   "card": "Hazır kahve, şeker ve biraz su shaker'da sertçe çalkalanır; köpük buzlu bardağa, üstüne soğuk su."
+  },
+  "coldbrew": {
+   "name": "Soğuk demleme kahve",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 2,
+   "req": "filter",
+   "unlockCups": 240,
+   "shop": 4,
+   "price": 145,
+   "cost": 25,
+   "needs": [
+    "coldBrewJar",
+    "iceMachine"
+   ],
+   "noBean": true,
+   "uses": [
+    [
+     "coldbrew",
+     "cb"
+    ]
+   ],
+   "steps": [
+    "ice",
+    "coldpour"
+   ],
+   "card": "Kaba çekilmiş kahve soğuk suda 12–18 saat demlenir. Önceden demlenen soğuk demleme buzun üstüne dökülür (dünyada «cold brew» diye bilinir)."
+  },
+  "vietnam": {
+   "name": "Vietnam kahvesi",
+   "sizes": [
+    "iS",
+    "iM"
+   ],
+   "level": 2,
+   "req": "filter",
+   "unlockCups": 312,
+   "shop": 4,
+   "price": 145,
+   "cost": 25,
+   "needs": [
+    "phin",
+    "iceMachine",
+    "syrupPump"
+   ],
+   "pump": "condensed",
+   "uses": [
+    [
+     "condensed",
+     "pump"
+    ]
+   ],
+   "brewer": "phin",
+   "steps": [
+    "pump",
+    "fdose",
+    "phin",
+    "ice"
+   ],
+   "card": "Cà phê sữa đá: bardağa yoğunlaştırılmış süt, üstüne phin filtreden damla damla kahve, sonra buz."
+  },
+  "icedmocha": {
+   "name": "Buzlu mocha",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 343,
+   "shop": 4,
+   "price": 170,
+   "cost": 45,
+   "needs": [
+    "iceMachine",
+    "syrupPump",
+    "creamSiphon"
+   ],
+   "milkUse": true,
+   "milkL": 0.15,
+   "pump": "choco",
+   "uses": [
+    [
+     "choco",
+     "pump"
+    ],
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "pump",
+    "ice",
+    "coldmilk",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "cream"
+   ],
+   "card": "Çikolata sosu, buz, soğuk süt ve espresso; üstüne krem şanti."
+  },
+  "chemex": {
+   "name": "Chemex kahve",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "filter",
+   "unlockCups": 291,
+   "shop": 4,
+   "price": 135,
+   "cost": 18,
+   "needs": [
+    "chemex",
+    "kettle"
+   ],
+   "brewer": "chemex",
+   "steps": [
+    "fdose",
+    "bloom",
+    "pourover"
+   ],
+   "card": "Kalın kâğıt filtreli cam demlik; çok temiz, çay gibi berrak bir fincan."
+  },
+  "siphon": {
+   "name": "Sifon kahve",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "filter",
+   "unlockCups": 420,
+   "shop": 5,
+   "price": 180,
+   "cost": 25,
+   "needs": [
+    "siphon"
+   ],
+   "brewer": "siphon",
+   "steps": [
+    "fdose",
+    "siphonheat",
+    "stir",
+    "siphondrop"
+   ],
+   "card": "Japon usulü vakumlu demleme: su ısınınca üst hazneye çıkar, kahve karıştırılır, ateş kesilince kahve süzülerek iner."
+  },
+  "nitro": {
+   "name": "Nitrojenli soğuk demleme",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 2,
+   "req": "coldbrew",
+   "unlockCups": 380,
+   "shop": 5,
+   "price": 180,
+   "cost": 25,
+   "needs": [
+    "nitroTap",
+    "coldBrewJar"
+   ],
+   "noBean": true,
+   "uses": [
+    [
+     "coldbrew",
+     "cb"
+    ]
+   ],
+   "steps": [
+    "nitrotap"
+   ],
+   "card": "Azotla doyurulmuş soğuk demleme kahve musluktan, buzsuz servis edilir; Guinness gibi kremsi köpük."
+  },
+  "cappuccino": {
+   "name": "Cappuccino",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 58,
+   "shop": 1,
+   "art": true,
+   "price": 155,
+   "cost": 35,
+   "needs": [
+    "milkKit",
+    "cocoa"
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl",
+    "cocoa"
+   ],
+   "milk": "foam",
+   "milkL": 0.15,
+   "card": "1/3 espresso, 1/3 süt, 1/3 köpük, ~150–180 ml. Süt 60–65 °C; kalın ama ipeksi köpük. Kakao isteğe bağlıdır (İtalya'da konmaz)."
+  },
+  "hotchoc": {
+   "name": "Sıcak çikolata",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "macchiato",
+   "unlockCups": 44,
+   "shop": 1,
+   "price": 135,
+   "cost": 35,
+   "needs": [
+    "milkKit",
+    "syrupPump"
+   ],
+   "noBean": true,
+   "pump": "choco",
+   "uses": [
+    [
+     "choco",
+     "pump"
+    ]
+   ],
+   "milkLiquid": "chocolate",
+   "steps": [
+    "pump",
+    "milk",
+    "swirl"
+   ],
+   "milk": "micro",
+   "milkL": 0.22,
+   "card": "Kahvesiz: çikolata sosu + buharla ısıtılmış süt. Kahve içmeyenler ve çocuklar için."
+  },
+  "latmac": {
+   "name": "Latte macchiato",
+   "sizes": [
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 80,
+   "shop": 2,
+   "price": 145,
+   "cost": 35,
+   "needs": [
+    "milkKit"
+   ],
+   "glass": true,
+   "steps": [
+    "milk",
+    "pour",
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "milk": "foam",
+   "milkL": 0.22,
+   "card": "Uzun cam bardakta önce sıcak süt ve köpük, espresso en üste yavaşça dökülür: süt · espresso · köpük üç katman. 'Lekelenmiş süt.'"
+  },
+  "conleche": {
+   "name": "İspanyol sütlü kahvesi",
+   "sizes": [
+    "S",
+    "M"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 56,
+   "shop": 1,
+   "price": 125,
+   "cost": 25,
+   "needs": [
+    "milkKit"
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour"
+   ],
+   "milk": "hot",
+   "milkL": 0.12,
+   "card": "İspanya: koyu espresso + eşit miktarda köpüksüz sıcak süt."
+  },
+  "gibraltar": {
+   "name": "Gibraltar",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 3,
+   "req": "cortado",
+   "unlockCups": 78,
+   "shop": 2,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "milkKit"
+   ],
+   "glass": true,
+   "art": true,
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour"
+   ],
+   "milk": "micro",
+   "milkL": 0.06,
+   "card": "San Francisco: 4,5 oz'luk Gibraltar bardağında cortado; double shot + eşit mikroköpük süt."
+  },
+  "magic": {
+   "name": "Magic",
+   "sizes": [
+    "S"
+   ],
+   "level": 3,
+   "req": "flatwhite",
+   "unlockCups": 85,
+   "shop": 2,
+   "ratio": 1.5,
+   "art": true,
+   "price": 145,
+   "cost": 35,
+   "needs": [
+    "milkKit"
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour"
+   ],
+   "milk": "micro",
+   "milkL": 0.11,
+   "card": "Melbourne: double ristretto + 3/4 dolduran ince mikroköpük, 160 ml fincanda. Flat white'tan daha yoğun."
+  },
+  "galao": {
+   "name": "Galão",
+   "sizes": [
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 83,
+   "shop": 2,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "milkKit"
+   ],
+   "glass": true,
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "pour"
+   ],
+   "milk": "foam",
+   "milkL": 0.24,
+   "card": "Portekiz: uzun cam bardakta 1/4 espresso, 3/4 köpüklü süt."
+  },
+  "breve": {
+   "name": "Breve",
+   "sizes": [
+    "S",
+    "M"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 87,
+   "shop": 2,
+   "price": 160,
+   "cost": 45,
+   "needs": [
+    "milkKit"
+   ],
+   "uses": [
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl"
+   ],
+   "milk": "micro",
+   "milkL": 0.1,
+   "card": "ABD: süt yerine yarım krema-yarım süt (half & half) köpürtülen latte; çok kremsi."
+  },
+  "chai": {
+   "name": "Baharatlı çay latte",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 73,
+   "shop": 2,
+   "price": 145,
+   "cost": 35,
+   "needs": [
+    "milkKit",
+    "syrupPump"
+   ],
+   "noBean": true,
+   "pump": "chai",
+   "uses": [
+    [
+     "chai",
+     "pump"
+    ]
+   ],
+   "milkLiquid": "chai",
+   "steps": [
+    "pump",
+    "milk",
+    "swirl"
+   ],
+   "milk": "micro",
+   "milkL": 0.2,
+   "card": "Kahvesiz: baharatlı (tarçın, kakule, zencefil, karanfil) siyah çay şurubu + köpürtülmüş süt."
+  },
+  "salep": {
+   "name": "Salep",
+   "sizes": [
+    "S",
+    "M"
+   ],
+   "level": 2,
+   "req": "macchiato",
+   "unlockCups": 46,
+   "shop": 1,
+   "price": 135,
+   "cost": 35,
+   "needs": [
+    "milkKit"
+   ],
+   "noBean": true,
+   "uses": [
+    [
+     "salep",
+     1
+    ],
+    [
+     "cinnamon",
+     1
+    ]
+   ],
+   "milkLiquid": "salep",
+   "dust": "cinnamon",
+   "steps": [
+    "milk",
+    "swirl",
+    "dust"
+   ],
+   "milk": "foam",
+   "milkL": 0.2,
+   "card": "Kahvesiz kış klasiği: salep tozu sütle karıştırılarak koyulaşana kadar ısıtılır, üstüne tarçın serpilir."
+  },
+  "pumpkin": {
+   "name": "Balkabaklı baharatlı latte",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 198,
+   "shop": 3,
+   "season": [
+    0
+   ],
+   "price": 170,
+   "cost": 45,
+   "needs": [
+    "milkKit",
+    "syrupPump"
+   ],
+   "pump": "pumpkin",
+   "uses": [
+    [
+     "pumpkin",
+     "pump"
+    ],
+    [
+     "cinnamon",
+     1
+    ]
+   ],
+   "dust": "cinnamon",
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl",
+    "dust"
+   ],
+   "milk": "micro",
+   "milkL": 0.2,
+   "card": "Mevsimlik (sonbahar): balkabağı-baharat şurubu + espresso + süt, üstüne tarçın."
+  },
+  "gingerbread": {
+   "name": "Zencefilli kurabiye latte",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "macchiato",
+   "unlockCups": 187,
+   "shop": 3,
+   "season": [
+    1
+   ],
+   "price": 170,
+   "cost": 45,
+   "needs": [
+    "milkKit",
+    "syrupPump"
+   ],
+   "pump": "gingerbread",
+   "uses": [
+    [
+     "gingerbread",
+     "pump"
+    ]
+   ],
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl"
+   ],
+   "milk": "micro",
+   "milkL": 0.2,
+   "card": "Mevsimlik (kış): zencefil-tarçın-esmer şeker şurubu + espresso + süt."
+  },
+  "damla": {
+   "name": "Damla sakızlı Türk kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 63,
+   "shop": 2,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "cezve"
+   ],
+   "sugar": true,
+   "uses": [
+    [
+     "mastic",
+     1
+    ]
+   ],
+   "steps": [
+    "tkdose",
+    "tkstir",
+    "tkfoam",
+    "tkserve"
+   ],
+   "cezve": {
+    "powder": "mastic"
+   },
+   "card": "Türk kahvesine dövülmüş damla sakızı eklenir; reçineli, ferah bir koku verir. Ege ve İstanbul klasiği."
+  },
+  "peppermint": {
+   "name": "Naneli mocha",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "mocha",
+   "unlockCups": 203,
+   "shop": 3,
+   "season": [
+    1
+   ],
+   "price": 180,
+   "cost": 45,
+   "needs": [
+    "milkKit",
+    "syrupPump",
+    "creamSiphon"
+   ],
+   "pump": "peppermint",
+   "uses": [
+    [
+     "peppermint",
+     "pump"
+    ],
+    [
+     "choco",
+     1
+    ],
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl",
+    "cream"
+   ],
+   "milk": "micro",
+   "milkL": 0.18,
+   "card": "Mevsimlik (kış): nane şurubu + çikolata + espresso + süt, üstüne krem şanti."
+  },
+  "dirtychai": {
+   "name": "Espressolu çay latte",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 3,
+   "req": "chai",
+   "unlockCups": 192,
+   "shop": 3,
+   "price": 160,
+   "cost": 35,
+   "needs": [
+    "milkKit",
+    "syrupPump"
+   ],
+   "pump": "chai",
+   "uses": [
+    [
+     "chai",
+     "pump"
+    ]
+   ],
+   "milkLiquid": "chai",
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "milk",
+    "swirl"
+   ],
+   "milk": "micro",
+   "milkL": 0.2,
+   "card": "Baharatlı çay latte + bir shot espresso."
+  },
+  "kenger": {
+   "name": "Kenger kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "menengic",
+   "unlockCups": 71,
+   "shop": 2,
+   "price": 125,
+   "cost": 25,
+   "needs": [
+    "cezve"
+   ],
+   "noBean": true,
+   "sugar": true,
+   "milkUse": true,
+   "milkL": 0.1,
+   "uses": [
+    [
+     "kenger",
+     1
+    ]
+   ],
+   "steps": [
+    "mndose",
+    "tkstir",
+    "tkfoam",
+    "tkserve"
+   ],
+   "cezve": {
+    "liquid": "milk",
+    "powder": "kenger"
+   },
+   "card": "Kahvesiz Anadolu içeceği: kavrulmuş kenger (çakır dikeni) tohumu ezmesi sütle cezvede pişirilir."
+  },
+  "osmanli": {
+   "name": "Osmanlı kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 67,
+   "shop": 2,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "cezve"
+   ],
+   "sugar": true,
+   "uses": [
+    [
+     "cardamom",
+     1
+    ]
+   ],
+   "steps": [
+    "tkdose",
+    "tkstir",
+    "tkfoam",
+    "tkserve"
+   ],
+   "cezve": {
+    "powder": "spiced"
+   },
+   "card": "Türk kahvesine kakule, damla sakızı ve biraz kakao katılan, daha yumuşak ve baharatlı karışım."
+  },
+  "mirra": {
+   "name": "Mırra",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 61,
+   "shop": 2,
+   "price": 160,
+   "cost": 35,
+   "needs": [
+    "cezve"
+   ],
+   "steps": [
+    "tkdose",
+    "tkstir",
+    "mirraboil"
+   ],
+   "cezve": {
+    "vessel": "mirra"
+   },
+   "card": "Mardin–Urfa: açık kavrulmuş kahve saatlerce kaynatılıp dinlendirilerek koyulaştırılır; şekersiz, kulpsuz fincanda bir iki yudum ikram edilir."
+  },
+  "kumda": {
+   "name": "Kumda Türk kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 123,
+   "shop": 3,
+   "price": 155,
+   "cost": 25,
+   "needs": [
+    "sandStove"
+   ],
+   "sugar": true,
+   "steps": [
+    "tkdose",
+    "tkstir",
+    "tkfoam",
+    "tkserve"
+   ],
+   "cezve": {
+    "vessel": "sand"
+   },
+   "card": "Cezve sıcak kumun içinde gezdirilir; ısı her yandan yavaş geldiği için köpük çok yoğun ve kalıcı olur."
+  },
+  "spanish": {
+   "name": "Buzlu İspanyol latte",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 3,
+   "req": "icedlatte",
+   "unlockCups": 170,
+   "shop": 3,
+   "price": 160,
+   "cost": 45,
+   "needs": [
+    "iceMachine",
+    "syrupPump"
+   ],
+   "milkUse": true,
+   "milkL": 0.15,
+   "pump": "condensed",
+   "uses": [
+    [
+     "condensed",
+     "pump"
+    ]
+   ],
+   "steps": [
+    "pump",
+    "ice",
+    "coldmilk",
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "card": "Yoğunlaştırılmış süt + buz + soğuk süt, en üste double shot. Tatlı ve katmanlı."
+  },
+  "einspanner": {
+   "name": "Viyana kahvesi",
+   "sizes": [
+    "S"
+   ],
+   "level": 3,
+   "req": "conpanna",
+   "unlockCups": 42,
+   "shop": 1,
+   "glass": true,
+   "price": 155,
+   "cost": 35,
+   "needs": [
+    "creamSiphon"
+   ],
+   "uses": [
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "cream"
+   ],
+   "card": "Viyana: cam bardakta double espresso, üstü kalın bir kat krem şanti; karıştırmadan, kremanın içinden içilir."
+  },
+  "cortadito": {
+   "name": "Şekerli cortado",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 3,
+   "req": "cubano",
+   "unlockCups": 226,
+   "shop": 3,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "whisk",
+    "milkKit"
+   ],
+   "uses": [
+    [
+     "sugar",
+     2
+    ]
+   ],
+   "whiskBowl": "cubano",
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "whisk",
+    "milk",
+    "pour"
+   ],
+   "milk": "hot",
+   "milkL": 0.06,
+   "card": "Küba: şekerle çırpılmış espresso (café cubano) + eşit miktarda sıcak süt."
+  },
+  "bicerin": {
+   "name": "Bicerin",
+   "sizes": [
+    "S"
+   ],
+   "level": 3,
+   "req": "mocha",
+   "unlockCups": 105,
+   "shop": 2,
+   "glass": true,
+   "price": 170,
+   "cost": 45,
+   "needs": [
+    "syrupPump",
+    "creamSiphon"
+   ],
+   "pump": "choco",
+   "uses": [
+    [
+     "choco",
+     "pump"
+    ],
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "pump",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "cream"
+   ],
+   "card": "Torino: küçük cam bardakta sıcak çikolata, espresso ve krema üç katman halinde; karıştırılmaz."
+  },
+  "freddoesp": {
+   "name": "Freddo espresso",
+   "sizes": [
+    "iS",
+    "iM"
+   ],
+   "level": 3,
+   "req": "espresso",
+   "unlockCups": 176,
+   "shop": 3,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "shaker",
+    "iceMachine"
+   ],
+   "uses": [
+    [
+     "sugar",
+     1
+    ]
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "shakeit",
+    "ice"
+   ],
+   "card": "Yunanistan / Ege: double espresso (isteğe şekerle) buzla shaker'da çalkalanır, köpüklü haliyle taze buzun üstüne süzülür."
+  },
+  "freddocap": {
+   "name": "Freddo cappuccino",
+   "sizes": [
+    "iS",
+    "iM"
+   ],
+   "level": 3,
+   "req": "freddoesp",
+   "unlockCups": 220,
+   "shop": 3,
+   "price": 155,
+   "cost": 35,
+   "needs": [
+    "shaker",
+    "iceMachine",
+    "frother"
+   ],
+   "milkUse": true,
+   "milkL": 0.1,
+   "uses": [
+    [
+     "sugar",
+     1
+    ]
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "shakeit",
+    "ice",
+    "coldfoam"
+   ],
+   "card": "Freddo espresso + üstüne soğuk süt köpüğü (afrogala). Türkiye'de yazın en çok istenenlerden."
+  },
+  "shakerato": {
+   "name": "Çalkalanmış espresso",
+   "sizes": [
+    "single",
+    "double"
+   ],
+   "level": 3,
+   "req": "espresso",
+   "unlockCups": 181,
+   "shop": 3,
+   "glass": true,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "shaker",
+    "iceMachine"
+   ],
+   "uses": [
+    [
+     "sugar",
+     1
+    ]
+   ],
+   "steps": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "ice",
+    "shakeit"
+   ],
+   "card": "İtalya: espresso + şeker + buz shaker'da çalkalanır, buzsuz olarak kokteyl bardağına süzülür; köpüklü üst."
+  },
+  "mazagran": {
+   "name": "Limonlu buzlu kahve",
+   "sizes": [
+    "iS",
+    "iM"
+   ],
+   "level": 3,
+   "req": "icedamericano",
+   "unlockCups": 155,
+   "shop": 3,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "iceMachine"
+   ],
+   "uses": [
+    [
+     "lemon",
+     1
+    ],
+    [
+     "sugar",
+     1
+    ]
+   ],
+   "steps": [
+    "ice",
+    "coldwater",
+    "grind",
+    "dose",
+    "tamp",
+    "extract",
+    "garnish"
+   ],
+   "card": "Portekiz / Cezayir: buzlu, limonlu, hafif şekerli soğuk kahve; yazın serinletici."
+  },
+  "kopi": {
+   "name": "Endonezya telveli kahvesi",
+   "sizes": [
+    "S"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 60,
+   "shop": 2,
+   "sugar": true,
+   "price": 110,
+   "cost": 18,
+   "needs": [
+    "kettle"
+   ],
+   "steps": [
+    "steepcup",
+    "stir"
+   ],
+   "card": "Endonezya: iri çekilmiş kahve ve şeker doğrudan bardağa, üstüne kaynar su; telve dibe çökünce içilir."
+  },
+  "flashbrew": {
+   "name": "Japon usulü buzlu filtre",
+   "sizes": [
+    "iS",
+    "iM"
+   ],
+   "level": 2,
+   "req": "filter",
+   "unlockCups": 150,
+   "shop": 3,
+   "price": 145,
+   "cost": 25,
+   "needs": [
+    "v60",
+    "kettle",
+    "iceMachine"
+   ],
+   "steps": [
+    "ice",
+    "fdose",
+    "bloom",
+    "pourover"
+   ],
+   "card": "Flash brew: V60'ta sıcak demleme doğrudan buzun üstüne; suyun bir kısmı buz olarak hesaplanır, aroma kilitlenir."
+  },
+  "irish": {
+   "name": "İrlanda kahvesi (alkolsüz)",
+   "sizes": [
+    "S",
+    "M"
+   ],
+   "level": 3,
+   "req": "filter",
+   "unlockCups": 102,
+   "shop": 2,
+   "glass": true,
+   "price": 180,
+   "cost": 45,
+   "needs": [
+    "v60",
+    "kettle",
+    "syrupPump",
+    "creamSiphon"
+   ],
+   "pump": "irish",
+   "uses": [
+    [
+     "irish",
+     "pump"
+    ],
+    [
+     "cream",
+     1
+    ]
+   ],
+   "steps": [
+    "pump",
+    "fdose",
+    "bloom",
+    "pourover",
+    "cream"
+   ],
+   "card": "Irish coffee'nin alkolsüz hali: sıcak filtre kahve + Irish cream aromalı şurup + üstüne yüzen hafif krema."
+  },
+  "cafezinho": {
+   "name": "Brezilya kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "filter",
+   "unlockCups": 247,
+   "shop": 4,
+   "price": 110,
+   "cost": 18,
+   "needs": [
+    "clothFilter"
+   ],
+   "uses": [
+    [
+     "sugar",
+     2
+    ]
+   ],
+   "brewer": "cloth",
+   "steps": [
+    "fdose",
+    "cloth"
+   ],
+   "card": "Brezilya: şekerli su kaynatılır, kahve eklenir ve bez filtreden (coador) küçük fincana süzülür; misafire ikram."
+  },
+  "olla": {
+   "name": "Meksika çömlek kahvesi",
+   "sizes": [
+    "S"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 263,
+   "shop": 4,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "clayPot"
+   ],
+   "uses": [
+    [
+     "cinnamon",
+     1
+    ]
+   ],
+   "steps": [
+    "tkdose",
+    "tkstir",
+    "tkfoam"
+   ],
+   "cezve": {
+    "vessel": "clay",
+    "powder": "spiced"
+   },
+   "card": "Meksika: toprak kapta (olla) kahve, tarçın çubuğu ve piloncillo (esmer şeker) ile kaynatılıp süzülür."
+  },
+  "qahwa": {
+   "name": "Arap kahvesi",
+   "sizes": [
+    "tk"
+   ],
+   "level": 2,
+   "req": "turkish",
+   "unlockCups": 255,
+   "shop": 4,
+   "price": 145,
+   "cost": 25,
+   "needs": [
+    "dallah"
+   ],
+   "uses": [
+    [
+     "cardamom",
+     1
+    ]
+   ],
+   "steps": [
+    "tkdose",
+    "tkfoam"
+   ],
+   "cezve": {
+    "vessel": "dallah",
+    "powder": "spiced"
+   },
+   "card": "Körfez: çok açık kavrulmuş kahve kakuleyle dallahta kaynatılır, kulpsuz finjana az az dökülür; hurmayla ikram edilir."
+  },
+  "indianf": {
+   "name": "Güney Hint filtre kahvesi",
+   "sizes": [
+    "S"
+   ],
+   "level": 3,
+   "req": "filter",
+   "unlockCups": 332,
+   "shop": 4,
+   "price": 135,
+   "cost": 25,
+   "needs": [
+    "indianFilter",
+    "milkKit"
+   ],
+   "brewer": "indian",
+   "milkUse": true,
+   "steps": [
+    "fdose",
+    "pourover",
+    "milk",
+    "tumbler"
+   ],
+   "milk": "hot",
+   "milkL": 0.1,
+   "card": "Metal filtrede hindibalı kahve yavaşça damlar (decoction); sıcak sütle karıştırılıp dabara-tumbler arasında dökülerek köpürtülür."
+  },
+  "coldfoamcb": {
+   "name": "Köpüklü soğuk demleme",
+   "sizes": [
+    "iS",
+    "iM",
+    "iL"
+   ],
+   "level": 3,
+   "req": "coldbrew",
+   "unlockCups": 282,
+   "shop": 4,
+   "price": 160,
+   "cost": 35,
+   "needs": [
+    "coldBrewJar",
+    "iceMachine",
+    "frother"
+   ],
+   "noBean": true,
+   "milkUse": true,
+   "milkL": 0.08,
+   "uses": [
+    [
+     "coldbrew",
+     "cb"
+    ]
+   ],
+   "steps": [
+    "ice",
+    "coldpour",
+    "coldfoam"
+   ],
+   "card": "Soğuk demleme kahve + üstte yavaşça süzülen soğuk süt köpüğü."
+  },
+  "eggcoffee": {
+   "name": "Yumurtalı Vietnam kahvesi",
+   "sizes": [
+    "S"
+   ],
+   "level": 3,
+   "req": "vietnam",
+   "unlockCups": 322,
+   "shop": 4,
+   "price": 160,
+   "cost": 35,
+   "needs": [
+    "phin",
+    "whisk",
+    "syrupPump"
+   ],
+   "pump": "condensed",
+   "uses": [
+    [
+     "egg",
+     1
+    ],
+    [
+     "condensed",
+     "pump"
+    ]
+   ],
+   "brewer": "phin",
+   "whiskBowl": "egg",
+   "steps": [
+    "fdose",
+    "phin",
+    "whisk",
+    "spoontop"
+   ],
+   "card": "Hanoi (cà phê trứng): yumurta sarısı ve yoğunlaştırılmış süt kremsi olana kadar çırpılır, phin kahvesinin üstüne kaşıkla konur."
+  },
+  "colddrip": {
+   "name": "Kyoto soğuk damla",
+   "sizes": [
+    "iS",
+    "iM"
+   ],
+   "level": 2,
+   "req": "coldbrew",
+   "unlockCups": 272,
+   "shop": 4,
+   "price": 180,
+   "cost": 35,
+   "needs": [
+    "coldDripTower",
+    "iceMachine"
+   ],
+   "steps": [
+    "colddrip",
+    "ice"
+   ],
+   "card": "Soğuk su, kulede kahve yatağının üstüne saniyede bir damla düşer (8–12 saat); berrak, şarap gibi bir soğuk kahve."
+  },
+  "kalitaw": {
+   "name": "Kalita Wave filtre",
+   "sizes": [
+    "S",
+    "M",
+    "L"
+   ],
+   "level": 2,
+   "req": "filter",
+   "unlockCups": 301,
+   "shop": 4,
+   "price": 135,
+   "cost": 18,
+   "needs": [
+    "kalita",
+    "kettle"
+   ],
+   "brewer": "kalita",
+   "steps": [
+    "fdose",
+    "bloom",
+    "pourover"
+   ],
+   "card": "Düz tabanlı, üç delikli dripper: su daha dengeli geçer, V60'tan daha affedici ve tatlı bir fincan."
+  }
+ },
+ "minigames": {
+  "grind": {
+   "name": "Öğütme",
+   "hint": "Siyah ibre hızla gidip geliyor: koyu yeşilde ÖĞÜT'e bas."
+  },
+  "dose": {
+   "name": "Dozlama",
+   "hint": "Yakın planı sağa-sola kaydırarak kahve düşür; terazi koyu yeşilde (hedef gram) iken TAMAM."
+  },
+  "tamp": {
+   "name": "Temperleme",
+   "hint": "Basılı tut: basınç arttıkça siyah kenar büyür; koyu yeşil halkadayken bırak."
+  },
+  "extract": {
+   "name": "Ekstraksiyon",
+   "hint": "BAŞLAT'a bas; terazide hedef gram ve 25–30 sn gelince DURDUR."
+  },
+  "milk": {
+   "name": "Süt köpürtme",
+   "hint": "Basılı tut, süt ısınır; ibre koyu yeşildeyken bırak (60–65 °C)."
+  },
+  "water": {
+   "name": "Sıcak su",
+   "hint": "Basılı tut, makinenin sıcak su musluğundan su ver; seviye koyu yeşildeyken bırak."
+  },
+  "pressure": {
+   "name": "Basınç",
+   "hint": "Kadran ibresi dönüyor: renkli yayın ortasındayken VİDAYI KAPAT."
+  },
+  "cocoa": {
+   "name": "Kakao çalkala",
+   "hint": "Serpiciyi fincanın üstünde sağa-sola kaydırarak çalkala; her çalkalamada kakao yağar."
+  },
+  "stir": {
+   "name": "Karıştır",
+   "hint": "Kaşıkla fincanın içinde daire çizerek 3 tur karıştır."
+  },
+  "swirl": {
+   "name": "Sürahiyi çevir",
+   "hint": "Sürahiyi daire çizerek 3 tur çevir; süt ile köpük birleşsin."
+  },
+  "tkdose": {
+   "name": "Kahve ölç",
+   "hint": "Basılı tut, cezveye kahve koy; 7 g'da (koyu yeşil) bırak."
+  },
+  "tkstir": {
+   "name": "Cezvede karıştır",
+   "hint": "Kaşıkla cezvenin içinde daire çizerek 3 tur karıştır."
+  },
+  "tkfoam": {
+   "name": "Köpüğü al",
+   "hint": "Köpük kabarıyor: taşmadan, koyu yeşildeyken OCAKTAN AL."
+  },
+  "fpdose": {
+   "name": "Kaba kahve",
+   "hint": "Basılı tut, kaba çekilmiş kahveyi koy; koyu yeşilde bırak."
+  },
+  "fpwater": {
+   "name": "Sıcak su",
+   "hint": "Basılı tut, suyu dök; seviye koyu yeşildeyken bırak."
+  },
+  "fpsteep": {
+   "name": "Demle",
+   "hint": "BAŞLAT'a bas; süre ibresi 4 dakikada (koyu yeşil) DURDUR."
+  },
+  "fpplunge": {
+   "name": "Pistonu bastır",
+   "hint": "Basılı tut, pistonu yavaşça sonuna kadar indir."
+  },
+  "fdose": {
+   "name": "Filtreye kahve",
+   "hint": "Basılı tut, kahveyi filtreye koy; koyu yeşilde bırak."
+  },
+  "bloom": {
+   "name": "Ön ıslatma",
+   "hint": "Basılı tut, kahveyi az suyla ıslat (bloom)."
+  },
+  "pourover": {
+   "name": "Dairesel dök",
+   "hint": "Kettle'la merkezden dışa daire çizerek dök."
+  },
+  "pump": {
+   "name": "Pompala",
+   "hint": "POMPALA'ya istenen pompa sayısı kadar bas."
+  },
+  "drizzle": {
+   "name": "Sos ızgarası",
+   "hint": "Üstüne daire çizerek sos gezdir."
+  },
+  "cream": {
+   "name": "Krem şanti",
+   "hint": "Sifonla daire çizerek krema sık."
+  },
+  "scoop": {
+   "name": "Dondurma topu",
+   "hint": "Basılı tut, kepçeyle top al."
+  },
+  "pourshot": {
+   "name": "Espressoyu dök",
+   "hint": "Basılı tut, sıcak espressoyu dondurmanın üstüne dök."
+  },
+  "garnish": {
+   "name": "Limon",
+   "hint": "LİMON'a dokun, kabuğu bardağın kenarına sür."
+  },
+  "ice": {
+   "name": "Buz koy",
+   "hint": "BUZ'a basarak bardağa buz koy."
+  },
+  "coldwater": {
+   "name": "Soğuk su",
+   "hint": "Basılı tut, bardağa soğuk su dök."
+  },
+  "coldmilk": {
+   "name": "Soğuk süt",
+   "hint": "Basılı tut, buzun üstüne soğuk süt dök."
+  },
+  "whisk": {
+   "name": "Çırp",
+   "hint": "Kasede daire çizerek köpük olana kadar çırp."
+  },
+  "spoontop": {
+   "name": "Köpüğü koy",
+   "hint": "Basılı tut, köpüğü kaşıkla sütün üstüne koy."
+  },
+  "tonic": {
+   "name": "Tonik dök",
+   "hint": "Basılı tut, toniği buzun üstüne yavaşça dök."
+  },
+  "blend": {
+   "name": "Blender",
+   "hint": "ÇALIŞTIR'a bas; doku göstergesi koyu yeşildeyken DURDUR."
+  },
+  "shakeit": {
+   "name": "Çalkala",
+   "hint": "Shaker'ı sağa-sola kaydırarak sertçe çalkala."
+  },
+  "coldpour": {
+   "name": "Soğuk demlemeyi dök",
+   "hint": "Basılı tut, soğuk demleme kahveyi buzun üstüne dök."
+  },
+  "mokafill": {
+   "name": "Su doldur",
+   "hint": "Basılı tut, alt hazneye vanaya kadar su doldur."
+  },
+  "mokaheat": {
+   "name": "Ocakta demle",
+   "hint": "OCAĞA KOY; kahve fokurdamaya başlayınca, püskürmeden OCAKTAN AL."
+  },
+  "apsteep": {
+   "name": "Demle",
+   "hint": "BAŞLAT'a bas; 1,5 dakikada DURDUR."
+  },
+  "appress": {
+   "name": "Bastır",
+   "hint": "Basılı tut, pistonu yavaşça bastır."
+  },
+  "phin": {
+   "name": "Damlat",
+   "hint": "BAŞLAT'a bas; phin damlaması bitince (4 dk) DURDUR."
+  },
+  "siphonheat": {
+   "name": "Isıt",
+   "hint": "ATEŞİ AÇ; su üst hazneye çıkınca ATEŞİ KES."
+  },
+  "siphondrop": {
+   "name": "Süzülme",
+   "hint": "Basılı tut, kahvenin alt hazneye süzülmesini bekle."
+  },
+  "nitrotap": {
+   "name": "Musluktan doldur",
+   "hint": "Basılı tut, musluğu aç; köpük çizgisinde bırak."
+  },
+  "pour": {
+   "name": "Sütü dök",
+   "hint": "Basılı tut, sürahiden fincana süt dök; fincan dolunca biter."
+  },
+  "mndose": {
+   "name": "Ezme ölç",
+   "hint": "Basılı tut, cezveye ezmeyi koy; koyu yeşilde bırak."
+  },
+  "mirraboil": {
+   "name": "Kaynat",
+   "hint": "Mırrayı kaynat; koyulaşınca, taşmadan OCAKTAN AL."
+  },
+  "tkserve": {
+   "name": "Servis",
+   "hint": "SERVİS'e bas: fincan, bir bardak su ve lokum."
+  },
+  "coldfoam": {
+   "name": "Soğuk köpük",
+   "hint": "Basılı tut, soğuk sütü köpürt ve üstüne koy."
+  },
+  "colddrip": {
+   "name": "Damla",
+   "hint": "VANAYI AÇ; damlama koyu yeşildeyken VANAYI KAPAT."
+  },
+  "tumbler": {
+   "name": "Dabara",
+   "hint": "Sağa-sola kaydır, kahveyi tumbler ile dabara arasında dökerek köpürt."
+  },
+  "cloth": {
+   "name": "Bezden süz",
+   "hint": "Basılı tut, kahveyi bez filtreden süz."
+  },
+  "steepcup": {
+   "name": "Sıcak su",
+   "hint": "Basılı tut, bardaktaki kahvenin üstüne kaynar su dök."
+  },
+  "dust": {
+   "name": "Serp",
+   "hint": "Sağa-sola kaydırarak üstüne serp."
+  },
+  "art": {
+   "name": "Latte art",
+   "hint": "Basılı tut ve dök, koyu yeşilde bırak; sonra fincanın ortasından parmağını yukarı çekerek kalbi kes."
+  }
+ },
+ "ranks": [
+  {
+   "name": "Çırak",
+   "xp": 0,
+   "tol": 1,
+   "tipMult": 1,
+   "guide": true
+  },
+  {
+   "name": "Barista",
+   "xp": 120,
+   "tol": 0.8,
+   "tipMult": 1.2,
+   "guide": false
+  },
+  {
+   "name": "Kıdemli barista",
+   "xp": 350,
+   "tol": 0.65,
+   "tipMult": 1.2,
+   "guide": false
+  }
+ ],
+ "customers": {
+  "business": {
+   "name": "İş adamı",
+   "patience": 27,
+   "extras": {
+    "sweetener": 6,
+    "sugar": 0.4,
+    "napkin": 1.3,
+    "stirrer": 0.7,
+    "straw": 0.6
+   },
+   "priceSens": 0.3,
+   "qualitySens": 0.7,
+   "tip": 2
+  },
+  "student": {
+   "name": "Öğrenci",
+   "patience": 82,
+   "extras": {
+    "sugar": 2.2,
+    "stirrer": 1.8,
+    "straw": 3,
+    "napkin": 1.2,
+    "sweetener": 0.4
+   },
+   "priceSens": 1,
+   "qualitySens": 0.6,
+   "tip": 0.4,
+   "discount": 0.8
+  },
+  "elder": {
+   "name": "Yaşlı teyze",
+   "patience": 105,
+   "extras": {
+    "sweetener": 9,
+    "sugar": 0.5,
+    "napkin": 1.5,
+    "stirrer": 1.6,
+    "straw": 0.4
+   },
+   "priceSens": 0.6,
+   "qualitySens": 0.7,
+   "tip": 1
+  },
+  "geek": {
+   "name": "Kahve meraklısı",
+   "patience": 60,
+   "extras": {
+    "sugar": 0.1,
+    "sweetener": 0.1,
+    "stirrer": 0.2,
+    "napkin": 0.8
+   },
+   "priceSens": 0.2,
+   "qualitySens": 1,
+   "tip": 1.6
+  },
+  "regular": {
+   "name": "Düzenli müşteri",
+   "patience": 75,
+   "extras": {},
+   "priceSens": 0.5,
+   "qualitySens": 0.8,
+   "tip": 1.2
+  },
+  "critic": {
+   "name": "Eleştirmen",
+   "special": true,
+   "patience": 55,
+   "extras": {
+    "napkin": 1
+   },
+   "priceSens": 0,
+   "qualitySens": 1,
+   "tip": 0
+  },
+  "tourist": {
+   "name": "Turist",
+   "special": true,
+   "patience": 90,
+   "extras": {
+    "sugar": 1.5,
+    "napkin": 1.2,
+    "straw": 1.5
+   },
+   "priceSens": 0.2,
+   "qualitySens": 0.6,
+   "tip": 1.5
+  },
+  "influencer": {
+   "name": "Fenomen",
+   "special": true,
+   "patience": 65,
+   "extras": {
+    "straw": 2,
+    "napkin": 1
+   },
+   "priceSens": 0.3,
+   "qualitySens": 0.9,
+   "tip": 1.2
+  },
+  "jury": {
+   "name": "Jüri",
+   "special": true,
+   "jury": true,
+   "patience": 140,
+   "extras": {},
+   "priceSens": 0,
+   "qualitySens": 1,
+   "tip": 0
+  }
+ },
+ "specialChance": 0.06,
+ "mods": {
+  "extraChance": 0.15,
+  "takeawayChance": 0.2,
+  "extraPrice": 0.25,
+  "extraBean": 0.009,
+  "takeawayFee": 5,
+  "fromDay": 3
+ },
+ "loyalty": {
+  "need": 3,
+  "patience": 1.2,
+  "tip": 1.3
+ },
+ "weather": {
+  "saturdayCrowd": 1.3,
+  "rain": {
+   "p": 0.25,
+   "hot": 1.5,
+   "iced": 0.3,
+   "icon": "🌧",
+   "name": "Yağmurlu"
+  },
+  "hot": {
+   "p": 0.25,
+   "iced": 2.5,
+   "icon": "☀️",
+   "name": "Sıcak"
+  },
+  "crowd": {
+   "icon": "👥",
+   "name": "Kalabalık"
+  }
+ },
+ "competition": {
+  "drinks": [
+   [
+    "espresso",
+    "double"
+   ],
+   [
+    "cappuccino",
+    "M"
+   ],
+   [
+    "latte",
+    "M"
+   ]
+  ],
+  "medals": [
+   {
+    "min": 95,
+    "name": "Altın",
+    "icon": "🥇",
+    "money": 9000,
+    "rep": 10
+   },
+   {
+    "min": 85,
+    "name": "Gümüş",
+    "icon": "🥈",
+    "money": 4500,
+    "rep": 5
+   },
+   {
+    "min": 70,
+    "name": "Bronz",
+    "icon": "🥉",
+    "money": 2000,
+    "rep": 2
+   }
+  ]
+ },
+ "achievements": [
+  {
+   "id": "perfect1",
+   "name": "İlk mükemmel",
+   "desc": "İlk mükemmel servis"
+  },
+  {
+   "id": "esp50",
+   "name": "Espresso ustası",
+   "desc": "50 mükemmel espresso"
+  },
+  {
+   "id": "serve100",
+   "name": "Yüz fincan",
+   "desc": "100 servis"
+  },
+  {
+   "id": "serve500",
+   "name": "Beş yüz fincan",
+   "desc": "500 servis"
+  },
+  {
+   "id": "art95",
+   "name": "İlk latte art",
+   "desc": "Latte art adımında 95+"
+  },
+  {
+   "id": "tradAll",
+   "name": "Gelenek bekçisi",
+   "desc": "Tüm Türk ve geleneksel kahveleri servis et"
+  },
+  {
+   "id": "special1",
+   "name": "Özel konuk",
+   "desc": "İlk özel müşteriye servis"
+  },
+  {
+   "id": "shop3",
+   "name": "Semt favorisi",
+   "desc": "3★ dükkana ulaş"
+  },
+  {
+   "id": "shop5",
+   "name": "Kahve evi",
+   "desc": "5★ dükkana ulaş"
+  },
+  {
+   "id": "gold",
+   "name": "Şampiyon barista",
+   "desc": "Yarışmada altın madalya"
+  }
+ ],
+ "beans": {
+  "brazil": {
+   "name": "Brezilya",
+   "unlock": 1,
+   "cups": 0,
+   "price": 900,
+   "mult": 1,
+   "grindT": 42,
+   "notes": "Fındık, çikolata, düşük asidite. Dükkanın ev çekirdeği.",
+   "qualityMod": 0,
+   "tolMod": 1,
+   "page": "Dünyanın en büyük üreticisi. Düşük rakım, doğal işleme. Bağışlayıcı bir espresso çekirdeği."
+  },
+  "colombia": {
+   "name": "Kolombiya",
+   "unlock": 1,
+   "cups": 20,
+   "price": 1260,
+   "mult": 1.1,
+   "grindT": 55,
+   "notes": "Dengeli, karamel, hafif meyve.",
+   "qualityMod": 0,
+   "tolMod": 1,
+   "page": "Yıkanmış işleme, 1.200–2.000 m rakım. Temiz ve dengeli; meraklı müşteriler bunu arar."
+  },
+  "ethiopia": {
+   "name": "Etiyopya Yirgacheffe",
+   "unlock": 3,
+   "cups": 175,
+   "price": 1530,
+   "mult": 1.2,
+   "grindT": 58,
+   "notes": "Çiçeksi, bergamot, limon. Kahvenin anavatanı.",
+   "page": "Kahvenin doğduğu topraklar; yüksek rakım, yıkanmış işleme, çay gibi hafif gövde."
+  },
+  "kenya": {
+   "name": "Kenya AA",
+   "unlock": 3,
+   "cups": 210,
+   "price": 1620,
+   "mult": 1.25,
+   "grindT": 57,
+   "notes": "Frenk üzümü, greyfurt, canlı asidite.",
+   "page": "AA en iri çekirdek sınıfı; SL28/SL34 çeşitleri, parlak ve sulu."
+  },
+  "guatemala": {
+   "name": "Guatemala Antigua",
+   "unlock": 2,
+   "cups": 85,
+   "price": 1440,
+   "mult": 1.15,
+   "grindT": 50,
+   "notes": "Kakao, baharat, tam gövde.",
+   "page": "Volkanik toprak, gölgede yetişen kahve; dumanlı, baharatlı."
+  },
+  "costarica": {
+   "name": "Kosta Rika Tarrazú",
+   "unlock": 3,
+   "cups": 140,
+   "price": 1580,
+   "mult": 1.2,
+   "grindT": 54,
+   "notes": "Bal, şeftali, temiz bitiş.",
+   "page": "Bal işleme ile tanınır; tatlı ve parlak."
+  },
+  "honduras": {
+   "name": "Honduras",
+   "unlock": 1,
+   "cups": 40,
+   "price": 1350,
+   "mult": 1.1,
+   "grindT": 48,
+   "notes": "Karamel, elma, yumuşak.",
+   "page": "Orta Amerika'nın en büyük üreticisi; dengeli ve tatlı."
+  },
+  "sumatra": {
+   "name": "Sumatra Mandheling",
+   "unlock": 4,
+   "cups": 260,
+   "price": 1670,
+   "mult": 1.25,
+   "grindT": 44,
+   "notes": "Toprak, sedir, yoğun gövde.",
+   "page": "Islak kabuk soyma (giling basah) işleme; ağır ve otsu."
+  },
+  "peru": {
+   "name": "Peru",
+   "unlock": 2,
+   "cups": 70,
+   "price": 1490,
+   "mult": 1.15,
+   "grindT": 50,
+   "notes": "Fındık, sütlü çikolata.",
+   "page": "And Dağları'nda organik küçük çiftlikler."
+  },
+  "yemen": {
+   "name": "Yemen Mocha",
+   "unlock": 4,
+   "cups": 320,
+   "price": 2350,
+   "mult": 1.45,
+   "grindT": 46,
+   "notes": "Kuru meyve, şarap, baharat.",
+   "page": "Mocha limanından adını alan tarihi kahve; doğal işleme, nadir."
+  },
+  "jamaica": {
+   "name": "Jamaika Blue Mountain",
+   "unlock": 5,
+   "cups": 390,
+   "price": 3400,
+   "mult": 1.7,
+   "grindT": 52,
+   "notes": "Çok yumuşak, dengeli, acısız.",
+   "page": "Dünyanın en pahalı kahvelerinden; Blue Mountain sıradağları."
+  },
+  "decaf": {
+   "name": "Kafeinsiz Kolombiya",
+   "unlock": 2,
+   "cups": 100,
+   "price": 1530,
+   "mult": 1.15,
+   "grindT": 53,
+   "notes": "Karamel, fındık; kafeinsiz.",
+   "page": "Swiss Water yöntemiyle, kimyasal kullanmadan kafeini alınmış; akşam ve hamile müşterilerin tercihi."
+  },
+  "geisha": {
+   "name": "Panama Geisha",
+   "unlock": 5,
+   "cups": 415,
+   "price": 4050,
+   "mult": 1.9,
+   "grindT": 60,
+   "notes": "Yasemin, şeftali, bal.",
+   "page": "Rekor fiyatlarla satılan efsanevi çeşit; çiçeksi ve zarif."
+  }
+ },
+ "milks": {
+  "cow": {
+   "name": "İnek sütü",
+   "short": "İnek",
+   "with": "inek sütüyle",
+   "price": 135,
+   "rep": 0,
+   "extra": 0
+  },
+  "lactose": {
+   "name": "Laktozsuz süt",
+   "short": "Laktozsuz",
+   "with": "laktozsuz sütle",
+   "price": 200,
+   "rep": 40,
+   "extra": 18
+  },
+  "oat": {
+   "name": "Yulaf sütü",
+   "short": "Yulaf",
+   "with": "yulaf sütüyle",
+   "price": 250,
+   "rep": 80,
+   "extra": 25
+  },
+  "soy": {
+   "name": "Soya sütü",
+   "short": "Soya",
+   "with": "soya sütüyle",
+   "price": 230,
+   "rep": 120,
+   "extra": 25
+  },
+  "almond": {
+   "name": "Badem sütü",
+   "short": "Badem",
+   "with": "badem sütüyle",
+   "price": 290,
+   "rep": 180,
+   "extra": 35
+  }
+ },
+ "houseBeanShare": 0.4,
+ "cowShare": 0.6,
+ "specials": {
+  "vanilla": {
+   "name": "Vanilya şurubu",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 360,
+   "color": "#e9d29a",
+   "tool": "syrupPump"
+  },
+  "caramel": {
+   "name": "Karamel sosu",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 410,
+   "color": "#c9772b",
+   "tool": "syrupPump"
+  },
+  "saltcar": {
+   "name": "Tuzlu karamel sosu",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 500,
+   "color": "#b8642e",
+   "tool": "syrupPump"
+  },
+  "choco": {
+   "name": "Çikolata sosu",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 450,
+   "color": "#4a2a14",
+   "tool": "syrupPump"
+  },
+  "condensed": {
+   "name": "Yoğunlaştırılmış süt",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 410,
+   "color": "#f3e3c3",
+   "tool": "syrupPump"
+  },
+  "cream": {
+   "name": "Krem şanti",
+   "unit": "porsiyon",
+   "pack": 20,
+   "price": 320,
+   "color": "#fffaf0",
+   "tool": "creamSiphon"
+  },
+  "icecream": {
+   "name": "Vanilyalı dondurma",
+   "unit": "top",
+   "pack": 20,
+   "price": 540,
+   "color": "#f6ecd2",
+   "tool": "iceCreamFridge"
+  },
+  "lemon": {
+   "name": "Limon",
+   "unit": "dilim",
+   "pack": 20,
+   "price": 180,
+   "color": "#f2d64b"
+  },
+  "tonic": {
+   "name": "Tonik",
+   "unit": "şişe",
+   "pack": 12,
+   "price": 540,
+   "color": "#dff1f5"
+  },
+  "menengic": {
+   "name": "Menengiç ezmesi",
+   "unit": "porsiyon",
+   "pack": 20,
+   "price": 450,
+   "color": "#7a6a3a"
+  },
+  "instant": {
+   "name": "Hazır kahve",
+   "unit": "kaşık",
+   "pack": 50,
+   "price": 410,
+   "color": "#5a3418"
+  },
+  "mastic": {
+   "name": "Damla sakızı",
+   "unit": "porsiyon",
+   "pack": 30,
+   "price": 720,
+   "color": "#f4f1e2"
+  },
+  "kenger": {
+   "name": "Kenger ezmesi",
+   "unit": "porsiyon",
+   "pack": 20,
+   "price": 450,
+   "color": "#9a7a4a"
+  },
+  "salep": {
+   "name": "Salep tozu",
+   "unit": "porsiyon",
+   "pack": 20,
+   "price": 810,
+   "color": "#f6efe0"
+  },
+  "chai": {
+   "name": "Chai şurubu",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 450,
+   "color": "#b07a48",
+   "tool": "syrupPump"
+  },
+  "pumpkin": {
+   "name": "Balkabağı-baharat şurubu",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 500,
+   "color": "#d0782c",
+   "tool": "syrupPump"
+  },
+  "gingerbread": {
+   "name": "Zencefilli kurabiye şurubu",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 500,
+   "color": "#9a5a2a",
+   "tool": "syrupPump"
+  },
+  "peppermint": {
+   "name": "Nane şurubu",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 450,
+   "color": "#bfe6cf",
+   "tool": "syrupPump"
+  },
+  "irish": {
+   "name": "Irish cream şurubu (alkolsüz)",
+   "unit": "pompa",
+   "pack": 50,
+   "price": 540,
+   "color": "#d9c3a0",
+   "tool": "syrupPump"
+  },
+  "cinnamon": {
+   "name": "Tarçın",
+   "unit": "serpme",
+   "pack": 100,
+   "price": 230,
+   "color": "#8a5a2b"
+  },
+  "cardamom": {
+   "name": "Kakule",
+   "unit": "porsiyon",
+   "pack": 50,
+   "price": 540,
+   "color": "#9aa86a"
+  },
+  "egg": {
+   "name": "Yumurta",
+   "unit": "adet",
+   "pack": 30,
+   "price": 410,
+   "color": "#f3c64b"
+  },
+  "coldbrew": {
+   "name": "Soğuk demleme",
+   "unit": "bardak",
+   "pack": 10,
+   "price": 0,
+   "color": "#3a2010",
+   "tool": "coldBrewJar",
+   "brew": true
+  }
+ },
+ "sugarLevels": {
+  "sade": {
+   "label": "Sade",
+   "say": "sade",
+   "n": 0
+  },
+  "az": {
+   "label": "Az şekerli",
+   "say": "az şekerli",
+   "n": 1
+  },
+  "orta": {
+   "label": "Orta şekerli",
+   "say": "orta şekerli",
+   "n": 2
+  },
+  "sekerli": {
+   "label": "Şekerli",
+   "say": "şekerli",
+   "n": 3
+  }
+ },
+ "stockOutLines": [
+  "{X} bile yok mu?!",
+  "Nasıl {x} yok?!",
+  "{X} yoksa ben de yokum!",
+  "Bu dükkanda {x} bile yok!"
+ ],
+ "upgradeCost": [
+  1,
+  1.3,
+  1.65
+ ],
+ "equipment": {
+  "grindPrecise": {
+   "name": "Mikro ayarlı öğütücü",
+   "price": 1350,
+   "stars": 1,
+   "widen": "grind",
+   "effect": "Öğütme hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)"
+  },
+  "precScale": {
+   "name": "Hassas terazi",
+   "price": 1440,
+   "stars": 1,
+   "widen": "dose",
+   "effect": "Dozlama hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)"
+  },
+  "scaleTamp": {
+   "name": "Tartılı temper",
+   "price": 1620,
+   "stars": 1,
+   "widen": "tamp",
+   "effect": "Temperleme hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)"
+  },
+  "pidGauge": {
+   "name": "Sıcaklık kontrolcüsü (PID)",
+   "price": 1980,
+   "stars": 1,
+   "widen": "extract",
+   "effect": "Ekstraksiyon hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)"
+  },
+  "thermoPitcher": {
+   "name": "Termometreli sürahi",
+   "price": 1260,
+   "stars": 1,
+   "widen": "milk",
+   "effect": "Süt hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)"
+  },
+  "steamWand": {
+   "name": "Buhar çubuğu yükseltmesi",
+   "price": 2700,
+   "stars": 1,
+   "effect": "Süt köpürtme hızlanır"
+  },
+  "pourPitcher": {
+   "name": "Profesyonel döküm sürahisi",
+   "price": 2350,
+   "stars": 3,
+   "widen": "art",
+   "effect": "Latte art hedef bölgeleri genişler: ×1,2 → ×1,35 → ×1,5 (3 kademe)"
+  },
+  "autoGrind": {
+   "name": "Otomatik öğütücü",
+   "price": 3150,
+   "stars": 1,
+   "auto": [
+    "grind"
+   ],
+   "requires": [
+    "grindPrecise"
+   ],
+   "effect": "Öğütme otomatik (100 puan)"
+  },
+  "scaleGrind": {
+   "name": "Tartılı öğütücü",
+   "price": 3600,
+   "stars": 1,
+   "auto": [
+    "dose"
+   ],
+   "requires": [
+    "precScale"
+   ],
+   "effect": "Dozlama otomatik (100 puan)"
+  },
+  "autoTamp": {
+   "name": "Otomatik temper",
+   "price": 4050,
+   "stars": 2,
+   "auto": [
+    "tamp"
+   ],
+   "requires": [
+    "scaleTamp"
+   ],
+   "effect": "Temperleme otomatik (100 puan)"
+  },
+  "dualGroup": {
+   "name": "Çift gruplu makine",
+   "price": 6300,
+   "stars": 2,
+   "effect": "2 paralel sipariş"
+  },
+  "fridge": {
+   "name": "Süt buzdolabı",
+   "price": 3600,
+   "stars": 1,
+   "effect": "Süt 6 gün dayanır (buzdolabı yoksa 2 gün)"
+  },
+  "superAuto": {
+   "name": "Süper otomatik espresso makinesi",
+   "price": 22500,
+   "stars": 3,
+   "auto": [
+    "grind",
+    "dose",
+    "tamp",
+    "extract"
+   ],
+   "requires": [
+    "pidGauge",
+    "autoGrind",
+    "scaleGrind",
+    "autoTamp"
+   ],
+   "effect": "Espressonun tüm adımları tek tuş (100 puan)"
+  },
+  "autoMilk": {
+   "name": "Otomatik süt köpürtücü",
+   "price": 8100,
+   "stars": 3,
+   "auto": [
+    "milk"
+   ],
+   "requires": [
+    "thermoPitcher"
+   ],
+   "effect": "Süt adımı otomatik (100 puan)"
+  },
+  "tkMachine": {
+   "name": "Türk kahvesi makinesi",
+   "price": 3150,
+   "stars": 1,
+   "auto": [
+    "tkstir",
+    "tkfoam"
+   ],
+   "effect": "Türk kahvesinde karıştırma ve köpük otomatik (100 puan)"
+  },
+  "filterMachine": {
+   "name": "Filtre kahve makinesi",
+   "price": 3600,
+   "stars": 2,
+   "auto": [
+    "bloom",
+    "pourover"
+   ],
+   "effect": "Filtre kahvede ön ıslatma ve dökme otomatik (100 puan)"
+  }
+ },
+ "zones": {
+  "time": {
+   "perfect": 0.0267,
+   "good": 0.0667,
+   "ok": 0.133
+  },
+  "minPerfect": 0.3,
+  "widen": 1.5,
+  "widenLevels": [
+   1.2,
+   1.35,
+   1.5
+  ],
+  "score": {
+   "perfect": 100,
+   "good": 88,
+   "ok": 72
+  }
+ },
+ "tools": {
+  "kettle": {
+   "name": "Su ısıtıcısı (kettle)",
+   "price": 720,
+   "stars": 1,
+   "step": "pourover",
+   "effect": "Filtre, French press ve AeroPress için 93 °C su"
+  },
+  "milkKit": {
+   "name": "Süt köpürtme seti (sürahi + buhar çubuğu)",
+   "price": 1620,
+   "stars": 1,
+   "step": "milk",
+   "effect": "Sütlü tüm tarifler için süt köpürtme"
+  },
+  "cocoa": {
+   "name": "Kakao serpici",
+   "price": 1080,
+   "stars": 1,
+   "step": "cocoa",
+   "effect": "Cappuccino'nun üstüne kakao"
+  },
+  "cezve": {
+   "name": "Bakır cezve",
+   "price": 810,
+   "stars": 1,
+   "step": "tkfoam",
+   "effect": "Türk kahvesi için cezve ve ocak"
+  },
+  "frenchPress": {
+   "name": "French press",
+   "price": 1080,
+   "stars": 1,
+   "step": "fpsteep",
+   "effect": "French press kahve için demlik"
+  },
+  "v60": {
+   "name": "V60 demleme seti",
+   "price": 990,
+   "stars": 1,
+   "step": "pourover",
+   "effect": "Filtre kahve için dripper, kâğıt filtre ve sürahi"
+  },
+  "syrupPump": {
+   "name": "Şurup pompası seti",
+   "price": 1350,
+   "stars": 1,
+   "step": "pump",
+   "effect": "Şurup ve sosları ölçülü pompalar"
+  },
+  "creamSiphon": {
+   "name": "Krema sifonu",
+   "price": 1620,
+   "stars": 1,
+   "step": "cream",
+   "effect": "Taze krem şanti sıkar"
+  },
+  "iceCreamFridge": {
+   "name": "Dondurma dolabı",
+   "price": 3600,
+   "stars": 2,
+   "step": "scoop",
+   "effect": "Affogato için vanilyalı dondurma"
+  },
+  "iceMachine": {
+   "name": "Buz makinesi",
+   "price": 4500,
+   "stars": 3,
+   "step": "ice",
+   "effect": "Soğuk kahveler için sınırsız buz"
+  },
+  "mokaPot": {
+   "name": "Moka pot",
+   "price": 810,
+   "stars": 3,
+   "step": "mokaheat",
+   "effect": "Ocak üstü İtalyan kahve demliği"
+  },
+  "aeropress": {
+   "name": "AeroPress",
+   "price": 990,
+   "stars": 3,
+   "step": "appress",
+   "effect": "Pistonlu basınçlı demleme"
+  },
+  "whisk": {
+   "name": "El çırpıcı ve kase",
+   "price": 540,
+   "stars": 3,
+   "step": "whisk",
+   "effect": "Espuma ve dalgona köpüğü"
+  },
+  "blender": {
+   "name": "Profesyonel blender",
+   "price": 4050,
+   "stars": 4,
+   "step": "blend",
+   "effect": "Frappé için buz kırar, pürüzsüz çeker"
+  },
+  "shaker": {
+   "name": "Kokteyl shaker",
+   "price": 720,
+   "stars": 3,
+   "step": "shakeit",
+   "effect": "Freddo, shakerato ve Yunan frappé için çalkalama"
+  },
+  "coldBrewJar": {
+   "name": "Soğuk demleme kavanozu",
+   "price": 1350,
+   "stars": 4,
+   "step": "coldpour",
+   "effect": "Gece boyu soğuk demleme (Tedarik'ten demlenir)"
+  },
+  "phin": {
+   "name": "Vietnam phin filtresi",
+   "price": 630,
+   "stars": 4,
+   "step": "phin",
+   "effect": "Damla damla Vietnam kahvesi"
+  },
+  "chemex": {
+   "name": "Chemex demlik",
+   "price": 1170,
+   "stars": 4,
+   "step": "pourover",
+   "effect": "Kalın filtreli cam demlik"
+  },
+  "siphon": {
+   "name": "Sifon (vakum) demlik",
+   "price": 5400,
+   "stars": 5,
+   "step": "siphonheat",
+   "effect": "Japon usulü vakumlu demleme"
+  },
+  "frother": {
+   "name": "El köpürtücü (soğuk köpük)",
+   "price": 1080,
+   "stars": 3,
+   "step": "coldfoam",
+   "effect": "Freddo cappuccino ve cold foam için soğuk süt köpüğü"
+  },
+  "sandStove": {
+   "name": "Kum ocağı",
+   "price": 3150,
+   "stars": 3,
+   "step": "tkfoam",
+   "effect": "Cezveyi sıcak kumda pişirme"
+  },
+  "dallah": {
+   "name": "Dallah (Arap cezvesi)",
+   "price": 1980,
+   "stars": 4,
+   "step": "tkfoam",
+   "effect": "Arap kahvesi için pirinç dallah"
+  },
+  "clayPot": {
+   "name": "Toprak olla",
+   "price": 810,
+   "stars": 4,
+   "step": "tkfoam",
+   "effect": "Meksika çömlek kahvesi için toprak kap"
+  },
+  "clothFilter": {
+   "name": "Bez filtre (coador)",
+   "price": 360,
+   "stars": 4,
+   "step": "cloth",
+   "effect": "Brezilya kahvesi için bez süzgeç"
+  },
+  "indianFilter": {
+   "name": "Hint filtresi + dabara",
+   "price": 990,
+   "stars": 4,
+   "step": "tumbler",
+   "effect": "Güney Hint filtre kahvesi seti"
+  },
+  "kalita": {
+   "name": "Kalita Wave",
+   "price": 1260,
+   "stars": 4,
+   "step": "pourover",
+   "effect": "Düz tabanlı dripper"
+  },
+  "coldDripTower": {
+   "name": "Kyoto damla kulesi",
+   "price": 8100,
+   "stars": 4,
+   "step": "colddrip",
+   "effect": "Saatlerce damla damla soğuk demleme"
+  },
+  "nitroTap": {
+   "name": "Nitro musluğu",
+   "price": 13500,
+   "stars": 5,
+   "step": "nitrotap",
+   "effect": "Azotlu soğuk demleme musluğu"
+  }
+ },
+ "sizes": {
+  "single": {
+   "label": "Tek",
+   "say": "",
+   "cup": "espS",
+   "bean": 0.5,
+   "milk": 1,
+   "price": 1,
+   "dose": 9
+  },
+  "double": {
+   "label": "Double",
+   "say": "double",
+   "cup": "espD",
+   "bean": 1,
+   "milk": 1,
+   "price": 1.8,
+   "dose": 18
+  },
+  "tk": {
+   "label": "Fincan",
+   "say": "",
+   "cup": "tkCup",
+   "bean": 0.4,
+   "milk": 0,
+   "price": 1,
+   "dose": 7
+  },
+  "iS": {
+   "label": "Küçük",
+   "say": "küçük boy",
+   "cup": "iceS",
+   "bean": 1,
+   "milk": 1,
+   "price": 1,
+   "dose": 18
+  },
+  "iM": {
+   "label": "Orta",
+   "say": "orta boy",
+   "cup": "iceM",
+   "bean": 1,
+   "milk": 1.5,
+   "price": 1.25,
+   "dose": 18
+  },
+  "iL": {
+   "label": "Büyük",
+   "say": "büyük boy",
+   "cup": "iceL",
+   "bean": 1,
+   "milk": 2,
+   "price": 1.6,
+   "dose": 18
+  },
+  "affo1": {
+   "label": "Tek top",
+   "say": "tek toplu",
+   "cup": "affoBowl",
+   "bean": 0.5,
+   "milk": 0,
+   "price": 1,
+   "dose": 18,
+   "scoops": 1
+  },
+  "affo2": {
+   "label": "Çift top",
+   "say": "çift toplu",
+   "cup": "affoBowl",
+   "bean": 1,
+   "milk": 0,
+   "price": 1.6,
+   "dose": 18,
+   "scoops": 2
+  },
+  "S": {
+   "label": "Küçük",
+   "say": "küçük boy",
+   "cup": "cupS",
+   "bean": 1,
+   "milk": 1,
+   "price": 1,
+   "dose": 18
+  },
+  "M": {
+   "label": "Orta",
+   "say": "orta boy",
+   "cup": "cupM",
+   "bean": 1,
+   "milk": 1.25,
+   "price": 1.25,
+   "dose": 18
+  },
+  "L": {
+   "label": "Büyük",
+   "say": "büyük boy",
+   "cup": "cupL",
+   "bean": 1,
+   "milk": 1.5,
+   "price": 1.6,
+   "dose": 18
+  }
+ },
+ "cups": {
+  "espS": {
+   "name": "Tek shot bardağı",
+   "pack": 10,
+   "price": 90
+  },
+  "espD": {
+   "name": "Double shot bardağı",
+   "pack": 10,
+   "price": 110
+  },
+  "cupS": {
+   "name": "Küçük bardak",
+   "pack": 10,
+   "price": 110
+  },
+  "cupM": {
+   "name": "Orta bardak",
+   "pack": 10,
+   "price": 135
+  },
+  "cupL": {
+   "name": "Büyük bardak",
+   "pack": 10,
+   "price": 160
+  },
+  "tkCup": {
+   "name": "Türk kahvesi fincanı",
+   "pack": 10,
+   "price": 125
+  },
+  "iceS": {
+   "name": "Küçük soğuk bardak",
+   "pack": 10,
+   "price": 110
+  },
+  "iceM": {
+   "name": "Orta soğuk bardak",
+   "pack": 10,
+   "price": 135
+  },
+  "iceL": {
+   "name": "Büyük soğuk bardak",
+   "pack": 10,
+   "price": 160
+  },
+  "affoBowl": {
+   "name": "Affogato kasesi",
+   "pack": 10,
+   "price": 180
+  }
+ },
+ "cupMin": 3,
+ "startCups": {
+  "espS": 10,
+  "espD": 5
+ },
+ "extras": {
+  "sleeve": {
+   "name": "Bardak tutacağı",
+   "pack": 50,
+   "price": 135,
+   "use": 0.9,
+   "takeaway": true,
+   "miss": "Bardak tutacağı bile yok, elim yandı!"
+  },
+  "napkin": {
+   "name": "Peçete",
+   "pack": 100,
+   "price": 70,
+   "use": 0.6,
+   "miss": "Peçete bile yok!"
+  },
+  "sugar": {
+   "name": "Şeker",
+   "pack": 100,
+   "price": 90,
+   "use": 0.35,
+   "miss": "Şeker bile yok mu?"
+  },
+  "stirrer": {
+   "name": "Karıştırma çubuğu",
+   "pack": 100,
+   "price": 55,
+   "use": 0.3,
+   "miss": "Karıştıracak çubuk bile yok!"
+  },
+  "sweetener": {
+   "name": "Tatlandırıcı",
+   "pack": 50,
+   "price": 110,
+   "use": 0.05,
+   "miss": "Tatlandırıcı bile yok!"
+  },
+  "straw": {
+   "name": "Pipet",
+   "pack": 50,
+   "price": 45,
+   "use": 0.05,
+   "miss": "Pipet bile yok!"
+  }
+ },
+ "extrasStart": {
+  "sleeve": 20,
+  "napkin": 60,
+  "sugar": 60,
+  "stirrer": 30,
+  "sweetener": 20,
+  "straw": 10
+ },
+ "extrasLow": 10,
+ "extraTip": [
+  1,
+  0.3,
+  0
+ ],
+ "difficulty": {
+  "easy": {
+   "label": "Kolay",
+   "desc": "Sabırlı müşteriler, renkli bölgeler %10 geniş, tedarik %20 ucuz.",
+   "patience": 1.3,
+   "zone": 1.1,
+   "cost": 0.8,
+   "startMoney": 3600
+  },
+  "normal": {
+   "label": "Normal",
+   "desc": "Oyunun dengelendiği zorluk.",
+   "patience": 1,
+   "zone": 1,
+   "cost": 1,
+   "startMoney": 2700
+  },
+  "hard": {
+   "label": "Zor",
+   "desc": "Sabırsız müşteriler, renkli bölgeler %15 dar, tedarik %20 pahalı.",
+   "patience": 0.75,
+   "zone": 0.85,
+   "cost": 1.2,
+   "startMoney": 2250
+  }
+ },
+ "badLines": [
+  "Bunu içemem, almıyorum!",
+  "Bu kahve mi şimdi? Para vermem!",
+  "Berbat olmuş, kalsın.",
+  "Yeniden yap ya da hiç yapma!",
+  "Böyle kahve olmaz, gidiyorum."
+ ],
+ "noCupLines": [
+  "Nasıl {s} bardağınız yok?!",
+  "{S} bardak mı bitmiş? Olacak iş değil!",
+  "Bardak yoksa ben de yokum!",
+  "Bu dükkanda {s} bardak bile yok mu?"
+ ],
+ "wrongLines": [
+  "Ben bunu istemedim!",
+  "Bu benim siparişim değil!",
+  "Yanlış kahve verdin, almıyorum.",
+  "Ben {d} istemiştim!"
+ ],
+ "orderLines": {
+  "any": [
+   "Bir {d} lütfen.",
+   "Bana bir {d} güzelim.",
+   "Sende {d} var mı?",
+   "Bir {d} alayım.",
+   "{d} yapar mısın?",
+   "Canım {d} istedi.",
+   "Merhaba! Bir {d} rica edebilir miyim?",
+   "Bugün {d} günü, bir tane lütfen.",
+   "Bir {d}, bol sevgili olsun.",
+   "{d} alabilir miyim?"
+  ],
+  "business": [
+   "Bir {d}, çabuk lütfen.",
+   "Toplantıya geç kalıyorum, bir {d}!",
+   "Hızlıca bir {d} alayım."
+  ],
+  "student": [
+   "Abi bir {d}, öğrenci indirimi var mı?",
+   "Abla bir {d} lütfen, sınavım var.",
+   "Bir {d}, hesabı bölüşemiyoruz ama."
+  ],
+  "elder": [
+   "Evladım bana bir {d} yapıver.",
+   "Kızım, bir {d} olsun.",
+   "Yavrum bir {d} rica edeyim."
+  ],
+  "geek": [
+   "Çekirdek ne? Bir {d} alayım.",
+   "Bugünkü öğütümle bir {d} lütfen.",
+   "Bir {d}, ekstraksiyonu 28 saniye olsun."
+  ],
+  "regular": [
+   "Her zamankinden, bir {d}.",
+   "Bildiğin gibi, bir {d}.",
+   "Yine ben! Bir {d} lütfen."
+  ],
+  "tourist": [
+   "Sende var {d}?",
+   "Ben istemek bir {d}.",
+   "Merhaba! {d}, lütfen… doğru söyledim mi?",
+   "Bir {d} please… yani lütfen."
+  ],
+  "critic": [
+   "Bir {d}. Ve lütfen özenli olsun, not alıyorum.",
+   "{d} alayım; bakalım ününüz hak edilmiş mi."
+  ],
+  "influencer": [
+   "Bir {d}! Takipçilerim için fotoğrafını çekeceğim.",
+   "{d} rica edeyim, canlı yayındayım!"
+  ],
+  "jury": [
+   "Jüri adına bir {d}, lütfen.",
+   "Yarışma tarifi: {d}."
+  ]
+ },
+ "reviews": [
+  {
+   "min": 95,
+   "label": "Mükemmel",
+   "cls": "perfect",
+   "lines": [
+    "İçtiğim en iyi kahve!",
+    "Mükemmel! Her gün geleceğim.",
+    "Bu kahve bir sanat eseri!",
+    "Vay be, tam kıvamında!",
+    "Hayatımın kahvesi!"
+   ]
+  },
+  {
+   "min": 80,
+   "label": "Lezzetli",
+   "cls": "good",
+   "lines": [
+    "Çok lezzetli, eline sağlık!",
+    "Harika olmuş, teşekkürler.",
+    "Güzel kahve, yine gelirim.",
+    "Mis gibi!"
+   ]
+  },
+  {
+   "min": 60,
+   "label": "Ortalama",
+   "cls": "ok",
+   "lines": [
+    "İdare eder.",
+    "Fena değil.",
+    "Sıradan bir kahve.",
+    "Eh işte, içilir."
+   ]
+  },
+  {
+   "min": 40,
+   "label": "Kötü",
+   "cls": "miss",
+   "lines": [
+    "Biraz acı olmuş.",
+    "Pek beğenmedim.",
+    "Tadı biraz garip.",
+    "Daha iyisini içmiştim."
+   ]
+  },
+  {
+   "min": 0,
+   "label": "Berbat",
+   "cls": "miss",
+   "lines": [
+    "Bunu içemem!",
+    "Berbat olmuş.",
+    "Bir daha gelmem.",
+    "Bu kahve mi şimdi?"
+   ]
+  }
+ ],
+ "pricing": {
+  "markup": 2,
+  "neutral": 0.1,
+  "all": 0.5,
+  "step": 0.05,
+  "min": 0.5,
+  "max": 2,
+  "stepTL": 5
+ },
+ "market": {
+  "weeklyMax": 0.12,
+  "min": 0.7,
+  "max": 1.4,
+  "news": 3
+ },
+ "staff": {
+  "assistant": {
+   "name": "Yardımcı barista",
+   "stars": 2,
+   "wage": 360,
+   "prepTime": 7,
+   "score": 85,
+   "effect": "Kuyruktaki sütsüz siparişleri kendisi hazırlar"
+  }
+ },
+ "decor": {
+  "plant": {
+   "stars": 1,
+   "name": "Büyük bitki",
+   "price": 1080,
+   "effect": "Günde +1 itibar",
+   "rep": 1
+  },
+  "lamp": {
+   "stars": 1,
+   "name": "Ayaklı lamba",
+   "price": 1800,
+   "effect": "Bahşiş ×1,1",
+   "tip": 1.1
+  },
+  "record": {
+   "stars": 1,
+   "name": "Pikap",
+   "price": 3150,
+   "effect": "Müşteri sabrı ×1,15",
+   "patience": 1.15
+  },
+  "poster": {
+   "stars": 1,
+   "name": "Vintage kahve posteri",
+   "price": 630,
+   "effect": "Bahşiş ×1,03",
+   "tip": 1.03
+  },
+  "mat": {
+   "stars": 1,
+   "name": "Hoş geldin paspası",
+   "price": 450,
+   "effect": "Müşteri sabrı ×1,05",
+   "patience": 1.05
+  },
+  "stools": {
+   "stars": 1,
+   "name": "Pencere önü tabureleri",
+   "price": 1350,
+   "effect": "Bahşiş ×1,05",
+   "tip": 1.05
+  },
+  "sofa": {
+   "stars": 2,
+   "name": "Chester koltuk",
+   "price": 4050,
+   "effect": "Bahşiş ×1,1",
+   "tip": 1.1
+  },
+  "bookshelf": {
+   "stars": 2,
+   "name": "Kitaplık",
+   "price": 2700,
+   "effect": "Müşteri sabrı ×1,1",
+   "patience": 1.1
+  },
+  "ivy": {
+   "stars": 2,
+   "name": "Sarmaşık saksılar",
+   "price": 1800,
+   "effect": "Günde +1 itibar",
+   "rep": 1
+  },
+  "photos": {
+   "stars": 2,
+   "name": "Mahalle fotoğrafları",
+   "price": 1350,
+   "effect": "Bahşiş ×1,04",
+   "tip": 1.04
+  },
+  "clock": {
+   "stars": 2,
+   "name": "Duvar saati",
+   "price": 1080,
+   "effect": "Müşteri sabrı ×1,05",
+   "patience": 1.05
+  },
+  "neon": {
+   "stars": 2,
+   "name": "Neon kahve tabelası",
+   "price": 3400,
+   "effect": "Bahşiş ×1,08",
+   "tip": 1.08
+  },
+  "piano": {
+   "stars": 3,
+   "name": "Duvar piyanosu",
+   "price": 10800,
+   "effect": "Müşteri sabrı ×1,15",
+   "patience": 1.15
+  },
+  "aquarium": {
+   "stars": 3,
+   "name": "Akvaryum",
+   "price": 7200,
+   "effect": "Müşteri sabrı ×1,1",
+   "patience": 1.1
+  },
+  "olive": {
+   "stars": 3,
+   "name": "Zeytin ağacı",
+   "price": 4500,
+   "effect": "Günde +1 itibar",
+   "rep": 1
+  },
+  "artwall": {
+   "stars": 3,
+   "name": "Sanat duvarı",
+   "price": 5400,
+   "effect": "Günde +2 itibar",
+   "rep": 2
+  },
+  "chandelier": {
+   "stars": 3,
+   "name": "Kristal avize",
+   "price": 8100,
+   "effect": "Bahşiş ×1,12",
+   "tip": 1.12
+  },
+  "brass": {
+   "stars": 3,
+   "name": "Pirinç tabela",
+   "price": 6300,
+   "effect": "Bahşiş ×1,1",
+   "tip": 1.1
+  },
+  "d4sofa": {
+   "stars": 4,
+   "name": "Deri chester takımı",
+   "price": 8100,
+   "effect": "Bahşiş ×1,1",
+   "tip": 1.1
+  },
+  "d4shelf": {
+   "stars": 4,
+   "name": "Duvar boyu kitaplık",
+   "price": 6300,
+   "effect": "Müşteri sabrı ×1,1",
+   "patience": 1.1
+  },
+  "d4ficus": {
+   "stars": 4,
+   "name": "Dev ficus ağacı",
+   "price": 5400,
+   "effect": "Günde +2 itibar",
+   "rep": 2
+  },
+  "d4clock": {
+   "stars": 4,
+   "name": "Antika duvar saati",
+   "price": 3600,
+   "effect": "Müşteri sabrı ×1,05",
+   "patience": 1.05
+  },
+  "d4neon": {
+   "stars": 4,
+   "name": "Neon logo",
+   "price": 7200,
+   "effect": "Bahşiş ×1,08",
+   "tip": 1.08
+  },
+  "d4gallery": {
+   "stars": 4,
+   "name": "Fotoğraf galerisi",
+   "price": 4500,
+   "effect": "Günde +1 itibar",
+   "rep": 1
+  },
+  "d5roaster": {
+   "stars": 5,
+   "name": "Kahve kavurma makinesi",
+   "price": 27000,
+   "effect": "Günde +3 itibar",
+   "rep": 3
+  },
+  "d5chand": {
+   "stars": 5,
+   "name": "Kristal avize",
+   "price": 16200,
+   "effect": "Bahşiş ×1,15",
+   "tip": 1.15
+  },
+  "d5piano": {
+   "stars": 5,
+   "name": "Kuyruklu piyano",
+   "price": 22500,
+   "effect": "Müşteri sabrı ×1,2",
+   "patience": 1.2
+  },
+  "d5aqua": {
+   "stars": 5,
+   "name": "Akvaryum duvarı",
+   "price": 14400,
+   "effect": "Müşteri sabrı ×1,1",
+   "patience": 1.1
+  },
+  "d5brass": {
+   "stars": 5,
+   "name": "Pirinç logo tabelası",
+   "price": 12600,
+   "effect": "Bahşiş ×1,1",
+   "tip": 1.1
+  },
+  "d5art": {
+   "stars": 5,
+   "name": "Sanat galerisi",
+   "price": 13500,
+   "effect": "Günde +2 itibar",
+   "rep": 2
+  }
+ },
+ "economy": {
+  "startMoney": 2700,
+  "beanPerCup": 0.018,
+  "milkPrice": 135,
+  "milkPerCup": 0.2,
+  "minBeans": 0.3,
+  "minMilk": 1,
+  "milkShelfDays": 6,
+  "milkShelfNoFridge": 2,
+  "autoScore": 100,
+  "loanInterest": 0.1,
+  "loanDailyCut": 0.2,
+  "loans": [
+   {
+    "amount": 900,
+    "days": 5
+   },
+   {
+    "amount": 2250,
+    "days": 8
+   }
+  ],
+  "rentLoanDays": 6,
+  "refuseBelow": 50,
+  "rentLoanStep": 450
+ },
+ "drinkGroups": [
+  {
+   "name": "Espresso bazlı",
+   "ids": [
+    "espresso",
+    "americano",
+    "lungo",
+    "ristretto",
+    "macchiato",
+    "cortado",
+    "latte",
+    "longblack",
+    "conpanna",
+    "romano",
+    "flatwhite",
+    "piccolo",
+    "vanillalatte",
+    "redeye",
+    "mocha",
+    "caramelmac",
+    "saltcaramel",
+    "affogato",
+    "cubano",
+    "bombon",
+    "marocchino",
+    "melange",
+    "cappuccino",
+    "latmac",
+    "conleche",
+    "gibraltar",
+    "magic",
+    "galao",
+    "breve",
+    "pumpkin",
+    "gingerbread",
+    "peppermint",
+    "dirtychai",
+    "einspanner",
+    "cortadito",
+    "bicerin"
+   ]
+  },
+  {
+   "name": "Türk ve geleneksel",
+   "ids": [
+    "turkish",
+    "sutluturk",
+    "menengic",
+    "dibek",
+    "damla",
+    "kenger",
+    "osmanli",
+    "mirra",
+    "kumda",
+    "kopi",
+    "cafezinho",
+    "olla",
+    "qahwa"
+   ]
+  },
+  {
+   "name": "Demleme ve filtre",
+   "ids": [
+    "frenchpress",
+    "filter",
+    "cafeaulait",
+    "moka",
+    "aeropress",
+    "chemex",
+    "siphon",
+    "irish",
+    "indianf",
+    "eggcoffee",
+    "kalitaw"
+   ]
+  },
+  {
+   "name": "Soğuk ve buzlu",
+   "ids": [
+    "icedamericano",
+    "icedlatte",
+    "dalgona",
+    "espressotonic",
+    "frappuccino",
+    "mochafrappe",
+    "greekfrappe",
+    "coldbrew",
+    "vietnam",
+    "icedmocha",
+    "nitro",
+    "spanish",
+    "freddoesp",
+    "freddocap",
+    "shakerato",
+    "mazagran",
+    "flashbrew",
+    "coldfoamcb",
+    "colddrip"
+   ]
+  },
+  {
+   "name": "Kahvesiz",
+   "ids": [
+    "hotchoc",
+    "chai",
+    "salep"
+   ]
+  }
+ ],
+ "shopLevels": [
+  {
+   "stars": 1,
+   "name": "Köşe büfesi",
+   "money": 0,
+   "rep": 0,
+   "customersPerDay": 6,
+   "rent": 1350,
+   "loanLimit": 5400,
+   "maxQueue": 3,
+   "interval": 21.5,
+   "custStep": 2,
+   "tierCost": [
+    1080,
+    1980,
+    3150
+   ]
+  },
+  {
+   "stars": 2,
+   "name": "Mahalle kahvecisi",
+   "money": 13500,
+   "rep": 100,
+   "customersPerDay": 9,
+   "rent": 3150,
+   "loanLimit": 13500,
+   "maxQueue": 5,
+   "interval": 16,
+   "custStep": 3,
+   "tierCost": [
+    2700,
+    4950,
+    7650
+   ]
+  },
+  {
+   "stars": 3,
+   "name": "Semt favorisi",
+   "money": 45000,
+   "rep": 250,
+   "customersPerDay": 13,
+   "rent": 6300,
+   "loanLimit": 27000,
+   "maxQueue": 7,
+   "interval": 11,
+   "custStep": 4,
+   "tierCost": [
+    6300,
+    10800,
+    16200
+   ]
+  },
+  {
+   "stars": 4,
+   "name": "Şehir kahvecisi",
+   "money": 108000,
+   "rep": 450,
+   "customersPerDay": 16,
+   "rent": 10800,
+   "loanLimit": 54000,
+   "maxQueue": 8,
+   "interval": 9,
+   "custStep": 5,
+   "tierCost": [
+    10800,
+    18000,
+    27000
+   ]
+  },
+  {
+   "stars": 5,
+   "name": "Kahve evi & kavurmahane",
+   "money": 270000,
+   "rep": 800,
+   "customersPerDay": 20,
+   "rent": 18000,
+   "loanLimit": 90000,
+   "maxQueue": 9,
+   "interval": 7.5,
+   "custStep": 6,
+   "tierCost": [
+    18000,
+    31500,
+    45000
+   ]
+  }
+ ],
+ "traffic": {
+  "cust": [
+   "Kaldırım tabelası",
+   "Sosyal medya sayfası",
+   "Mahalle gazetesine ilan"
+  ],
+  "freq": [
+   "Vitrin ışıkları",
+   "Kapı önü menü panosu",
+   "Sokağa kahve kokusu (fan)"
+  ],
+  "freqMult": 0.85
+ },
+ "weekdays": [
+  "Pzt",
+  "Sal",
+  "Çar",
+  "Per",
+  "Cum",
+  "Cmt",
+  "Paz"
+ ],
+ "tasks": [
+  {
+   "kind": "serveDrink",
+   "text": "Bugün {n} {d} sat",
+   "n": [
+    2,
+    3
+   ],
+   "money": 360,
+   "xp": 20
+  },
+  {
+   "kind": "perfect",
+   "text": "{n} mükemmel servis yap",
+   "n": [
+    1,
+    2
+   ],
+   "money": 450,
+   "xp": 25
+  },
+  {
+   "kind": "noLeave",
+   "text": "Hiç müşteri kaçırma",
+   "money": 540,
+   "xp": 30
+  },
+  {
+   "kind": "earn",
+   "text": "Bugün {n}₺ kazan",
+   "n": [
+    540,
+    810
+   ],
+   "money": 360,
+   "xp": 20
+  }
+ ],
+ "streak": {
+  "step": 0.1,
+  "max": 1.5
+ },
+ "tips": {
+  "grind_low": "Öğütüm çok kaba: su hızlı geçer, ekşi tat. Bir kademe incelt.",
+  "grind_high": "Öğütüm çok ince: su yavaş geçer, acı tat. Bir kademe kabalaştır.",
+  "dose_low": "Doz eksik: sepet boş kalır, kanal oluşur. 18 g hedefle.",
+  "dose_high": "Doz fazla: grup kafasına değer, akış tıkanır.",
+  "tamp_low": "Temperleme zayıf: kahve yatağı eşit sıkışmaz, kanal oluşur.",
+  "tamp_high": "Temperleme çok sert: fayda yok, bileği yorar. Düz ve eşit basınç yeter.",
+  "extract_low": "Çok erken durdurdun: az ekstraksiyon, ekşi ve ince.",
+  "extract_high": "Çok geç durdurdun: fazla ekstraksiyon, acı ve kuru.",
+  "milk_low": "Süt soğuk kaldı: köpük tutmaz. 60 °C'yi bekle.",
+  "milk_high": "Süt kaynadı: tatlılık gider, kabarcıklar irileşir. 65 °C'yi geçme.",
+  "water_low": "Su az: americano fazla sert ve kısa kaldı.",
+  "water_high": "Su fazla: americano sulandı, tadı kaçtı.",
+  "pressure_low": "Basınç düşük: süt köpürmeden ılık kalır.",
+  "pressure_high": "Basınç fazla: buhar sütü sıçratır, köpük iri olur.",
+  "cocoa_low": "Kakao kenara döküldü: fincanın soluna kaydı.",
+  "cocoa_high": "Kakao kenara döküldü: fincanın sağına kaydı.",
+  "art_low": "Döküm erken bitti: kalbin tabanı küçük kaldı. %65'e kadar doldur.",
+  "art_high": "Fincan taştı ya da kesim kaydı: desen dağıldı. %80'de bırak, ortadan kes."
+ },
+ "seasons": [
+  "Sonbahar",
+  "Kış",
+  "İlkbahar",
+  "Yaz"
+ ],
+ "tutorial": {
+  "intro": "Hoş geldin evladım. Ben Yıldız Teyze. Bu dükkanı yıllardır işletiyorum ama artık yoruldum; bundan sonra dükkan senin. Bugün yanındayım: sana espresso yapmayı ve akşam dükkanı kapatmayı öğreteceğim; sonra dükkan sana emanet. Tarif defterim de köşede duruyor.",
+  "firstSay": "Hazırsan başlayabiliriz evladım, bana dokun.",
+  "milk": "Sütü köpürtürken kâğıt yırtılır gibi hafif bir ses duyarsın. O ses doğru sestir.",
+  "first": "Yıldız Teyze tezgâhın önünde seni bekliyor. Hazır olunca ona dokun.",
+  "espressoIntro": "<b>Espresso 4 adımdır:</b> öğüt, dozla, sıkıştır, çek.",
+  "steps": {
+   "grind": "<b>1. Öğüt.</b> İbre <b>koyu yeşile</b> gelince <b>ÖĞÜT</b>'e bas.",
+   "dose": "<b>2. Dozla.</b> 18 gram koyacağız. Yakın planı <b>sağa-sola kaydır</b>; terazi <b>koyu yeşile</b> gelince <b>TAMAM</b>.",
+   "tamp": "<b>3. Sıkıştır.</b> <b>BASILI TUT</b>: basınç artar. Siyah kenar <b>koyu yeşil halkaya</b> gelince bırak.",
+   "extract": "<b>4. Çek.</b> <b>BAŞLAT</b>'a bas. 36 gram yaklaşık 27 saniyede akar; ibre <b>koyu yeşilde</b> <b>DURDUR</b>.",
+   "milk": "<b>Süt.</b> Basılı tut; ibre <b>koyu yeşildeyken</b> (60–65 °C) bırak.",
+   "art": "<b>Latte art.</b> Basılı tut, koyu yeşilde bırak; sonra fincanın ortasından parmağını <b>yukarı</b> çek."
+  },
+  "pressNow": "<b>İşte şimdi!</b> İbre koyu yeşilde, bas!",
+  "extractEarly": "Erken durdurdun evladım. Kahvenin akmasını bekle; yine <b>BAŞLAT</b>'a bas.",
+  "tooEarly": "Acele etme evladım. İbre <b>koyu yeşile</b> gelsin, öyle bas.",
+  "release": "<b>Şimdi bırak!</b> Tam 18 gram oldu.",
+  "doseNow": "<b>Tam 18 gram!</b> Şimdi <b>TAMAM</b>'a bas.",
+  "doseEarly": "Daha erken evladım. Kaydırmaya devam et; terazi <b>koyu yeşile</b> gelsin.",
+  "releaseTamp": "<b>Şimdi bırak!</b> Siyah kenar koyu yeşil halkada; baskı tam yerinde.",
+  "holdRetry": "Erken bıraktın. Baştan: <b>koyu yeşile</b> gelene kadar <b>basılı tut</b>.",
+  "extractRun": "Kahve akıyor: önce koyu bal rengi, sonra karamel krema. <b>Koyu yeşilde</b> durdur.",
+  "stopNow": "<b>Şimdi durdur!</b> 36 gram, 27 saniye: tam kıvamında.",
+  "midday": "Eline sağlık evladım, mis gibi olmuş! İlk espressonu yaptın, ilk paranı da kazandın. Şimdi müşteriler gelecek; her kahveyi sen hazırla. Ben biraz çarşıya çıkıyorum; akşam kapanışta yine yanındayım, onu da birlikte yapacağız.",
+  "closeIntro": "Gün bitti evladım, kapanışı birlikte yapalım. Önce haftalık kiraya bakarız: kira her hafta ödenir, kaç gün kaldığı burada yazar. Şimdi ödeyebilir ya da kira gününe bırakabilirsin.",
+  "closeLedger": "Bu gün defteri: kaç kahve sattın, ne kazandın, kasada ne kaldı. Her şey yolundaysa <b>Devam</b>'a bas.",
+  "done": "İşte bu kadar evladım. Artık espressoyu ve akşam kapatmayı biliyorsun. Şimdi Tedarik'ten yarının çekirdeğini, sütünü ve bardaklarını al. Ben gidiyorum; dükkan sana emanet. Yeni bir şeyle ilk karşılaştığında defterime yazdığım not çıkar, nasıl yapılacağını o anda gösterir."
+ },
+ "lessons": {
+  "select": {
+   "t": "Sipariş seçimi",
+   "h": "Müşterinin istediği üstteki kartta yazar. Önce <b>tarifi</b>, sonra <b>boyu</b> seç (istediyse çekirdeği, sütü, şekeri de) ve <b>Hazırlamaya başla</b>'ya bas. Yanlış seçersen müşteri almaz."
+  },
+  "extras": {
+   "t": "Ekstralar",
+   "h": "Bazı müşteriler <b>ekstra shot</b> ya da <b>paket servis</b> ister. Seçim ekranındaki <b>Ekstralar</b> kutusundan işaretle; unutursan sipariş yanlış sayılır."
+  },
+  "weather": {
+   "t": "Hava ve günler",
+   "h": "Hava dükkanı etkiler: yağmurda sıcak, sıcakta buzlu kahveler çok istenir; Cumartesi dükkan kalabalık olur. Günün havası saatin yanında simgeyle görünür."
+  },
+  "rush": {
+   "t": "Yoğun saat",
+   "h": "30 saniye boyunca müşteriler üç kat sık gelir ve her bahşiş ×1,5 olur. Sıra dolarsa yeni gelen kapıdan döner; en öndekinden başlayıp hızlı çalış."
+  },
+  "critic": {
+   "t": "Eleştirmen",
+   "h": "Kahvesi mükemmel olursa itibarın <b>+20</b> artar, kötü olursa <b>−20</b> düşer. Her adımda koyu yeşile odaklan."
+  },
+  "tourist": {
+   "t": "Turist",
+   "h": "Türkçesi bozuk ama siparişi kartta doğru yazar. Bahşişi bol; kartı oku, ona göre seç."
+  },
+  "influencer": {
+   "t": "Fenomen",
+   "h": "Mükemmel servis edersen paylaşır, ertesi gün <b>+3 müşteri</b> gelir; kötü olursa müşterin azalır."
+  },
+  "jury": {
+   "t": "Yarışma günü",
+   "h": "İlk 3 müşteri jüri. Her birinin kahvesi puanlanır; ortalamana göre altın, gümüş ya da bronz madalya ve para kazanırsın."
+  },
+  "loyal": {
+   "t": "Sadık müşteri",
+   "h": "Bir müşteri tipine art arda 3 mükemmel servis yaptın; artık sadık (♥): daha sabırlı bekler, daha çok bahşiş bırakır. Kötü bir servis sayacı sıfırlar."
+  },
+  "steps": {
+   "milk2": {
+    "t": "Süt köpürtme",
+    "h": "Süt iki aşamadır. <b>1. Hava al:</b> basılı tut, köpük hacmi koyu yeşile gelince bırak. <b>2. Isıt:</b> yine basılı tut, 60–65 °C'de (koyu yeşil) bırak."
+   },
+   "art": {
+    "t": "Latte art",
+    "h": "<b>1. Dök:</b> basılı tut, fincan %65–80 dolunca (koyu yeşil) bırak. <b>2. Çiz:</b> fincanın ortasına dokun ve parmağını düz <b>yukarı</b> çek; kalbin kesimi olur."
+   },
+   "tkfoamBlind": {
+    "t": "Köpüğü gözle al",
+    "h": "Artık ölçek yok: köpüğe bak. Köpük kabarıp cezvenin ağzına yaklaşınca, <b>taşmadan hemen önce</b> OCAKTAN AL."
+   },
+   "pregrind": {
+    "t": "Önden öğütme",
+    "h": "<b>＋ Sonraki için de öğüt</b>'ü seçersen bir doz da sonraki espresso için öğütülür; o siparişte öğütme atlanır. Bekledikçe tazeliği düşer (her 10 sn −3)."
+   },
+   "dual": {
+    "t": "Çift grup",
+    "h": "Shot akarken üstteki sekmeden öbür siparişe geçebilirsin; shot arka planda akmaya devam eder. Geri dönüp koyu yeşilde <b>DURDUR</b>."
+   }
+  }
+ },
+ "econScale": 9
+}

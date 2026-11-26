@@ -1,10 +1,10 @@
-name: Godot Windows deneme
-# godot-tasarim dalındaki Godot denemesini Windows için derler ve
-# "godot-deneme" sürümüne (Releases) indirilebilir zip olarak koyar.
+name: Godot Windows
+# godot-tasarim dalındaki Godot oyununu (godot/coffebean) Windows için derler ve
+# "godot-deneme" sürümüne (Releases) indirilebilir zip olarak koyar; bağlantı sabit kalır.
 on:
   push:
     branches: [godot-tasarim]
-    paths: ['godot/deneme-3b/**', '.github/workflows/godot-windows.yml']
+    paths: ['godot/coffebean/**', '.github/workflows/godot-windows.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -29,12 +29,12 @@ jobs:
       - name: Windows için dışa aktar
         run: |
           G=$PWD/Godot_v${GODOT}-stable_linux.x86_64
-          cd godot/deneme-3b
+          cd godot/coffebean
           $G --headless --import || true
           mkdir -p build
-          $G --headless --export-release "Windows Desktop" build/CoffeBean_BirinciSahis.exe
+          $G --headless --export-release "Windows Desktop" build/CoffeBean.exe
           ls -la build
-          cd build && zip -9 $GITHUB_WORKSPACE/CoffeBean_Godot_Deneme_Windows.zip CoffeBean_BirinciSahis.exe
+          cd build && zip -9 $GITHUB_WORKSPACE/CoffeBean_Godot_Deneme_Windows.zip CoffeBean.exe
       - name: Sürüme koy
         env:
           GH_TOKEN: ${{ github.token }}
@@ -42,5 +42,5 @@ jobs:
           gh release delete godot-deneme --yes --cleanup-tag || true
           gh release create godot-deneme CoffeBean_Godot_Deneme_Windows.zip \
             --target ${{ github.sha }} --prerelease \
-            --title "CoffeBean Godot denemesi (Windows)" \
-            --notes "Zip'i açıp CoffeBean_BirinciSahis.exe'yi çalıştırın. WASD yürü, fare bak, E / sol tık etkileşim, Boşluk tamam, R kaşık, Esc fareyi bırakır. Görsel ve his denemesidir, oyun değildir. Modeller: Poly Haven (CC0), insanlar: Microsoft Rocketbox (MIT). Commit: ${{ github.sha }}"
+            --title "CoffeBean Godot (Windows)" \
+            --notes "Zip'i açıp CoffeBean.exe'yi çalıştırın. WASD yürü, fare bak, E / sol tık etkileşim, Boşluk tamam, R kaşık, Esc menü. Modeller: Poly Haven (CC0), insanlar: Microsoft Rocketbox (MIT). Commit: ${{ github.sha }}"

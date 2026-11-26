@@ -19,7 +19,9 @@ Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı i
 - Geliştirme planı (Claude Docs): https://claude.ai/artifact/Hjw3yV9CtTRsWq4VXGWo3h — "Taşıma adımları" sekmesi (27 Kasım 2026, kullanıcı: eski oyunun her şeyi yavaş yavaş taşınacak): T1–T18, her adım belge → kod → derleme → kullanıcı oynar → onay. Sıradaki iş T1 (iskelet, ana menü, kayıt).
 
 ## Bekleyen paket (son Godot derlemesi: deneme v3, 89d478d)
-- Espresso akışı ×1,25 (`godot/deneme-3b/fp.gd` FLOW, terazi metni ~23 sn); tasarım belgesi Espresso satırları + Web sürümü + §10 Depo/Web kararları; KURALLAR Kural 4/6; tasarım HTML'i yenilendi.
+- Espresso akışı ×1,25 (FLOW tek 1,025 / double 2,05 g/sn, terazi metni ~23 sn); tasarım belgesi Espresso satırları + Web sürümü + §10 Depo/Web kararları; KURALLAR Kural 4/6.
+- **T1 (Godot 0.1):** `godot/deneme-3b` → `godot/coffebean` (gerçek proje). Klasörler: `autoload/` (GameState, SaveSystem, Settings, Flow), `ui/` (ana menü, tema), `dukkan/` (denemenin fp*.gd'leri, `menu_modu` ile menü arkası), `data/web_v047.json` (`tools/data_aktar.js`), `art/` (ph, tex, people; KayKit ve eski izometrik main.gd silindi). Ana menü (Devam/Yeni oyun/Yükle/Ayarlar/Çıkış), 3 yuva (`user://kayit_N.json`, özet, üstüne yazma/silme onayı), zorluk (Kolay/Normal/Zor), Esc oyun içi menü (duraklatır; Kaydet, Ayarlar, Ana menü), otomatik kayıt (ana menü, çıkış, pencere kapanışı), ayarlar (fare 0,5–2, tam ekran, grafik Düşük/Orta/Yüksek; `user://ayarlar.cfg`). Tasarım belgesi §4 "Ana menü, kayıt yuvaları ve zorluk". Workflow `godot/coffebean`'ı derler, bağlantı aynı. `.gitignore`: `godot/**/.godot/`, `godot/**/build/`.
+- Kontrol: içe aktarma hatasız; ekran görüntüleriyle menü, yuva ve zorluk pencereleri bakıldı.
 
 ## v0.47 – YAYINLANDI (13 Kasım 2026, kullanıcı "ikisini de hemen yayınla")
 - **PWA kimliği (kritik, kullanıcı bildirdi):** `manifest.webmanifest` `"id": "./"` Chrome'da start_url'in kökenine (`https://bogacavdar.github.io/`) çözülüyordu; Purple Light'ınki de aynı → iki oyun tek uygulama sayılıyordu. `"id": "/coffeBean/"` yapıldı (Purple Light reposunda da `/purple-light/`). Doküman §12 PWA notu güncellendi.
