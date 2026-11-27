@@ -64,7 +64,10 @@ func _ready() -> void:
 	cik.pressed.connect(Flow.cikis)
 	v.add_child(cik)
 
-	var surum := Tema.yazi("Sürüm " + str(ProjectSettings.get_setting("application/config/version")), 15, Color(Tema.KREM, 0.6))
+	var surum := Tema.yazi("Sürüm %s · %d tarif" % [ProjectSettings.get_setting("application/config/version"), Content.tarif_sayisi()], 15, Color(Tema.KREM, 0.6))
+	if not Content.sorunlar.is_empty():
+		surum.text += " · içerikte %d sorun" % Content.sorunlar.size()
+		surum.add_theme_color_override("font_color", Color("e0705f"))
 	surum.autowrap_mode = TextServer.AUTOWRAP_OFF
 	surum.anchor_top = 1.0
 	surum.anchor_bottom = 1.0
