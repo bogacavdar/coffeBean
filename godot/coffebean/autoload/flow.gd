@@ -89,6 +89,7 @@ func pencere(baslik: String, govde: Control, dugmeler: Array, vazgec = null, gen
 		v.add_child(h)
 		for d in dugmeler:
 			var b := Tema.dugme(d.metin, d.get("tur", ""))
+			b.disabled = d.get("kapali", false)
 			var fn = d.get("fn")
 			b.pressed.connect(func():
 				kapat(p)
