@@ -1,4 +1,4 @@
-extends "res://dukkan/ekstra.gd"
+extends "res://dukkan/dersler.gd"
 ## Hile paneli ve akış testi kurulumu (tasarım belgesi §4 "Hile modu ve akış testi (taşıma adımı T9)"); web CHEATS, FLOWS.
 
 var hile_katman: CanvasLayer
@@ -196,6 +196,8 @@ func _hile_siparis() -> void:
 		return
 	step_scores.assign([100.0])
 	wrong = false
+	shot_sayi = 2                              # hile: ekstra shot ve kapak tamam sayılır
+	kapak_tamam = true
 	serve()
 
 
