@@ -147,7 +147,7 @@ func _musteri_getir() -> void:
 	var sabir := float(ct.patience) * float(dz.patience) * FP_SABIR
 	var menu: Array = []
 	for id in GameState.S.get("unlocked", ["espresso"]):
-		if YAPILABILIR.has(id):
+		if YAPILABILIR.has(id) and _istenebilir(id):
 			menu.append(id)
 	if menu.is_empty():
 		menu = ["espresso"]
@@ -187,6 +187,11 @@ func _musteri_getir() -> void:
 		"metin": _siparis_cumlesi(tip, d), "metin_ad": d, "sabir": sabir, "sabir_max": sabir, "durum": "giris", "cubuk": cubuk, "etiket": etiket})
 
 
+## Müşteri bu tarifi isteyebilir mi (T6: aletleri var mı).
+func _istenebilir(_id: String) -> bool:
+	return true
+
+
 ## Web orderLine: genel + tipe özel cümleler, ilk harf büyük. "saniye" içeren cümle yalnız espresso ailesinde.
 func _siparis_cumlesi(tip: String, d: String) -> String:
 	var L: Dictionary = GameState.D.orderLines
@@ -205,8 +210,10 @@ func _sira_yeri(i: int) -> Vector3:
 func customer_tick(delta: float) -> void:
 	if menu_modu:
 		return
-	for i in sira.size():
-		var m: Dictionary = sira[i]
+	for m: Dictionary in sira.duplicate():
+		var i := sira.find(m)
+		if i < 0:
+			continue
 		var hedef := _sira_yeri(i)
 		var vardi := walk_to(m.node, hedef, delta)
 		if vardi:

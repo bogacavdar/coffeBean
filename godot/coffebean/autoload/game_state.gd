@@ -34,6 +34,7 @@ func yeni_durum(zorluk: String) -> Dictionary:
 		"equipment": {}, "prices": {}, "tipsLearned": [], "regulars": {}, "log": [],
 		"debt": 0, "staff": {}, "decor": {}, "streak": 0, "milkDay": 1, "traffic": {}, "tools": {},
 		"market": {}, "loans": [], "cups": D.startCups.duplicate(), "extras": ekstra, "syr": {},
+		"firstSupply": true, "spend": 0, "milkAlt": {},
 	}
 
 

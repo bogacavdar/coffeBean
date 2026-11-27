@@ -87,6 +87,7 @@ func serve() -> void:
 	var S := GameState.S
 	var ct: Dictionary = GameState.D.customers[m.tip]
 	var D := GameState.D
+	_harca(m)
 	if yanlis or kalite < float(D.economy.refuseBelow):
 		var satir: String
 		if yanlis:
@@ -113,6 +114,8 @@ func serve() -> void:
 	var bahsis := 0
 	if kalite >= 80:
 		bahsis = roundi(tutar * 0.25 * ((kalite - 70.0) / 30.0) * hiz * float(ct.tip) * float(_rutbe().tipMult) * _seri_carpani())
+	var eksik := _kucuk_malzemeler(m)
+	bahsis = roundi(bahsis * float(D.extraTip[mini(2, eksik.size())]))
 	S.streak = int(S.get("streak", 0)) + 1 if servis >= 95 else 0
 	S.money = float(S.money) + tutar + bahsis
 	gunluk.gelir += tutar
@@ -141,7 +144,11 @@ func serve() -> void:
 		if kalite >= float(r.min):
 			yorum = r
 			break
-	show_bubble(yorum.lines[rng.randi() % yorum.lines.size()])
+	if eksik.is_empty():
+		show_bubble(yorum.lines[rng.randi() % yorum.lines.size()])
+	else:
+		show_bubble(D.extras[eksik[rng.randi() % eksik.size()]].miss)
+		_yuzen(m.node, "az bahşiş", Color("e9c46a"), 1.4)
 	_yuzen(m.node, "+₺" + GameState.tl(tutar), Color("5f8a4b"), 0.0)
 	if bahsis > 0:
 		_yuzen(m.node, "+₺%s bahşiş" % GameState.tl(bahsis), Color("c9962b"), 0.35)
@@ -152,6 +159,16 @@ func serve() -> void:
 	var ad: String = _bas_harf(m.metin_ad)
 	flash = "%s · %s · ₺%s%s · %s" % [m.ad, ad, GameState.tl(tutar), (" + ₺%s bahşiş" % GameState.tl(bahsis)) if bahsis > 0 else "", mesaj]
 	prompt_tail()
+
+
+## Stok harcaması (T6'da doldurulur): servis anında çekirdek, süt, özel malzeme.
+func _harca(_m: Dictionary) -> void:
+	pass
+
+
+## Müşterinin kullanıp bulamadığı küçük malzemeler (T6'da doldurulur).
+func _kucuk_malzemeler(_m: Dictionary) -> Array:
+	return []
 
 
 ## Servisten sonra portafiltreyi boşaltma hatırlatması alt ipucunda kalır (fp.serve ile aynı).
