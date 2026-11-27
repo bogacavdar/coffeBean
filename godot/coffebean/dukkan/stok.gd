@@ -466,6 +466,7 @@ func _tedarik(kip: String) -> void:
 	var dugmeler: Array = []
 	if kip == "gunsonu":
 		dugmeler.append({"metin": "← Geri", "fn": _hesap})
+	dugmeler.append_array(_tedarik_kredi_dugmesi(kip))
 	if not eks.is_empty():
 		var plan2 := eksik_plani()
 		dugmeler.append({"metin": "Eksikleri al · ₺%s" % GameState.tl(plan2.tutar), "tur": "ana", "kapali": float(S.money) < plan2.tutar, "fn": func():
@@ -487,6 +488,11 @@ func _tedarik(kip: String) -> void:
 	Flow.pencere("Tedarik", kaydir, dugmeler, _ekrandan_cik, 780)
 	kaydir.set_deferred("scroll_vertical", tedarik_kaydir)
 	tedarik_kaydir = 0
+
+
+## Tedarik ekranına kredi düğmesi (T8'de doldurulur).
+func _tedarik_kredi_dugmesi(_kip: String) -> Array:
+	return []
 
 
 func _kutu(baslik: String, icerik: Array) -> PanelContainer:

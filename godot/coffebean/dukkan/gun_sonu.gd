@@ -129,7 +129,7 @@ func _kira() -> void:
 	var kalan := _kiraya(gun)
 	var odendi := _kira_odendi(gun)
 	var yeter := float(S.money) >= kira
-	if kalan == 0 and not odendi and not yeter:
+	if kalan == 0 and not odendi and not yeter and float(S.money) + _en_buyuk_kredi() < kira:
 		_iflas(kira - roundi(float(S.money)))
 		return
 	var v := VBoxContainer.new()
@@ -138,6 +138,8 @@ func _kira() -> void:
 	v.add_child(Tema.yazi(buyuk, 30, Tema.TEHLIKE if kalan == 0 and not odendi else Tema.ANA, true))
 	v.add_child(_tablo([["Kasa", "₺" + GameState.tl(S.money)], ["Haftalık kira (%s)" % dk.name, "₺" + GameState.tl(kira)]]))
 	var dugmeler: Array = []
+	if not odendi and not yeter:
+		dugmeler.append_array(_kira_kredi_dugmesi())
 	if odendi:
 		dugmeler.append({"metin": "Devam", "tur": "ana", "fn": _hesap})
 	else:
@@ -173,10 +175,12 @@ func _hesap() -> void:
 	satirlar.append(["Bahşiş", "₺" + GameState.tl(st.tips)])
 	if L.get("spend", 0): satirlar.append(["Alımlar (tedarik, alet, dekor)", "−₺" + GameState.tl(L.spend)])
 	if L.rent: satirlar.append(["Haftalık kira", "−₺" + GameState.tl(L.rent)])
-	satirlar.append(["*Günün neti", _para(int(st.income) + int(st.tips) - int(L.get("spend", 0)) - int(L.rent))])
+	if L.get("cut", 0): satirlar.append(["Kredi taksiti (%20)", "−₺" + GameState.tl(L.cut)])
+	satirlar.append(["*Günün neti", _para(int(st.income) + int(st.tips) - int(L.get("spend", 0)) - int(L.rent) - int(L.get("cut", 0)))])
 	if L.get("spoiled", false): satirlar.append(["Kalan süt bozuldu", "0 L"])
 	satirlar.append(["İtibar değişimi", ("+" if int(son.repDelta) >= 0 else "") + str(son.repDelta)])
 	satirlar.append(["*Kasa", _para(S.money)])
+	satirlar.append_array(_hesap_kredi_satirlari())
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 12)
 	v.add_child(_tablo(satirlar))
@@ -213,11 +217,35 @@ func _ertesi_gun() -> void:
 	super._ertesi_gun()
 
 
-# ---------- iflas (web bankrupt; krediler T8'de) ----------
-func _iflas(acik_tl: int) -> void:
+# ---------- kredi kancaları (T8'de doldurulur) ----------
+func _en_buyuk_kredi() -> int:
+	return 0
+
+
+func _kira_kredi_dugmesi() -> Array:
+	return []
+
+
+func _hesap_kredi_satirlari() -> Array:
+	return []
+
+
+# ---------- iflas (web bankrupt) ----------
+func _iflas(acik_tl: int, sebep := "") -> void:
 	var S := GameState.S
 	S.bankrupt = true
 	S.log.append("Gün %d: iflas" % int(S.day))
 	SaveSystem.yaz(GameState.yuva, S)
-	var metin := "Kasa kirayı karşılamadı (₺%s açık). Banka dükkâna el koydu; oyun bitti." % GameState.tl(acik_tl)
-	Flow.pencere("İflas!", Tema.yazi(metin), [{"metin": "Ana menü", "tur": "ana", "fn": Flow.ana_menuye}], Flow.ana_menuye)
+	_ekrana_gec()
+	if sebep == "":
+		sebep = "Kasa kirayı karşılamadı (₺%s açık) ve banka kredi limiti (₺%s) dolu olduğu için yeni kredi vermedi." % [GameState.tl(acik_tl), GameState.tl(GameState.dukkan(S.shopLevel).loanLimit)]
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 12)
+	v.add_child(Tema.yazi(sebep + " Banka dükkâna el koydu; oyun bitti."))
+	var satilan := 0
+	for k in S.served:
+		satilan += int(S.served[k])
+	var dk := GameState.dukkan(S.shopLevel)
+	v.add_child(_tablo([["Dayandığın gün", str(S.day)], ["Satılan kahve", str(satilan)],
+		["Açılan tarif", "%d / %d" % [S.unlocked.size(), GameState.D.drinks.size()]], ["Dükkan", "%s %s" % ["★".repeat(int(dk.stars)), dk.name]]]))
+	Flow.pencere("İflas!", v, [{"metin": "Ana menü", "tur": "ana", "fn": Flow.ana_menuye}], Flow.ana_menuye)
