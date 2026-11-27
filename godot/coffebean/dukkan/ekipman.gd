@@ -6,8 +6,8 @@ extends "res://dukkan/ogretici.gd"
 const ADIM_ESLEME := {"grind": "wdt", "dose": "dose", "tamp": "tamp", "extract": "pull", "milk": "steam", "art": "pour"}
 ## İstasyonu ya da akışı Godot'a henüz gelmemiş ekipman listelenmez.
 const GIZLI_EKIPMAN := ["dualGroup", "tkMachine", "filterMachine"]
-## Aletler sekmesinde satılan aletlerin adımları (Godot'da istasyonu olanlar).
-const GODOT_ALET_ADIMI := ["milk", "cocoa", "pump", "cream"]
+## Aletler sekmesinde satılan aletler (Godot'da istasyonu olanlar).
+const GODOT_ALETLER := ["milkKit", "cocoa", "syrupPump", "creamSiphon", "cezve"]
 
 var adim_simdi := ""
 var dukkan_sekme := "upg"
@@ -291,7 +291,7 @@ func _aletler(v: VBoxContainer, yildiz: int, yenile: Callable, kip: String) -> v
 	var ic := _dukkan_bolum(v, "Aletler", "Bazı tarifler bu aletler olmadan yapılamaz. Dükkan büyüyünce yenisine taşınır.")
 	for id in _D().tools:
 		var a: Dictionary = _D().tools[id]
-		if int(a.get("stars", 1)) > yildiz or not a.step in GODOT_ALET_ADIMI:
+		if int(a.get("stars", 1)) > yildiz or not id in GODOT_ALETLER:
 			continue
 		var kullanan: Array = []
 		for d in _D().drinks:
