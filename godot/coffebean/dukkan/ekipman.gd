@@ -7,7 +7,7 @@ const ADIM_ESLEME := {"grind": "wdt", "dose": "dose", "tamp": "tamp", "extract":
 ## İstasyonu ya da akışı Godot'a henüz gelmemiş ekipman listelenmez.
 const GIZLI_EKIPMAN := ["dualGroup", "tkMachine", "filterMachine"]
 ## Aletler sekmesinde satılan aletlerin adımları (Godot'da istasyonu olanlar).
-const GODOT_ALET_ADIMI := ["milk", "cocoa"]
+const GODOT_ALET_ADIMI := ["milk", "cocoa", "pump", "cream"]
 
 var adim_simdi := ""
 var dukkan_sekme := "upg"

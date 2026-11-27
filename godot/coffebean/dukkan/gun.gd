@@ -11,7 +11,9 @@ const SAAT_POS := Vector3(-0.9, 2.5, -2.98)
 ## Godot'da yapılabilen tarifler (tasarım belgesi "Espresso ve süt ailesi: 17 tarif (Faz 3a)").
 const YAPILABILIR := {"espresso": "", "lungo": "", "ristretto": "", "americano": "", "longblack": "", "macchiato": "",
 	"cortado": "", "latte": "", "flatwhite": "", "piccolo": "", "melange": "", "cappuccino": "", "conleche": "",
-	"gibraltar": "", "magic": "", "galao": "", "breve": ""}
+	"gibraltar": "", "magic": "", "galao": "", "breve": "",
+	"conpanna": "", "romano": "", "vanillalatte": "", "mocha": "", "saltcaramel": "", "bombon": "", "marocchino": "",
+	"pumpkin": "", "gingerbread": "", "peppermint": "", "dirtychai": "", "einspanner": "", "bicerin": ""}
 ## Web bardak türü → birinci şahıs fincanı; fincanların adı.
 const FINCAN := {"espS": "tek", "espD": "double", "cupS": "cappuccino", "cupM": "latte", "cupL": "buyuk"}
 const FINCAN_AD := {"tek": "tek espresso", "double": "double espresso", "cappuccino": "küçük", "latte": "orta", "buyuk": "büyük"}
