@@ -184,7 +184,7 @@ func _musteri_getir() -> void:
 	cubuk.position = Vector3(0, 1.9, 0)
 	node.add_child(cubuk)
 	sira.append({"node": node, "tip": tip, "ad": ct.name, "siparis": siparis, "tarif": tarif, "boy": boy,
-		"metin": _siparis_cumlesi(tip, d), "sabir": sabir, "sabir_max": sabir, "durum": "giris", "cubuk": cubuk, "etiket": etiket})
+		"metin": _siparis_cumlesi(tip, d), "metin_ad": d, "sabir": sabir, "sabir_max": sabir, "durum": "giris", "cubuk": cubuk, "etiket": etiket})
 
 
 ## Web orderLine: genel + tipe özel cümleler, ilk harf büyük. "saniye" içeren cümle yalnız espresso ailesinde.
@@ -297,12 +297,24 @@ func prompt_flash(text: String) -> void:
 	flash = text
 
 
+func _saat() -> String:
+	var dakika := int(clampf(t / GUN_SN, 0.0, 1.0) * 12.0 * 60.0)
+	return "%02d:%02d" % [8 + dakika / 60, dakika % 60]
+
+
+func _sag_ust() -> String:
+	var gun: int = GameState.S.get("day", 1)
+	return "%s · Gün %d · %s" % [GameState.hafta_gunu(gun), gun, _saat()]
+
+
+func _gun_ozeti() -> String:
+	return "Hizmet edilen: %d · Kızıp giden: %d · Kapıdan dönen: %d" % [ist.hizmet, ist.kizgin, ist.donen]
+
+
 func _hud() -> void:
 	var S := GameState.S
-	var dakika := int(clampf(t / GUN_SN, 0.0, 1.0) * 12.0 * 60.0)
-	var saat := "%02d:%02d" % [8 + dakika / 60, dakika % 60]
-	var gun: int = S.get("day", 1)
-	var sag := "%s · Gün %d · %s" % [GameState.hafta_gunu(gun), gun, saat]
+	var saat := _saat()
+	var sag := _sag_ust()
 	if saat_hud.text != sag:
 		saat_hud.text = sag
 		saat_yazi.text = saat
@@ -332,7 +344,7 @@ func _gun_bitti() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	get_tree().paused = true
 	var S := GameState.S
-	var metin := "Hizmet edilen: %d · Kızıp giden: %d · Kapıdan dönen: %d" % [ist.hizmet, ist.kizgin, ist.donen]
+	var metin := _gun_ozeti()
 	Flow.pencere("%s, Gün %d bitti" % [GameState.hafta_gunu(S.day), S.day], Tema.yazi(metin), [
 		{"metin": "Ertesi gün", "tur": "ana", "fn": _ertesi_gun}], _ertesi_gun)
 
