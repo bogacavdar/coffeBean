@@ -161,12 +161,17 @@ func _musteri_getir() -> void:
 		siparis = "tek" if boy == "single" else "double"
 	var say: String = GameState.D.sizes[boy].say if tarif == "espresso" else ""
 	var d: String = ((say + " ") if say != "" else "") + String(Content.tarif(tarif).name).to_lower()
-	var node := make_avatar(_gorunus(tip))
+	_musteri_kur(tip, ct.name, _gorunus(tip), tarif, boy, siparis, _siparis_cumlesi(tip, d), d, sabir)
+
+
+## Müşteriyi kapıda kurar ve sıraya ekler (T11: Yıldız Teyze de bununla gelir).
+func _musteri_kur(tip: String, ad: String, model: String, tarif: String, boy: String, siparis: String, metin: String, metin_ad: String, sabir: float) -> Dictionary:
+	var node := make_avatar(model)
 	n_customer += 1
 	node.position = DOOR
 	add_child(node)
 	var etiket := Label3D.new()
-	etiket.text = ct.name
+	etiket.text = ad
 	etiket.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	etiket.font_size = 32
 	etiket.pixel_size = 0.0018
@@ -186,8 +191,10 @@ func _musteri_getir() -> void:
 	cubuk.material_override = cm
 	cubuk.position = Vector3(0, 1.9, 0)
 	node.add_child(cubuk)
-	sira.append({"node": node, "tip": tip, "ad": ct.name, "siparis": siparis, "tarif": tarif, "boy": boy,
-		"metin": _siparis_cumlesi(tip, d), "metin_ad": d, "sabir": sabir, "sabir_max": sabir, "durum": "giris", "cubuk": cubuk, "etiket": etiket})
+	var m := {"node": node, "tip": tip, "ad": ad, "siparis": siparis, "tarif": tarif, "boy": boy,
+		"metin": metin, "metin_ad": metin_ad, "sabir": sabir, "sabir_max": sabir, "durum": "giris", "cubuk": cubuk, "etiket": etiket}
+	sira.append(m)
+	return m
 
 
 ## Menüden tarif seçimi (T7: havaya göre ağırlıklı).

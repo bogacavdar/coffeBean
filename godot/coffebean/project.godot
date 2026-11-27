@@ -1,10 +1,10 @@
-; CoffeBean (Godot 4.7) — taşıma adımları T1–T10
+; CoffeBean (Godot 4.7) — taşıma adımları T1–T11
 config_version=5
 
 [application]
 
 config/name="CoffeBean"
-config/version="0.10"
+config/version="0.11"
 run/main_scene="res://ui/ana_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.png"

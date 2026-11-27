@@ -287,6 +287,8 @@ var akis: Dictionary = {}                  ## o an çalışan test: {id, kurulum
 ## [id, ad, başlangıç durumu ayarı (Dictionary), sahnede kurulum (Callable(sahne) ya da null)]
 func akis_listesi() -> Array:
 	var L: Array = [
+		["A1", "İlk gün baştan: Yıldız Teyze (espresso → kapanış)", {"_yeni": true}, null],
+		["A2", "İlk günün kapanışı (kira, defter, veda)", {"day": 1, "taught": ["intro", "first"]}, func(sc): sc.hile_gunu_bitir_hazir()],
 		["A3", "Gün sonu: kira günü → defter → gazete → tedarik → fiyatlar", {"day": 7, "rentPaidWeek": 0}, func(sc): sc.hile_gunu_bitir_hazir()],
 		["A11", "Hava: yağmurlu gün", {"day": 3}, func(sc): sc.hile_hava("rain")],
 		["A12", "Hava: sıcak gün", {"day": 3}, func(sc): sc.hile_hava("hot")],
@@ -328,8 +330,14 @@ func akis_testleri() -> void:
 
 func akis_baslat(a: Array) -> void:
 	var st := GameState.yeni_durum("normal")
+	if a[2].has("_yeni"):
+		akis = {"id": a[0], "kurulum": a[3]}
+		oyunu_baslat(st, 0)
+		return
 	st.firstSupply = false
-	st.taught = ["first"]
+	st.taught = ["intro", "first", "closing"]
+	for k in GameState.D.lessons:
+		st.taught.append("L:" + k)
 	for k in a[2]:
 		var deger = a[2][k]
 		if k == "cups":

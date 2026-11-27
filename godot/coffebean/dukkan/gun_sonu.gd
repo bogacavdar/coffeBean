@@ -185,6 +185,9 @@ func _hesap() -> void:
 	v.add_theme_constant_override("separation", 12)
 	v.add_child(_tablo(satirlar))
 	v.add_child(Tema.yazi("Bu haftanın kirası ödendi." if _kira_odendi(gun) else "Kiraya %d gün kaldı." % _kiraya(gun), 17, Tema.SOLUK))
+	var notu := _hesap_notu()
+	if notu != "":
+		v.add_child(Tema.yazi(notu, 17, Tema.KAHVE))
 	Flow.pencere("%s · %d. Hafta – gün kapanışı" % [GameState.hafta_gunu(gun), GameState.hafta_no(gun)], v, [
 		{"metin": "← Geri", "fn": _kira}, {"metin": "Devam", "tur": "ana", "fn": _ertesi_gun}], _ekrandan_cik, 620)
 
@@ -215,6 +218,11 @@ func _ertesi_gun() -> void:
 	var S := GameState.S
 	S.erase("endPending")
 	super._ertesi_gun()
+
+
+## Hesap ekranının altındaki not (T11: ilk kapanışta Yıldız Teyze).
+func _hesap_notu() -> String:
+	return ""
 
 
 # ---------- kredi kancaları (T8'de doldurulur) ----------

@@ -88,7 +88,7 @@ func serve() -> void:
 	var ct: Dictionary = GameState.D.customers[m.tip]
 	var D := GameState.D
 	_harca(m)
-	if yanlis or kalite < float(D.economy.refuseBelow):
+	if not _kabul(m, kalite, yanlis):
 		var satir: String
 		if yanlis:
 			var d: String = m.metin_ad
@@ -160,6 +160,11 @@ func serve() -> void:
 	flash = "%s · %s · ₺%s%s · %s" % [m.ad, ad, GameState.tl(tutar), (" + ₺%s bahşiş" % GameState.tl(bahsis)) if bahsis > 0 else "", mesaj]
 	prompt_tail()
 	_servis_sonrasi(m, tutar, bahsis, servis)
+
+
+## Müşteri kahveyi alır mı (T11: Yıldız Teyze her kahveyi alır).
+func _kabul(_m: Dictionary, kalite: float, yanlis: bool) -> bool:
+	return not yanlis and kalite >= float(GameState.D.economy.refuseBelow)
 
 
 ## Ücretli servisten sonra (T10: tarif ilerlemesi, görev, rütbe).

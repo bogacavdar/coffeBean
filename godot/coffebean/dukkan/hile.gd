@@ -1,4 +1,4 @@
-extends "res://dukkan/ilerleme.gd"
+extends "res://dukkan/ogretici.gd"
 ## Hile paneli ve akış testi kurulumu (tasarım belgesi §4 "Hile modu ve akış testi (taşıma adımı T9)"); web CHEATS, FLOWS.
 
 var hile_katman: CanvasLayer
@@ -148,6 +148,8 @@ func _process(delta: float) -> void:
 
 # ---------- hileler ----------
 func _gunu_bitir() -> void:
+	ogretici_aktif = false
+	teyze_servis = true
 	gelecek = 0
 	for m in sira:
 		m.node.queue_free()
