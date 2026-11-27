@@ -7,6 +7,9 @@ const KALITE := ["Düşük", "Orta", "Yüksek"]
 var fare := 1.0               ## fare hassasiyeti 0,5–2,0
 var tam_ekran := false
 var kalite := 2               ## 0 düşük, 1 orta, 2 yüksek
+var hile_acilmis := false     ## "cheat" bir kez yazıldı mı (Ayarlar'da anahtar görünür)
+var hile_acik := false        ## hile modu (T9)
+var akis_tamam: Array = []    ## tamamlanan akış testleri
 
 
 func _ready() -> void:
@@ -15,6 +18,9 @@ func _ready() -> void:
 		fare = clampf(c.get_value("oyun", "fare", 1.0), 0.5, 2.0)
 		tam_ekran = c.get_value("ekran", "tam_ekran", false)
 		kalite = clampi(c.get_value("ekran", "kalite", 2), 0, 2)
+		hile_acilmis = c.get_value("hile", "acilmis", false)
+		hile_acik = hile_acilmis and c.get_value("hile", "acik", false)
+		akis_tamam = c.get_value("hile", "akis_tamam", [])
 	pencere_uygula()
 
 
@@ -23,7 +29,17 @@ func kaydet() -> void:
 	c.set_value("oyun", "fare", fare)
 	c.set_value("ekran", "tam_ekran", tam_ekran)
 	c.set_value("ekran", "kalite", kalite)
+	c.set_value("hile", "acilmis", hile_acilmis)
+	c.set_value("hile", "acik", hile_acik)
+	c.set_value("hile", "akis_tamam", akis_tamam)
 	c.save(YOL)
+
+
+## "cheat" yazınca / sürüm yazısına 3 kez tıklayınca: açıksa kapatır, kapalıysa açar.
+func hile_degistir() -> void:
+	hile_acilmis = true
+	hile_acik = not hile_acik
+	kaydet()
 
 
 func pencere_uygula() -> void:

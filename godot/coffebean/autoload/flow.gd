@@ -48,6 +48,9 @@ func oyunu_baslat(durum: Dictionary, i: int) -> void:
 
 func ana_menuye() -> void:
 	SaveSystem.otomatik()
+	if GameState.yuva == 0:
+		SaveSystem.sil(0)
+		akis = {}
 	tumunu_kapat()
 	GameState.S = {}
 	GameState.yuva = 0
@@ -255,6 +258,18 @@ func ayarlar() -> void:
 		kd.append(b)
 		kh.add_child(b)
 	g.add_child(kh)
+	if Settings.hile_acilmis:
+		g.add_child(_etiket("Hile modu (test için)"))
+		var hm := CheckButton.new()
+		hm.button_pressed = Settings.hile_acik
+		hm.focus_mode = Control.FOCUS_NONE
+		hm.toggled.connect(func(on):
+			Settings.hile_acik = on
+			Settings.kaydet()
+			var sc := get_tree().current_scene
+			if sc and sc.has_method("yenile"):
+				sc.yenile())
+		g.add_child(hm)
 	pencere("Ayarlar", g, [{"metin": "Tamam", "tur": "ana", "fn": Settings.kaydet}], Settings.kaydet)
 
 
@@ -263,6 +278,78 @@ func _etiket(metin: String) -> Label:
 	l.autowrap_mode = TextServer.AUTOWRAP_OFF
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	return l
+
+
+# ---------- akış testi (T9; hile modunda ana menüde) ----------
+var akis: Dictionary = {}                  ## o an çalışan test: {id, kurulum: Callable}
+
+
+## [id, ad, başlangıç durumu ayarı (Dictionary), sahnede kurulum (Callable(sahne) ya da null)]
+func akis_listesi() -> Array:
+	var L: Array = [
+		["A3", "Gün sonu: kira günü → defter → gazete → tedarik → fiyatlar", {"day": 7, "rentPaidWeek": 0}, func(sc): sc.hile_gunu_bitir_hazir()],
+		["A11", "Hava: yağmurlu gün", {"day": 3}, func(sc): sc.hile_hava("rain")],
+		["A12", "Hava: sıcak gün", {"day": 3}, func(sc): sc.hile_hava("hot")],
+		["A13", "Hava: kalabalık cumartesi", {"day": 6}, null],
+		["A14", "Kredi vadesi doldu (iflas)", {"day": 9, "loans": [{"id": 1, "amount": 900, "owe": 990, "rem": 990, "day": 4, "due": 9}], "debt": 990, "loanSeq": 1}, func(sc): sc.hile_gunu_bitir_hazir()],
+		["A15", "Pahalı fiyat tepkisi (espresso ₺160)", {"day": 3, "priceTL": {"espresso": 160}}, null],
+		["A16", "Bardak bitince müşteri gider", {"day": 3, "cups": {"espS": 0, "espD": 0}}, null],
+	]
+	for n in 5:
+		L.append(["A%d" % (21 + n), "Dükkan seviyesi %s %s" % ["★".repeat(n + 1), GameState.dukkan(n).name], {"day": 3, "shopLevel": n}, null])
+	return L
+
+
+func akis_testleri() -> void:
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 6)
+	var L := akis_listesi()
+	var tamam := 0
+	for a in L:
+		if a[0] in Settings.akis_tamam:
+			tamam += 1
+	v.add_child(Tema.yazi("%d/%d tamam · her test ayrı bir deneme kaydında açılır; gerçek yuvaların değişmez." % [tamam, L.size()], 16, Tema.SOLUK))
+	var p := pencere("Akış testi", v, [
+		{"metin": "Listeyi sıfırla", "fn": func():
+			Settings.akis_tamam = []
+			Settings.kaydet()
+			akis_testleri()},
+		{"metin": "Kapat", "tur": "ana"}], null, 720)
+	for a in L:
+		var b := Tema.dugme(("✓ " if a[0] in Settings.akis_tamam else "") + "%s · %s" % [a[0], a[1]])
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.add_theme_font_size_override("font_size", 17)
+		var test: Array = a
+		b.pressed.connect(func():
+			kapat(p)
+			akis_baslat(test))
+		v.add_child(b)
+
+
+func akis_baslat(a: Array) -> void:
+	var st := GameState.yeni_durum("normal")
+	st.firstSupply = false
+	st.taught = ["first"]
+	for k in a[2]:
+		var deger = a[2][k]
+		if k == "cups":
+			for c in deger:
+				st.cups[c] = deger[c]
+		else:
+			st[k] = deger.duplicate(true) if deger is Dictionary or deger is Array else deger
+	akis = {"id": a[0], "kurulum": a[3]}
+	oyunu_baslat(st, 0)
+
+
+func akis_bitti() -> void:
+	if akis.is_empty():
+		return
+	if not akis.id in Settings.akis_tamam:
+		Settings.akis_tamam.append(akis.id)
+		Settings.kaydet()
+	akis = {}
+	ana_menuye()
+	akis_testleri()
 
 
 # ---------- oyun içi menü (Esc) ----------

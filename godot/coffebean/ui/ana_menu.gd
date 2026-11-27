@@ -5,6 +5,10 @@ var devam: Button
 var devam_bilgi: Label
 var yeni: Button
 var yukle: Button
+var akis_d: Button
+var surum: Label
+var tampon := ""
+var dokunuslar: Array = []
 
 
 func _ready() -> void:
@@ -57,6 +61,9 @@ func _ready() -> void:
 	yukle = Tema.dugme("Yükle", "", 320)
 	yukle.pressed.connect(func(): Flow.yuvalar("yukle", yenile))
 	v.add_child(yukle)
+	akis_d = Tema.dugme("Akış testi", "", 320)
+	akis_d.pressed.connect(Flow.akis_testleri)
+	v.add_child(akis_d)
 	var ayar := Tema.dugme("Ayarlar", "", 320)
 	ayar.pressed.connect(Flow.ayarlar)
 	v.add_child(ayar)
@@ -64,7 +71,7 @@ func _ready() -> void:
 	cik.pressed.connect(Flow.cikis)
 	v.add_child(cik)
 
-	var surum := Tema.yazi("Sürüm %s · %d tarif" % [ProjectSettings.get_setting("application/config/version"), Content.tarif_sayisi()], 15, Color(Tema.KREM, 0.6))
+	surum = Tema.yazi("Sürüm %s · %d tarif" % [ProjectSettings.get_setting("application/config/version"), Content.tarif_sayisi()], 15, Color(Tema.KREM, 0.6))
 	if not Content.sorunlar.is_empty():
 		surum.text += " · içerikte %d sorun" % Content.sorunlar.size()
 		surum.add_theme_color_override("font_color", Color("e0705f"))
@@ -73,7 +80,30 @@ func _ready() -> void:
 	surum.anchor_bottom = 1.0
 	surum.offset_left = 56
 	surum.offset_top = -44
+	surum.mouse_filter = Control.MOUSE_FILTER_STOP
+	surum.gui_input.connect(func(e: InputEvent):
+		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
+			var simdi := Time.get_ticks_msec()
+			dokunuslar = dokunuslar.filter(func(x): return simdi - x < 700)
+			dokunuslar.append(simdi)
+			if dokunuslar.size() >= 3:
+				dokunuslar = []
+				_hile())
 	kok.add_child(surum)
+	yenile()
+
+
+## Hile modu (T9): menüde "cheat" yazınca ya da sürüm yazısına 3 kez tıklayınca açılır / kapanır.
+func _unhandled_input(e: InputEvent) -> void:
+	if e is InputEventKey and e.pressed and not e.echo and e.unicode > 0 and Flow.yigin.is_empty():
+		tampon = (tampon + char(e.unicode).to_lower()).right(5)
+		if tampon == "cheat":
+			tampon = ""
+			_hile()
+
+
+func _hile() -> void:
+	Settings.hile_degistir()
 	yenile()
 
 
@@ -92,3 +122,9 @@ func yenile() -> void:
 	for k in ["font_color", "font_hover_color", "font_pressed_color"]:
 		yeni.add_theme_color_override(k, Tema.KAHVE if i > 0 else Tema.KREM)
 	yukle.disabled = not SaveSystem.herhangi()
+	akis_d.visible = Settings.hile_acik
+	surum.text = "Sürüm %s · %d tarif" % [ProjectSettings.get_setting("application/config/version"), Content.tarif_sayisi()]
+	if not Content.sorunlar.is_empty():
+		surum.text += " · içerikte %d sorun" % Content.sorunlar.size()
+	if Settings.hile_acik:
+		surum.text += " · hile açık"
