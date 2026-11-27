@@ -151,7 +151,10 @@ func _musteri_getir() -> void:
 			menu.append(id)
 	if menu.is_empty():
 		menu = ["espresso"]
-	var tarif: String = menu[rng.randi() % menu.size()]
+	var tarif: String = _tarif_sec(menu)
+	if _gelmez(tip, tarif):
+		ist.kizgin += 1
+		return
 	var boy: String = Content.tarif(tarif).sizes[rng.randi() % Content.tarif(tarif).sizes.size()]
 	var siparis: String = YAPILABILIR[tarif]
 	if siparis == "":
@@ -185,6 +188,16 @@ func _musteri_getir() -> void:
 	node.add_child(cubuk)
 	sira.append({"node": node, "tip": tip, "ad": ct.name, "siparis": siparis, "tarif": tarif, "boy": boy,
 		"metin": _siparis_cumlesi(tip, d), "metin_ad": d, "sabir": sabir, "sabir_max": sabir, "durum": "giris", "cubuk": cubuk, "etiket": etiket})
+
+
+## Menüden tarif seçimi (T7: havaya göre ağırlıklı).
+func _tarif_sec(menu: Array) -> String:
+	return menu[rng.randi() % menu.size()]
+
+
+## Müşteri hiç gelmez mi (T7: fiyata duyarlı tip pahalıysa).
+func _gelmez(_tip: String, _tarif: String) -> bool:
+	return false
 
 
 ## Müşteri bu tarifi isteyebilir mi (T6: aletleri var mı).

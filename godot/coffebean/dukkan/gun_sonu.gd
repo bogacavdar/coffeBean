@@ -163,6 +163,7 @@ func _hesap() -> void:
 	if st.perfect: satirlar.append(["Mükemmel servis", str(st.perfect)])
 	satirlar.append(["Vazgeçip giden", str(st.left)])
 	if st.bounced: satirlar.append(["Kapıdan dönen (sıra doluydu)", str(st.bounced)])
+	if st.get("pricey", 0): satirlar.append(["Pahalı bulup giden", str(st.pricey)])
 	if st.wrong: satirlar.append(["Yanlış sipariş (ödemeden giden)", str(st.wrong)])
 	if st.get("nocup", 0): satirlar.append(["Bardak olmadığı için giden", str(st.nocup)])
 	if st.get("nostock", 0): satirlar.append(["İstediği çekirdek/süt olmadığı için giden", str(st.nostock)])

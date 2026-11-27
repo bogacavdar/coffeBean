@@ -47,6 +47,13 @@ static func olustur() -> Theme:
 	t.set_color("font_color", "CheckButton", KAHVE)
 	t.set_color("font_hover_color", "CheckButton", KAHVE)
 	t.set_color("font_pressed_color", "CheckButton", KAHVE)
+	var giris := kutu(Color.WHITE, 8, 1, ANA)
+	giris.content_margin_left = 8
+	giris.content_margin_right = 8
+	t.set_stylebox("normal", "LineEdit", giris)
+	t.set_stylebox("focus", "LineEdit", kutu(Color.WHITE, 8, 2, ANA))
+	t.set_color("font_color", "LineEdit", KAHVE)
+	t.set_color("caret_color", "LineEdit", KAHVE)
 	_tema = t
 	return t
 

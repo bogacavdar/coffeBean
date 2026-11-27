@@ -180,8 +180,15 @@ func _siparis_al(m: Dictionary) -> void:
 		flash = "%s · %s · −3 itibar" % [m.ad, _bas_harf(hata)]
 		_cikar(m)
 		return
+	if not _siparis_onay(m):
+		return
 	S.cups[bardak] = maxi(0, int(S.cups.get(bardak, 0)) - 1)
 	super._siparis_al(m)
+
+
+## Stoktan sonra son kontrol (T7: fiyat tepkisi). false dönerse müşteri gitmiştir.
+func _siparis_onay(_m: Dictionary) -> bool:
+	return true
 
 
 # ---------- servis harcaması ----------
