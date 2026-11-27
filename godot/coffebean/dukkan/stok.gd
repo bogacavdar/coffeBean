@@ -450,6 +450,18 @@ func _tedarik(kip: String) -> void:
 		var fiyat_s := SP(sp.price)
 		os.append([sp.name, "stok %d %s" % [ozel_stok(k), sp.unit], fiyat_s, "%d %s al" % [int(sp.pack), sp.unit], func():
 			if _al(fiyat_s, func(): S.syr[k] = int(S.syr.get(k, 0)) + int(sp.pack)): yenile.call()])
+	if ozel_acik("coldbrew"):
+		var cb: Dictionary = _D().specials.coldbrew
+		var dem := int(S.get("cbBrewing", 0))
+		os.append([cb.name, "stok %d %s · gece boyunca demlenir, ertesi sabah hazır%s" % [ozel_stok("coldbrew"), cb.unit, (" · demleniyor: %d %s" % [dem, cb.unit]) if dem > 0 else ""], 0,
+			"Demle (0,2 kg Brezilya → %d %s)" % [int(cb.pack), cb.unit], func():
+				if cekirdek("brazil") < 0.2:
+					return
+				S.beans.brazil.kg = float(S.beans.brazil.kg) - 0.2
+				S.cbBrewing = int(S.get("cbBrewing", 0)) + int(cb.pack)
+				S.cbDay = int(S.day) - (1 if bitti else 0)
+				SaveSystem.yaz(GameState.yuva, S)
+				yenile.call()])
 	if not os.is_empty():
 		v.add_child(_bolum("Şuruplar, soslar ve özel malzemeler", "Stokta yoksa müşteri gider.", os, ""))
 

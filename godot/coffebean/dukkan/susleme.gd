@@ -154,6 +154,8 @@ func action_text(id: String) -> String:
 		if mat_fincan == null:
 			return "Önce fincanı süsleme minderine koy"
 		var bos := mat_tur == "cup"
+		if x.tur == "pump" and x.once and stage != "cup_taken":
+			bos = true                         # buz/süt konmuş bardağa da espressodan önce şurup pompalanır
 		if x.once != bos:
 			return ("Şurup boş fincana konur" if x.tur == "pump" else "Önce kahveyi hazırla")
 		if sus_durum.has(k):

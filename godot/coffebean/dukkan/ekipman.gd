@@ -7,7 +7,9 @@ const ADIM_ESLEME := {"grind": "wdt", "dose": "dose", "tamp": "tamp", "extract":
 ## İstasyonu ya da akışı Godot'a henüz gelmemiş ekipman listelenmez.
 const GIZLI_EKIPMAN := ["dualGroup", "tkMachine", "filterMachine"]
 ## Aletler sekmesinde satılan aletler (Godot'da istasyonu olanlar).
-const GODOT_ALETLER := ["milkKit", "cocoa", "syrupPump", "creamSiphon", "cezve", "kettle", "frenchPress", "v60", "aeropress", "mokaPot", "chemex", "kalita", "iceMachine", "shaker", "frother", "whisk"]
+const GODOT_ALETLER := ["milkKit", "cocoa", "syrupPump", "creamSiphon", "cezve", "kettle", "frenchPress", "v60", "aeropress", "mokaPot", "chemex", "kalita", "iceMachine", "shaker", "frother", "whisk",
+	"blender", "coldBrewJar", "nitroTap", "coldDripTower", "iceCreamFridge", "phin", "clothFilter", "indianFilter", "siphon",
+	"sandStove", "clayPot", "dallah"]
 
 var adim_simdi := ""
 var dukkan_sekme := "upg"

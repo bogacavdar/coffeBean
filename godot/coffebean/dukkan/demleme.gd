@@ -6,8 +6,9 @@ const DM_YER := Vector3(DM_X, 0.92, -2.56)
 const DM_CIHAZ := Vector3(DM_X, 0.92, -2.8)
 const DM_TORBA := Vector3(DM_X - 0.22, 0.92, -2.84)
 const DM_KETTLE := Vector3(DM_X + 0.21, 0.92, -2.84)
-const DM_ADIMLAR := ["fdose", "fpdose", "bloom", "pourover", "fpwater", "steepcup", "mokafill", "fpsteep", "apsteep", "mokaheat", "fpplunge", "appress", "stir"]
-const CIHAZLAR := ["frenchPress", "v60", "chemex", "kalita", "aeropress", "mokaPot"]
+const DM_ADIMLAR := ["fdose", "fpdose", "bloom", "pourover", "fpwater", "steepcup", "mokafill", "fpsteep", "apsteep", "mokaheat",
+	"fpplunge", "appress", "stir", "phin", "siphonheat", "cloth", "siphondrop"]
+const CIHAZLAR := ["frenchPress", "v60", "chemex", "kalita", "aeropress", "mokaPot", "phin", "clothFilter", "indianFilter", "siphon"]
 const DOZ := {"S": 15.0, "M": 20.0, "L": 25.0}
 
 var dm_fincan: Node3D
@@ -162,6 +163,28 @@ func _cihaz_kur(ad: String) -> void:
 			t.material_override = cam
 			cyl(dm_cihaz, Vector3(0, 0.17, 0), 0.03, 0.05, Color("1d1d1d"), 0.5).name = "Piston"
 			cyl(dm_cihaz, Vector3(0, 0.03, 0), 0.03, 0.04, Color("3b2414"), 0.9).name = "Kahve"
+		"phin":
+			var bardak := cyl(dm_cihaz, Vector3(0, 0.05, 0), 0.04, 0.1, Color.WHITE)
+			bardak.material_override = cam
+			cyl(dm_cihaz, Vector3(0, 0.13, 0), 0.04, 0.06, Color("c0c0c0"), 0.3, 0.85)
+			cyl(dm_cihaz, Vector3(0, 0.165, 0), 0.042, 0.01, Color("c0c0c0"), 0.3, 0.85)
+			cyl(dm_cihaz, Vector3(0, 0.03, 0), 0.036, 0.04, Color("3b2414"), 0.9).name = "Kahve"
+		"clothFilter":
+			_k(dm_cihaz, Vector3(0, 0.12, -0.05), Vector3(0.12, 0.24, 0.01), Color("5a3a22"), 0.7)
+			var bez := cyl(dm_cihaz, Vector3(0, 0.17, 0), 0.04, 0.09, Color("efe3c8"), 0.95)
+			(bez.mesh as CylinderMesh).bottom_radius = 0.012
+			cyl(dm_cihaz, Vector3(0, 0.03, 0), 0.04, 0.05, Color("3b2414"), 0.9).name = "Kahve"
+		"indianFilter":
+			cyl(dm_cihaz, Vector3(0, 0.06, 0), 0.045, 0.12, Color("c0c0c0"), 0.3, 0.85)
+			cyl(dm_cihaz, Vector3(0, 0.16, 0), 0.04, 0.08, Color("c0c0c0"), 0.3, 0.85)
+			cyl(dm_cihaz, Vector3(0, 0.205, 0), 0.042, 0.012, Color("c0c0c0"), 0.3, 0.85)
+		"siphon":
+			var top := sph(dm_cihaz, Vector3(0, 0.07, 0), 0.055, Color.WHITE)
+			top.material_override = cam
+			var ust2 := cyl(dm_cihaz, Vector3(0, 0.18, 0), 0.035, 0.12, Color.WHITE)
+			ust2.material_override = cam
+			cyl(dm_cihaz, Vector3(0, 0.012, 0), 0.03, 0.024, Color("4fa3ff"), 0.2).name = "Plaka"
+			cyl(dm_cihaz, Vector3(0, 0.06, 0), 0.04, 0.04, Color("3b2414"), 0.9).name = "Kahve"
 		"mokaPot":
 			cyl(dm_cihaz, Vector3(0, 0.01, 0), 0.07, 0.02, Color("2b2b2b"), 0.4, 0.5).name = "Plaka"
 			var alt := cyl(dm_cihaz, Vector3(0, 0.07, 0), 0.045, 0.1, Color("c0c0c0"), 0.3, 0.85)
@@ -184,6 +207,9 @@ func _dm_hedef(s: String) -> float:
 		"pourover", "fpwater": return maxf(dm_doz, doz) * 15.0
 		"steepcup": return 200.0
 		"mokafill": return 150.0
+		"cloth": return maxf(dm_doz, doz) * 12.0
+		"phin": return 240.0
+		"siphonheat": return 60.0
 		"fpsteep": return 240.0
 		"apsteep": return 90.0
 		"mokaheat": return 75.0
@@ -195,10 +221,10 @@ func _dm_hiz(s: String) -> float:
 		"fdose", "fpdose": return 5.0
 		"bloom": return 15.0
 		"mokafill": return 20.0
-		"pourover", "fpwater", "steepcup": return 40.0
-		"fpsteep", "apsteep": return 30.0
+		"pourover", "fpwater", "steepcup", "cloth": return 40.0
+		"fpsteep", "apsteep", "phin", "siphonheat": return 30.0
 		"mokaheat": return 20.0
-		"fpplunge", "appress": return 0.4
+		"fpplunge", "appress", "siphondrop": return 0.4
 	return 1.0
 
 
@@ -215,7 +241,7 @@ func action_text(id: String) -> String:
 		var s := _dm_simdi()
 		if id == "dm_yer":
 			if dm_fincan == null:
-				if held_kind == "cup":
+				if held_kind in ["cup", "cup_full"]:
 					for x in _eksik(true):
 						if x.tur == "pump":
 							return "Önce şurubu pompala (arka tezgâh)"
@@ -236,10 +262,14 @@ func action_text(id: String) -> String:
 				if s in ["pourover", "fpwater"]: return "E basılı: sıcak su dök"
 				if s == "steepcup": return "E basılı: fincana kaynar su"
 				if s == "mokafill": return "E basılı: mokaya su doldur"
+				if s == "cloth": return "E basılı: bezden süz"
 			"dm_cihaz":
 				if s in ["fpsteep", "apsteep"]: return "E: Demlemeyi başlat"
 				if s == "mokaheat": return "E: Mokayı ısıt"
 				if s in ["fpplunge", "appress"]: return "E basılı: pistonu bastır"
+				if s == "phin": return "E: Damlatmayı başlat"
+				if s == "siphonheat": return "E: Sifonu ısıt"
+				if s == "siphondrop": return "E basılı: sifonu indir"
 		return "Sıradaki: %s" % String(_D().minigames.get(s, {"name": s}).name) if s != "" else "Demleme bitti"
 	if demleme_once() and id == "machine" and stage == "locked":
 		if held_kind == "cup_full":
@@ -280,7 +310,7 @@ func interact(id: String) -> void:
 				_dm_bitir(100.0, "Karıştırıldı")
 		return
 	match s:
-		"fpsteep", "apsteep", "mokaheat":
+		"fpsteep", "apsteep", "mokaheat", "phin", "siphonheat":
 			dm_v = 0.0
 			mode = "dm_sure"
 			adim_simdi = s
@@ -320,7 +350,7 @@ func _process(delta: float) -> void:
 		"dm_tut":
 			if e:
 				dm_v += _dm_hiz(s) * delta
-				var birim := "g" if s in ["fdose", "fpdose"] else ("" if s in ["fpplunge", "appress"] else "ml")
+				var birim := "g" if s in ["fdose", "fpdose"] else ("" if s in ["fpplunge", "appress", "siphondrop"] else "ml")
 				if birim == "":
 					var p := dm_cihaz.get_node_or_null("Piston") if dm_cihaz else null
 					if p:
@@ -333,7 +363,7 @@ func _process(delta: float) -> void:
 					var toplam := dm_v + (dm_su if s in ["pourover", "fpwater"] else 0.0)
 					dm_yazi.text = "%.0f %s / %.0f" % [toplam, birim, _dm_hedef(s)]
 					hint.text = "E basılı · %.0f %s (hedef %.0f) · bırakınca biter" % [toplam, birim, _dm_hedef(s)]
-			elif dm_v > 0.02 and not s in ["fpplunge", "appress"]:
+			elif dm_v > 0.02 and not s in ["fpplunge", "appress", "siphondrop"]:
 				var f := dm_v
 				if s in ["fdose", "fpdose"]:
 					dm_doz = f

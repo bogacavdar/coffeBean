@@ -21,11 +21,15 @@ var olcek: Node3D
 var olcek_bolge: Array = []
 var olcek_igne: MeshInstance3D
 var cz_yazi: Label3D
+var cz_govde: MeshInstance3D
 
 
 func _ready() -> void:
 	super._ready()
-	if menu_modu or not GameState.S.tools.get("cezve", false):
+	if menu_modu:
+		return
+	var T: Dictionary = GameState.S.tools
+	if not (T.get("cezve", false) or T.get("sandStove", false) or T.get("clayPot", false) or T.get("dallah", false)):
 		return
 	slab(Vector3(CZ.x, 0.45, -2.75), Vector3(1.0, 0.9, 0.5), mat(Color("3a2416"), 0.6))
 	slab(Vector3(CZ.x, 0.91, -2.75), Vector3(1.04, 0.03, 0.54), mat(Color("e8e1d4"), 0.4))
@@ -54,6 +58,10 @@ func _ready() -> void:
 	add_child(cezve)
 	var govde := cyl(cezve, Vector3(0, 0.045, 0), 0.04, 0.09, Color("b8733a"), 0.3, 0.8)
 	(govde.mesh as CylinderMesh).bottom_radius = 0.05
+	cz_govde = govde
+	if T.get("sandStove", false):
+		var kum := _k(self, OCAK + Vector3(0, 0.03, 0), Vector3(0.26, 0.04, 0.24), Color("d9b77a"), 1.0)
+		kum.name = "Kum"
 	_k(cezve, Vector3(0.12, 0.08, 0), Vector3(0.16, 0.012, 0.018), Color("3a2416"), 0.6)
 	cz_kopuk_disk = cyl(cezve, Vector3(0, 0.03, 0), 0.036, 0.004, Color("5a3418"), 0.9)
 	cz_kopuk_disk.visible = false
@@ -145,6 +153,17 @@ func _cz_sifirla() -> void:
 	cz_kopuk = 0.0
 	cz_servis = 0
 	if cezve:
+		var ihtiyac: Array = _tarif().get("needs", []) if siparis_tarif != "" else []
+		var renk := Color("b8733a")
+		var olc := Vector3.ONE
+		if "clayPot" in ihtiyac:
+			renk = Color("8a4a2a")
+			olc = Vector3(1.4, 1.1, 1.4)
+		elif "dallah" in ihtiyac:
+			renk = Color("c9a24a")
+			olc = Vector3(1.1, 1.6, 1.1)
+		cz_govde.material_override = mat(renk, 0.3, 0.8 if not "clayPot" in ihtiyac else 0.0)
+		cz_govde.scale = olc
 		cezve.position = CEZVE_YER
 		cz_kopuk_disk.visible = false
 		alev.visible = false
@@ -238,7 +257,7 @@ func action_text(id: String) -> String:
 					return ("E: Servis: finjan, su, lokum (%d/3)" % cz_servis) if "tkserve" in st else "E: Fincana dök"
 				return "Önce kahveyi pişir" if cz_durum in ["bos", "dozlandi", "karisti"] else ""
 	if id == "customer" and cezve_siparis() and cstate == "wait":
-		return "E: Kahveyi ver" if held_kind == "tk_tepsi" else "Sipariş: %s · finjan" % siparis_adi
+		return "E: Kahveyi ver" if held_kind in ["tk_tepsi", "cup_full"] else "Sipariş: %s · %s" % [siparis_adi, size_name(order_size)]
 	return super.action_text(id)
 
 
@@ -292,7 +311,10 @@ func interact(id: String) -> void:
 				cz_durum = "tepsi"
 				cezve.position = CEZVE_YER
 				cz_kopuk_disk.visible = false
-				hold("tk_tepsi", "finjan")
+				if fp_fincan(siparis_boy) == "finjan":
+					hold("tk_tepsi", "finjan")
+				else:
+					hold("cup_full", order_size)
 				prompt_flash("Servis tepsisi hazır: müşteriye ver")
 
 
@@ -329,7 +351,7 @@ func _process(delta: float) -> void:
 				step_scores.append(sc)
 				mode = ""
 				hint.text = ""
-				cz_durum = "dozlandi"
+				cz_durum = "dozlandi" if "tkstir" in _tarif().steps else "karisti"
 				Ses.sfx("dose")
 				prompt_flash("%s: %s" % ["Kahve %.1f g" % cz_g if kahve else "Ezme %.1f kaşık" % cz_g, {100.0: "Mükemmel!", 88.0: "Güzel", 72.0: "İyi", 0.0: "Kaçtı"}[sc]])
 		"cz_ocak":
@@ -368,6 +390,6 @@ func serve() -> void:
 	var tut := held_kind
 	super.serve()
 	stage = st
-	if tut == "tk_tepsi":
+	if tut in ["tk_tepsi", "cup_full"]:
 		drop_held()
 	_cz_sifirla()
