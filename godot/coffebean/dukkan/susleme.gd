@@ -85,6 +85,11 @@ func sus_gerek() -> Array:
 	var ei := st.find("extract")
 	if ei < 0:
 		ei = st.find("milk")                  # espressosuz tarifte "önce" süte göre
+	if ei < 0:
+		for s in ["fdose", "fpdose", "steepcup", "mokafill"]:
+			if s in st:
+				ei = st.find(s)                   # demlemede "önce" ilk demleme adımına göre
+				break
 	var pompa_var := false
 	for u in d.get("uses", []):
 		if u[1] is String and u[1] == "pump":
