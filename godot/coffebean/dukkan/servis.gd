@@ -105,6 +105,14 @@ func serve() -> void:
 		_reddedildi(m)
 		return
 
+	_odeme(m, kalite)
+
+
+## Ücretli servis: fiyat, bahşiş, itibar, XP, yorum ve yüzen yazılar (T16: yardımcı barista da kullanır).
+func _odeme(m: Dictionary, kalite: float, yardimci := false) -> void:
+	var S := GameState.S
+	var ct: Dictionary = GameState.D.customers[m.tip]
+	var D := GameState.D
 	var p: float = clampf(m.sabir / m.sabir_max, 0.0, 1.0)
 	var hiz := 0.6 + 0.4 * clampf(p / 0.5, 0.0, 1.0)
 	var servis := roundi(kalite * hiz)
@@ -116,7 +124,8 @@ func serve() -> void:
 		bahsis = roundi(tutar * 0.25 * ((kalite - 70.0) / 30.0) * hiz * float(ct.tip) * float(_rutbe().tipMult) * _seri_carpani() * _bahsis_carpani(m))
 	var eksik := _kucuk_malzemeler(m)
 	bahsis = roundi(bahsis * float(D.extraTip[mini(2, eksik.size())]))
-	S.streak = int(S.get("streak", 0)) + 1 if servis >= 95 else 0
+	if not yardimci:
+		S.streak = int(S.get("streak", 0)) + 1 if servis >= 95 else 0
 	S.money = float(S.money) + tutar + bahsis
 	gunluk.gelir += tutar
 	gunluk.bahsis += bahsis
@@ -145,10 +154,12 @@ func serve() -> void:
 		if kalite >= float(r.min):
 			yorum = r
 			break
-	if eksik.is_empty():
-		show_bubble(yorum.lines[rng.randi() % yorum.lines.size()])
+	var soz: String = yorum.lines[rng.randi() % yorum.lines.size()] if eksik.is_empty() else D.extras[eksik[rng.randi() % eksik.size()]].miss
+	if yardimci:
+		_yuzen(m.node, "Yardımcı", Color("f6efe3"), 1.75)
 	else:
-		show_bubble(D.extras[eksik[rng.randi() % eksik.size()]].miss)
+		show_bubble(soz)
+	if not eksik.is_empty():
 		_yuzen(m.node, "az bahşiş", Color("e9c46a"), 1.4)
 	_yuzen(m.node, "+₺" + GameState.tl(tutar), Color("5f8a4b"), 0.0)
 	if bahsis > 0:
@@ -159,7 +170,8 @@ func serve() -> void:
 		_yuzen(m.node, "★", Color("c9962b"), 1.05)
 	var ad: String = _bas_harf(m.metin_ad)
 	flash = "%s · %s · ₺%s%s · %s" % [m.ad, ad, GameState.tl(tutar), (" + ₺%s bahşiş" % GameState.tl(bahsis)) if bahsis > 0 else "", mesaj]
-	prompt_tail()
+	if not yardimci:
+		prompt_tail()
 	_servis_sonrasi(m, tutar, bahsis, servis)
 
 

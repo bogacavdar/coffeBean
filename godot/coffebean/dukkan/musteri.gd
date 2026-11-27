@@ -159,7 +159,7 @@ func _servis_sonrasi(m: Dictionary, tutar: int, bahsis: int, servis: int) -> voi
 	var S := GameState.S
 	if m.tip == "influencer":
 		S.buzz = maxi(-2, int(S.get("buzz", 0)) + (3 if servis >= 95 else (-2 if servis < 70 else 0)))
-	if not _D().customers.get(m.tip, {}).get("special", false) and not m.get("ogretici", false):
+	if not _D().customers.get(m.tip, {}).get("special", false) and not m.get("ogretici", false) and not m.get("yardimci", false):
 		if not S.has("loyal"):
 			S.loyal = {}
 		var n := int(S.loyal.get(m.tip, 0))
