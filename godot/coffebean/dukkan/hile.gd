@@ -1,4 +1,4 @@
-extends "res://dukkan/sesler.gd"
+extends "res://dukkan/su.gd"
 ## Hile paneli ve akış testi kurulumu (tasarım belgesi §4 "Hile modu ve akış testi (taşıma adımı T9)"); web CHEATS, FLOWS.
 
 var hile_katman: CanvasLayer
@@ -237,8 +237,8 @@ func _hile_tarif_sec() -> void:
 				var boylar: Array = Content.tarif(tid).sizes
 				m.tarif = tid
 				m.boy = boylar[rng.randi() % boylar.size()]
-				m.siparis = YAPILABILIR[tid] if YAPILABILIR[tid] != "" else ("tek" if m.boy == "single" else "double")
-				var say: String = GameState.D.sizes[m.boy].say if tid == "espresso" else ""
+				m.siparis = fp_fincan(m.boy)
+				var say: String = GameState.D.sizes[m.boy].say
 				m.metin_ad = ((say + " ") if say != "" else "") + String(Content.tarif(tid).name).to_lower()
 				m.metin = _siparis_cumlesi(m.tip, m.metin_ad))
 		v.add_child(b)

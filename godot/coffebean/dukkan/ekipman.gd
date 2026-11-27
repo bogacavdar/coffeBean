@@ -53,6 +53,7 @@ func eq_tamam(id: String) -> bool:
 # ---------- etkiler ----------
 ## Godot adımının genişleme çarpanı (web widenMult): en yüksek kademe sayılır.
 func genislik(adim: String) -> float:
+	var taban := super.genislik(adim)
 	var m := 1.0
 	var kat: Array = _D().zones.get("widenLevels", [1.2, 1.35, 1.5])
 	for id in _D().equipment:
@@ -60,7 +61,7 @@ func genislik(adim: String) -> float:
 		var lv := eq_seviye(id)
 		if lv > 0 and e.has("widen") and ADIM_ESLEME.get(e.widen, "") == adim:
 			m = maxf(m, float(kat[mini(lv, 3) - 1]))
-	return m
+	return m * taban
 
 
 func ekipman_carpani() -> float:
@@ -109,7 +110,7 @@ func _oto(m: String) -> void:
 
 ## Süper otomatik: çekim hedef gramda kendisi durur.
 func _cekim_dur() -> bool:
-	if "pull" in oto_adimlar() and pull_g >= float(YIELD[held_size]):
+	if "pull" in oto_adimlar() and pull_g >= verim():
 		return true
 	return super._cekim_dur()
 
@@ -121,7 +122,7 @@ func start_steam() -> void:
 	if "steam" in oto_adimlar():
 		get_tree().create_timer(1.0).timeout.connect(func():
 			if mode == "steam":
-				foam = FOAM_TARGET[order_size]
+				foam = kopuk_hedefi()
 				milk_temp = MILK_TARGET
 				scream = 0.0
 				finish_steam())

@@ -121,7 +121,7 @@ func close_panel(score: float, label: String) -> void:
 	match m:
 		"dose": ipucu("dose_low" if dose_g < float(DOSE[held_size]) else "dose_high")
 		"tamp": ipucu("tamp_low")
-		"pull": ipucu("extract_low" if pull_g < float(YIELD[held_size]) else "extract_high")
+		"pull": ipucu("extract_low" if pull_g < verim() else "extract_high")
 
 
 func finish_steam() -> void:

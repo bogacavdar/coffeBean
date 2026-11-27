@@ -788,6 +788,11 @@ func drop_held() -> void:
 	held_kind = ""
 
 
+## Çekim hedefi gram (Faz 3a: doz × tarifin oranı).
+func verim() -> float:
+	return YIELD[held_size]
+
+
 ## Ekipmanın bir adımın eşiklerini genişletme çarpanı (T12 ekipman.gd doldurur).
 func genislik(_adim: String) -> float:
 	return 1.0
@@ -907,7 +912,7 @@ func pull_tick(delta: float) -> void:
 	if pull_t > PREINFUSE:
 		pull_g += rate * delta
 		stream.visible = true
-	var target: float = YIELD[held_size]
+	var target: float = verim()
 	var top := MACHINE.y + 0.25
 	var cup_top := CUP_POS.y + (0.07 if cup_size == "tek" else 0.095)
 	(stream.mesh as CylinderMesh).height = max(top - cup_top, 0.01)
@@ -959,7 +964,7 @@ func draw_panel() -> void:
 			panel.draw_circle(c, 110.0, Color(0.55, 0.56, 0.58, 0.9))
 			panel.draw_line(c, c + Vector2.from_angle(a) * 160.0, Color("2e2622"), 26.0)
 		"pull":
-			var target: float = YIELD[held_size]
+			var target: float = verim()
 			var x0 := -100.0
 			var w := 580.0
 			var vmax := target * 1.6

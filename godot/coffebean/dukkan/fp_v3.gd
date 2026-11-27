@@ -7,7 +7,7 @@ const ORDER_NAME := {"tek": "tek espresso", "double": "double espresso", "latte"
 const FOAM_TARGET := {"latte": 20.0, "cappuccino": 50.0}
 const MILK_SPOT := Vector3(-3.05, 0.94, -2.62)
 const WAND := Vector3(-2.73, 1.0, -1.04)
-const MORE_CUPS := {"latte": Vector3(-3.28, 1.0, -0.76), "cappuccino": Vector3(-3.05, 1.0, -0.76)}
+const MORE_CUPS := {"latte": Vector3(-3.28, 1.0, -0.76), "cappuccino": Vector3(-3.05, 1.0, -0.76), "buyuk": Vector3(-2.85, 1.0, -0.72)}
 const HEAT_RATE := 5.0          # °C/sn
 var BUHAR_K := 1.0              ## T12 buhar çubuğu yükseltmesi ısınma ve köpük hızını çarpar
 const MILK_TARGET := 62.5
@@ -50,6 +50,11 @@ func needs_milk() -> bool:
 	return order_size == "latte" or order_size == "cappuccino"
 
 
+## Köpük hedefi (Faz 3a: tarifin süt türü).
+func kopuk_hedefi() -> float:
+	return FOAM_TARGET.get(order_size, 20.0)
+
+
 func shot_size() -> String:
 	return "tek" if order_size == "tek" else "double"
 
@@ -64,6 +69,7 @@ func cup_dims(size: String) -> Vector2:
 		"tek": return Vector2(0.045, 0.06)
 		"latte": return Vector2(0.075, 0.1)
 		"cappuccino": return Vector2(0.066, 0.075)
+		"buyuk": return Vector2(0.084, 0.115)
 	return Vector2(0.06, 0.085)
 
 
@@ -127,7 +133,7 @@ func cup_only(parent: Node3D, size: String) -> Node3D:
 # ---------- sahneye eklenenler ----------
 func build_props() -> void:
 	super.build_props()
-	for s in ["latte", "cappuccino"]:
+	for s in MORE_CUPS:
 		var stack := Node3D.new()
 		stack.position = MORE_CUPS[s]
 		add_child(stack)
@@ -529,7 +535,7 @@ func lock_tick(delta: float) -> void:
 
 # ---------- çekim: tepsideki terazi + basınç ----------
 func set_tray_zones() -> void:
-	var target: float = YIELD[held_size]
+	var target: float = verim()
 	var rate: float = FLOW[held_size]
 	var vmax := target * 1.6
 	var w := 0.17
@@ -542,7 +548,7 @@ func set_tray_zones() -> void:
 
 func pull_tick(delta: float) -> void:
 	super.pull_tick(delta)
-	var target: float = YIELD[held_size]
+	var target: float = verim()
 	tray_label.text = "%.1f g   %.0f sn" % [pull_g, pull_t]
 	tray_needle.position.x = -0.085 + clamp(pull_g / (target * 1.6), 0.0, 1.0) * 0.17
 	var bar: float = clamp(pull_t / 3.0, 0.0, 1.0) * 9.0 if mode == "pull" else 0.0
@@ -697,7 +703,7 @@ func milk_tick(delta: float) -> void:
 
 func finish_steam() -> void:
 	steam.emitting = false
-	var target: float = FOAM_TARGET[order_size]
+	var target: float = kopuk_hedefi()
 	var fdev: float = abs(foam - target)
 	var foam_sc := 100.0 if fdev <= 4.0 else (88.0 if fdev <= 8.0 else (72.0 if fdev <= 12.0 else 0.0))
 	if scream > 0.6: foam_sc = min(foam_sc, 72.0)

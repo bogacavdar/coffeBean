@@ -8,8 +8,14 @@ const NORMAL_TIPLER := ["business", "student", "elder", "geek", "regular"]
 const TABELA_POS := Vector3(-0.66, 1.0, -0.72)
 const SAAT_POS := Vector3(-0.9, 2.5, -2.98)
 
-## Godot'da yapılabilen tarifler → denemedeki sipariş adı (fp_v3 ORDERS).
-const YAPILABILIR := {"espresso": "", "latte": "latte", "cappuccino": "cappuccino"}
+## Godot'da yapılabilen tarifler (tasarım belgesi "Espresso ve süt ailesi: 17 tarif (Faz 3a)").
+const YAPILABILIR := {"espresso": "", "lungo": "", "ristretto": "", "americano": "", "longblack": "", "macchiato": "",
+	"cortado": "", "latte": "", "flatwhite": "", "piccolo": "", "melange": "", "cappuccino": "", "conleche": "",
+	"gibraltar": "", "magic": "", "galao": "", "breve": ""}
+## Web bardak türü → birinci şahıs fincanı; fincanların adı.
+const FINCAN := {"espS": "tek", "espD": "double", "cupS": "cappuccino", "cupM": "latte", "cupL": "buyuk"}
+const FINCAN_AD := {"tek": "tek espresso", "double": "double espresso", "cappuccino": "küçük", "latte": "orta", "buyuk": "büyük"}
+const KOPUK := {"hot": 3.0, "micro": 20.0, "foam": 50.0, "dollop": 60.0}
 
 var acik := false                          ## dükkan açıldı mı (tabela)
 var t := 0.0                               ## gün saniyesi
@@ -25,6 +31,9 @@ var saat_yazi: Label3D
 var saat_hud: Label
 var flash := ""
 var son_info := ""
+var siparis_tarif := ""                    ## kasadaki siparişin tarifi ve boyu (Faz 3a)
+var siparis_boy := ""
+var siparis_adi := ""
 
 
 func _ready() -> void:
@@ -92,7 +101,7 @@ func spawn_customer() -> void:
 
 
 # ---------- etkileşim: tabela ----------
-func action_text(id: String) -> String:
+func _action_text_gun(id: String) -> String:
 	if id == "tabela":
 		return "" if acik else "E: Dükkânı aç"
 	if id == "customer" and cstate != "wait":
@@ -164,10 +173,8 @@ func _musteri_getir() -> void:
 		ist.kizgin += 1
 		return
 	var boy: String = ozel[1] if not ozel.is_empty() else Content.tarif(tarif).sizes[rng.randi() % Content.tarif(tarif).sizes.size()]
-	var siparis: String = YAPILABILIR[tarif]
-	if siparis == "":
-		siparis = "tek" if boy == "single" else "double"
-	var say: String = GameState.D.sizes[boy].say if tarif == "espresso" else ""
+	var siparis := fp_fincan(boy)
+	var say: String = GameState.D.sizes[boy].say
 	var d: String = ((say + " ") if say != "" else "") + String(Content.tarif(tarif).name).to_lower()
 	_musteri_kur(tip, _musteri_adi(tip), _gorunus(tip), tarif, boy, siparis, _siparis_cumlesi(tip, d), d, sabir)
 
@@ -228,6 +235,56 @@ func _musteri_kur(tip: String, ad: String, model: String, tarif: String, boy: St
 		"metin": metin, "metin_ad": metin_ad, "sabir": sabir, "sabir_max": sabir, "durum": "giris", "cubuk": cubuk, "etiket": etiket}
 	sira.append(m)
 	return m
+
+
+## Boyun birinci şahıs fincanı (FINCAN).
+func fp_fincan(boy: String) -> String:
+	return FINCAN.get(String(GameState.D.sizes.get(boy, {}).get("cup", "espD")), "double")
+
+
+func _tarif() -> Dictionary:
+	return Content.tarif(siparis_tarif) if siparis_tarif != "" else {}
+
+
+func needs_milk() -> bool:
+	if siparis_tarif == "":
+		return super.needs_milk()
+	return "milk" in _tarif().steps
+
+
+func shot_size() -> String:
+	if siparis_tarif == "":
+		return super.shot_size()
+	return "tek" if siparis_boy == "single" else "double"
+
+
+func size_name(s: String) -> String:
+	return FINCAN_AD.get(s, super.size_name(s))
+
+
+## Çekim hedefi = doz × oran (yoksa 2).
+func verim() -> float:
+	return float(DOSE[held_size]) * float(_tarif().get("ratio", 2.0))
+
+
+func kopuk_hedefi() -> float:
+	if siparis_tarif == "":
+		return super.kopuk_hedefi()
+	return float(KOPUK.get(String(_tarif().get("milk", "micro")), 20.0))
+
+
+## Ristretto: çekim pencereleri tarifin profiliyle daralır.
+func genislik(adim: String) -> float:
+	var k := super.genislik(adim)
+	if adim == "pull":
+		k *= float(_tarif().get("profile", {}).get("extractZone", 1.0))
+	return k
+
+
+func action_text(id: String) -> String:
+	if id == "customer" and cstate == "wait" and stage != "cup_taken" and siparis_adi != "":
+		return "Sipariş: %s · %s fincan" % [siparis_adi, FINCAN_AD.get(order_size, order_size)]
+	return _action_text_gun(id)
 
 
 ## Menüden tarif seçimi (T7: havaya göre ağırlıklı).
@@ -317,6 +374,9 @@ func _siparis_al(m: Dictionary) -> void:
 	var govde := collider(Vector3(0, 1.0, 0), Vector3(0.6, 1.9, 0.5), "customer")
 	govde.reparent(m.node, false)
 	order_size = m.siparis
+	siparis_tarif = m.tarif
+	siparis_boy = m.boy
+	siparis_adi = m.metin_ad
 	milk_state = "none"
 	cstate = "wait"
 	show_bubble(m.metin)
@@ -426,7 +486,7 @@ func _hud() -> void:
 		var dk := GameState.dukkan(S.shopLevel)
 		durum = "Sıra %d/%d · " % [_bekleyen(), int(dk.maxQueue)]
 		if cstate == "wait":
-			durum += "Sipariş: %s" % size_name(order_size)
+			durum += "Sipariş: %s · %s fincan" % [siparis_adi, FINCAN_AD.get(order_size, order_size)]
 		elif not sira.is_empty():
 			durum += "Müşteri kasaya geliyor"
 		else:
