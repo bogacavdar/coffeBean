@@ -151,7 +151,7 @@ func _musteri_getir() -> void:
 	var tip: String = NORMAL_TIPLER[rng.randi() % NORMAL_TIPLER.size()]
 	var ct: Dictionary = GameState.D.customers[tip]
 	var dz: Dictionary = GameState.D.difficulty.get(GameState.S.get("diff", "normal"), GameState.D.difficulty.normal)
-	var sabir := float(ct.patience) * float(dz.patience) * FP_SABIR
+	var sabir := float(ct.patience) * float(dz.patience) * FP_SABIR * _sabir_carpani()
 	var menu: Array = []
 	for id in GameState.S.get("unlocked", ["espresso"]):
 		if YAPILABILIR.has(id) and _istenebilir(id):
@@ -169,6 +169,11 @@ func _musteri_getir() -> void:
 	var say: String = GameState.D.sizes[boy].say if tarif == "espresso" else ""
 	var d: String = ((say + " ") if say != "" else "") + String(Content.tarif(tarif).name).to_lower()
 	_musteri_kur(tip, ct.name, _gorunus(tip), tarif, boy, siparis, _siparis_cumlesi(tip, d), d, sabir)
+
+
+## Yeni gelen müşterinin sabır çarpanı (T14: dekor).
+func _sabir_carpani() -> float:
+	return 1.0
 
 
 ## Müşteriyi kapıda kurar ve sıraya ekler (T11: Yıldız Teyze de bununla gelir).

@@ -152,7 +152,7 @@ func _dukkan(kip: String) -> void:
 	_dukkan_ust(v, yenile)
 	var sekmeler := HBoxContainer.new()
 	sekmeler.add_theme_constant_override("separation", 8)
-	for s in [["upg", "Geliştirmeler"], ["tools", "Aletler"]]:
+	for s in _sekmeler():
 		var b := Tema.dugme(s[1], "ana" if dukkan_sekme == s[0] else "")
 		var sk: String = s[0]
 		b.pressed.connect(func():
@@ -161,10 +161,7 @@ func _dukkan(kip: String) -> void:
 			yenile.call())
 		sekmeler.add_child(b)
 	v.add_child(sekmeler)
-	if dukkan_sekme == "upg":
-		_gelistirmeler(v, int(dk.stars), yenile)
-	else:
-		_aletler(v, int(dk.stars), yenile, kip)
+	_sekme_icerik(v, dukkan_sekme, int(dk.stars), yenile, kip)
 	var dugmeler: Array = []
 	if kip == "gunsonu":
 		dugmeler.append({"metin": "← Geri", "fn": func(): _tedarik("gunsonu")})
@@ -174,6 +171,18 @@ func _dukkan(kip: String) -> void:
 	Flow.pencere("Dükkan · %s %s" % ["★".repeat(int(dk.stars)), dk.name], kaydir, dugmeler, _ekrandan_cik, 820)
 	kaydir.set_deferred("scroll_vertical", dukkan_kaydir)
 	dukkan_kaydir = 0
+
+
+## Dükkan sekmeleri (T14: Dekor eklenir).
+func _sekmeler() -> Array:
+	return [["upg", "Geliştirmeler"], ["tools", "Aletler"]]
+
+
+func _sekme_icerik(v: VBoxContainer, sekme: String, yildiz: int, yenile: Callable, kip: String) -> void:
+	if sekme == "tools":
+		_aletler(v, yildiz, yenile, kip)
+	else:
+		_gelistirmeler(v, yildiz, yenile)
 
 
 ## Dükkan penceresinin üstüne ek (T13: Ana hedef).

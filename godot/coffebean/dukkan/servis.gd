@@ -112,7 +112,7 @@ func serve() -> void:
 		tutar = roundi(tutar * float(ct.discount))
 	var bahsis := 0
 	if kalite >= 80:
-		bahsis = roundi(tutar * 0.25 * ((kalite - 70.0) / 30.0) * hiz * float(ct.tip) * float(_rutbe().tipMult) * _seri_carpani())
+		bahsis = roundi(tutar * 0.25 * ((kalite - 70.0) / 30.0) * hiz * float(ct.tip) * float(_rutbe().tipMult) * _seri_carpani() * _bahsis_carpani())
 	var eksik := _kucuk_malzemeler(m)
 	bahsis = roundi(bahsis * float(D.extraTip[mini(2, eksik.size())]))
 	S.streak = int(S.get("streak", 0)) + 1 if servis >= 95 else 0
@@ -159,6 +159,11 @@ func serve() -> void:
 	flash = "%s · %s · ₺%s%s · %s" % [m.ad, ad, GameState.tl(tutar), (" + ₺%s bahşiş" % GameState.tl(bahsis)) if bahsis > 0 else "", mesaj]
 	prompt_tail()
 	_servis_sonrasi(m, tutar, bahsis, servis)
+
+
+## Bahşiş çarpanı (T14: dekor).
+func _bahsis_carpani() -> float:
+	return 1.0
 
 
 ## Müşteri kahveyi alır mı (T11: Yıldız Teyze her kahveyi alır).

@@ -42,11 +42,7 @@ func build_room() -> void:
 			ph("wooden_stool_01_2k", Vector3(x, 0, -2.55))
 		ph("potted_plant_02_1k", Vector3(-3.7, 0, -0.2), 0.0, 1.0)
 	if lv >= 3:
-		ph("modern_arm_chair_01_1k", Vector3(2.75, 0, 3.5), 180.0)
 		ph("hanging_picture_frame_02_1k", Vector3(-4.08, 1.6, -0.6), 90.0)
-	if lv >= 4:
-		ph("Sofa_01_1k", Vector3(0.6, 0, 3.9), 180.0)
-		ph("potted_plant_01_1k", Vector3(3.8, 0, 3.9), 0.0, 1.0)
 
 
 # ---------- Dükkan penceresi: Ana hedef + müşteri gelişi ----------
