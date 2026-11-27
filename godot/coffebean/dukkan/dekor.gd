@@ -43,12 +43,12 @@ func dekor_carpani(anahtar: String) -> float:
 	return m
 
 
-func _sabir_carpani() -> float:
-	return super._sabir_carpani() * dekor_carpani("patience")
+func _sabir_carpani(tip: String) -> float:
+	return super._sabir_carpani(tip) * dekor_carpani("patience")
 
 
-func _bahsis_carpani() -> float:
-	return super._bahsis_carpani() * dekor_carpani("tip")
+func _bahsis_carpani(m: Dictionary) -> float:
+	return super._bahsis_carpani(m) * dekor_carpani("tip")
 
 
 # ---------- gün sonu itibarı ----------

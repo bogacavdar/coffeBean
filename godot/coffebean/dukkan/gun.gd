@@ -131,7 +131,7 @@ func _process(delta: float) -> void:
 			else:
 				_musteri_getir()
 			gelecek -= 1
-			sonraki += aralik * rng.randf_range(0.6, 1.4)
+			sonraki += aralik * rng.randf_range(0.6, 1.4) * _aralik_carpani()
 		_sabir(delta)
 		if gelecek == 0 and sira.is_empty() and cikanlar.is_empty():
 			_gun_bitti()
@@ -148,31 +148,52 @@ func _bekleyen() -> int:
 
 
 func _musteri_getir() -> void:
-	var tip: String = NORMAL_TIPLER[rng.randi() % NORMAL_TIPLER.size()]
+	var tip := _tip_sec()
 	var ct: Dictionary = GameState.D.customers[tip]
 	var dz: Dictionary = GameState.D.difficulty.get(GameState.S.get("diff", "normal"), GameState.D.difficulty.normal)
-	var sabir := float(ct.patience) * float(dz.patience) * FP_SABIR * _sabir_carpani()
+	var sabir := float(ct.patience) * float(dz.patience) * FP_SABIR * _sabir_carpani(tip)
 	var menu: Array = []
 	for id in GameState.S.get("unlocked", ["espresso"]):
 		if YAPILABILIR.has(id) and _istenebilir(id):
 			menu.append(id)
 	if menu.is_empty():
 		menu = ["espresso"]
-	var tarif: String = _tarif_sec(menu)
-	if _gelmez(tip, tarif):
+	var ozel := _ozel_siparis(tip)
+	var tarif: String = ozel[0] if not ozel.is_empty() else _tarif_sec(menu)
+	if ozel.is_empty() and _gelmez(tip, tarif):
 		ist.kizgin += 1
 		return
-	var boy: String = Content.tarif(tarif).sizes[rng.randi() % Content.tarif(tarif).sizes.size()]
+	var boy: String = ozel[1] if not ozel.is_empty() else Content.tarif(tarif).sizes[rng.randi() % Content.tarif(tarif).sizes.size()]
 	var siparis: String = YAPILABILIR[tarif]
 	if siparis == "":
 		siparis = "tek" if boy == "single" else "double"
 	var say: String = GameState.D.sizes[boy].say if tarif == "espresso" else ""
 	var d: String = ((say + " ") if say != "" else "") + String(Content.tarif(tarif).name).to_lower()
-	_musteri_kur(tip, ct.name, _gorunus(tip), tarif, boy, siparis, _siparis_cumlesi(tip, d), d, sabir)
+	_musteri_kur(tip, _musteri_adi(tip), _gorunus(tip), tarif, boy, siparis, _siparis_cumlesi(tip, d), d, sabir)
 
 
-## Yeni gelen müşterinin sabır çarpanı (T14: dekor).
-func _sabir_carpani() -> float:
+## Yeni gelen müşterinin sabır çarpanı (T14: dekor, T15: sadakat).
+func _sabir_carpani(_tip: String) -> float:
+	return 1.0
+
+
+## Gelen müşterinin tipi (T15: özel müşteri, jüri).
+func _tip_sec() -> String:
+	return NORMAL_TIPLER[rng.randi() % NORMAL_TIPLER.size()]
+
+
+## Tipe bağlı sabit sipariş [tarif, boy] (T15: jüri); boşsa menüden seçilir.
+func _ozel_siparis(_tip: String) -> Array:
+	return []
+
+
+## Müşterinin başındaki ad (T15: sadık tipte ♥).
+func _musteri_adi(tip: String) -> String:
+	return GameState.D.customers[tip].name
+
+
+## Geliş aralığı çarpanı (T15: yoğun saatte ÷ 3).
+func _aralik_carpani() -> float:
 	return 1.0
 
 
@@ -251,7 +272,7 @@ func _gorunus(tip: String) -> String:
 func _siparis_cumlesi(tip: String, d: String) -> String:
 	var L: Dictionary = GameState.D.orderLines
 	var own: Array = L.get(tip, [])
-	var havuz: Array = L.any + own + own
+	var havuz: Array = own if GameState.D.customers.get(tip, {}).get("special", false) and not own.is_empty() else L.any + own + own
 	var t2: String = havuz[rng.randi() % havuz.size()]
 	t2 = t2.replace("{d}", d)
 	return t2.substr(0, 1).to_upper() + t2.substr(1)
@@ -320,7 +341,7 @@ func _sabir(delta: float) -> void:
 
 
 ## Sabrı biten müşteri (T10: "Hiç müşteri kaçırma" görevini bozar).
-func _musteri_kacti() -> void:
+func _musteri_kacti(_m: Dictionary) -> void:
 	pass
 
 
@@ -328,7 +349,7 @@ func _kizip_git(m: Dictionary) -> void:
 	var siparisli: bool = m.durum == "siparis"
 	sira.erase(m)
 	ist.kizgin += 1
-	_musteri_kacti()
+	_musteri_kacti(m)
 	var S := GameState.S
 	S.rep = maxi(0, int(S.get("rep", 0)) - 5)
 	S.streak = 0

@@ -202,8 +202,8 @@ func _gorev_bitti() -> void:
 	flash = "Görev tamam · +₺%s, +%d XP" % [GameState.tl(gorev.money), int(gorev.xp)]
 
 
-func _musteri_kacti() -> void:
-	super._musteri_kacti()
+func _musteri_kacti(m: Dictionary) -> void:
+	super._musteri_kacti(m)
 	if not gorev.is_empty() and gorev.kind == "noLeave" and not gorev.done:
 		gorev.failed = true
 

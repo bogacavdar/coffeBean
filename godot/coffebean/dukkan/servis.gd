@@ -102,6 +102,7 @@ func serve() -> void:
 		_yuzen(m.node, "−3", Color("b5533c"), 0.0)
 		flash = "%s · %s · almadan gitti · −3 itibar" % [m.ad, "yanlış sipariş" if yanlis else "kalite %d" % int(kalite)]
 		prompt_tail()
+		_reddedildi(m)
 		return
 
 	var p: float = clampf(m.sabir / m.sabir_max, 0.0, 1.0)
@@ -112,7 +113,7 @@ func serve() -> void:
 		tutar = roundi(tutar * float(ct.discount))
 	var bahsis := 0
 	if kalite >= 80:
-		bahsis = roundi(tutar * 0.25 * ((kalite - 70.0) / 30.0) * hiz * float(ct.tip) * float(_rutbe().tipMult) * _seri_carpani() * _bahsis_carpani())
+		bahsis = roundi(tutar * 0.25 * ((kalite - 70.0) / 30.0) * hiz * float(ct.tip) * float(_rutbe().tipMult) * _seri_carpani() * _bahsis_carpani(m))
 	var eksik := _kucuk_malzemeler(m)
 	bahsis = roundi(bahsis * float(D.extraTip[mini(2, eksik.size())]))
 	S.streak = int(S.get("streak", 0)) + 1 if servis >= 95 else 0
@@ -136,6 +137,7 @@ func serve() -> void:
 	else:
 		rep = -3
 		mesaj = "Şikâyet"
+	rep = _itibar(m, servis, rep)
 	S.rep = maxi(0, int(S.rep) + rep)
 	S.xp = int(S.xp) + 5 + roundi(servis / 4.0)
 	var yorum: Dictionary = D.reviews[D.reviews.size() - 1]
@@ -161,9 +163,19 @@ func serve() -> void:
 	_servis_sonrasi(m, tutar, bahsis, servis)
 
 
-## Bahşiş çarpanı (T14: dekor).
-func _bahsis_carpani() -> float:
+## Bahşiş çarpanı (T14: dekor, T15: sadakat, yoğun saat).
+func _bahsis_carpani(_m: Dictionary) -> float:
 	return 1.0
+
+
+## Servisin itibar etkisi (T15: eleştirmen).
+func _itibar(_m: Dictionary, _servis: int, rep: int) -> int:
+	return rep
+
+
+## Müşteri kahveyi almadan gitti (T15: jüri puanı 0).
+func _reddedildi(_m: Dictionary) -> void:
+	pass
 
 
 ## Müşteri kahveyi alır mı (T11: Yıldız Teyze her kahveyi alır).

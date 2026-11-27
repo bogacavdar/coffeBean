@@ -1,4 +1,4 @@
-extends "res://dukkan/dekor.gd"
+extends "res://dukkan/musteri.gd"
 ## Hile paneli ve akış testi kurulumu (tasarım belgesi §4 "Hile modu ve akış testi (taşıma adımı T9)"); web CHEATS, FLOWS.
 
 var hile_katman: CanvasLayer
@@ -36,6 +36,30 @@ func _fiyatlardan_sonra() -> void:
 		Flow.akis_bitti()
 		return
 	super._fiyatlardan_sonra()
+
+
+## Akış testleri A6–A8, A10, A13 servisle, A9 madalya penceresiyle biter.
+func _servis_sonrasi(m: Dictionary, tutar: int, bahsis: int, servis: int) -> void:
+	super._servis_sonrasi(m, tutar, bahsis, servis)
+	if Flow.akis.is_empty():
+		return
+	var hedef := {"A6": "critic", "A7": "tourist", "A8": "influencer", "A13": "regular"}
+	if hedef.get(Flow.akis.id, "") == m.tip or (Flow.akis.id == "A10" and yogun_saat()):
+		_akis_sonra_bitir()
+
+
+func _juri_bitti() -> void:
+	super._juri_bitti()
+	if not Flow.akis.is_empty() and Flow.akis.id == "A9":
+		_akis_sonra_bitir()
+
+
+func _akis_sonra_bitir() -> void:
+	get_tree().create_timer(2.0).timeout.connect(func():
+		if Flow.akis.is_empty():
+			return
+		Flow.tumunu_kapat()
+		Flow.akis_bitti())
 
 
 func _iflas(acik_tl: int, sebep := "") -> void:
