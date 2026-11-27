@@ -788,6 +788,16 @@ func drop_held() -> void:
 	held_kind = ""
 
 
+## Ekipmanın bir adımın eşiklerini genişletme çarpanı (T12 ekipman.gd doldurur).
+func genislik(_adim: String) -> float:
+	return 1.0
+
+
+## Çekim durdurulsun mu (T12: süper otomatik hedefte kendisi durdurur).
+func _cekim_dur() -> bool:
+	return Input.is_action_just_pressed("interact")
+
+
 func open_panel(m: String, title: String) -> void:
 	mode = m
 	panel.visible = true
@@ -816,7 +826,8 @@ func dose_tick(delta: float) -> void:
 
 func finish_dose() -> void:
 	var dev: float = abs(dose_g - DOSE[held_size])
-	var sc: float = 100.0 if dev <= 0.2 else (88.0 if dev <= 0.5 else (72.0 if dev <= 1.0 else 0.0))
+	var k := genislik("dose")
+	var sc: float = 100.0 if dev <= 0.2 * k else (88.0 if dev <= 0.5 * k else (72.0 if dev <= 1.0 * k else 0.0))
 	scale_pf.queue_free()
 	hold("pf_dosed", held_size)
 	stage = "to_station"
@@ -844,7 +855,8 @@ func finish_wdt() -> void:
 	for v in wdt_cells:
 		if v < 0.12: even += 1
 	var pct: float = float(even) / wdt_cells.size()
-	var sc: float = 100.0 if pct >= 0.95 else (88.0 if pct >= 0.85 else (72.0 if pct >= 0.7 else 0.0))
+	var k := genislik("wdt")
+	var sc: float = 100.0 if pct >= 1.0 - 0.05 * k else (88.0 if pct >= 1.0 - 0.15 * k else (72.0 if pct >= 1.0 - 0.3 * k else 0.0))
 	stage = "wdt_done"
 	close_panel(sc, "Dağıtma %%%d" % int(pct * 100))
 
@@ -904,7 +916,7 @@ func pull_tick(delta: float) -> void:
 	var col: Color = COFFEE.lerp(Color("a8743f"), clamp((f - 0.55) * 2.0, 0.0, 1.0)).lerp(Color("d9b36a"), clamp((f - 1.0) * 4.0, 0.0, 1.0))
 	(stream.material_override as StandardMaterial3D).albedo_color = col
 	panel_text.text = "Terazi %.1f g  ·  %.0f sn   (hedef %.0f g, ~23 sn)\nKahvenin rengi açılınca hedefe yaklaşıyorsun · E: Durdur" % [pull_g, pull_t, target]
-	if Input.is_action_just_pressed("interact") or pull_g >= target * 1.6:
+	if _cekim_dur() or pull_g >= target * 1.6:
 		stream.visible = false
 		var secs: float = abs(pull_g - target) / rate
 		var sc: float = 100.0 if secs <= WIN_DARK else (88.0 if secs <= WIN_LIGHT else (72.0 if secs <= WIN_YELLOW else 0.0))

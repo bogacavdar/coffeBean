@@ -9,6 +9,7 @@ const MILK_SPOT := Vector3(-3.05, 0.94, -2.62)
 const WAND := Vector3(-2.73, 1.0, -1.04)
 const MORE_CUPS := {"latte": Vector3(-3.28, 1.0, -0.76), "cappuccino": Vector3(-3.05, 1.0, -0.76)}
 const HEAT_RATE := 5.0          # °C/sn
+var BUHAR_K := 1.0              ## T12 buhar çubuğu yükseltmesi ısınma ve köpük hızını çarpar
 const MILK_TARGET := 62.5
 
 var hand_r: Node3D
@@ -657,9 +658,9 @@ func _input(event: InputEvent) -> void:
 
 func milk_tick(delta: float) -> void:
 	if mode == "steam":
-		milk_temp += HEAT_RATE * delta
+		milk_temp += HEAT_RATE * BUHAR_K * delta
 		if tip_depth >= 0.0 and tip_depth <= 8.0 and milk_temp < 40.0:
-			foam += 6.0 * delta
+			foam += 6.0 * BUHAR_K * delta
 			tip_depth += 6.0 * delta * 0.45   # köpük yükseldikçe yüzey yükselir, uç derinleşir
 		elif tip_depth < 0.0:
 			scream += delta
@@ -700,7 +701,7 @@ func finish_steam() -> void:
 	var fdev: float = abs(foam - target)
 	var foam_sc := 100.0 if fdev <= 4.0 else (88.0 if fdev <= 8.0 else (72.0 if fdev <= 12.0 else 0.0))
 	if scream > 0.6: foam_sc = min(foam_sc, 72.0)
-	var secs: float = abs(milk_temp - MILK_TARGET) / HEAT_RATE
+	var secs: float = abs(milk_temp - MILK_TARGET) / (HEAT_RATE * BUHAR_K)
 	var temp_sc := 100.0 if secs <= WIN_DARK else (88.0 if secs <= WIN_LIGHT else (72.0 if secs <= WIN_YELLOW else 0.0))
 	if milk_temp > 70.0: temp_sc = 0.0
 	step_scores.append(foam_sc)
@@ -724,7 +725,8 @@ func finish_pour() -> void:
 	stream.visible = false
 	(stream.mesh as CylinderMesh).top_radius = 0.006
 	(stream.mesh as CylinderMesh).bottom_radius = 0.006
-	var sc := 100.0 if pour_fill >= 0.9 and pour_fill <= 1.0 else (88.0 if pour_fill >= 0.8 and pour_fill <= 1.05 else 72.0)
+	var k := genislik("pour")
+	var sc := 100.0 if absf(pour_fill - 0.95) <= 0.05 * k else (88.0 if absf(pour_fill - 0.925) <= 0.125 * k else 72.0)
 	step_scores.append(sc)
 	drop_held()
 	milk_pitcher_home.visible = true

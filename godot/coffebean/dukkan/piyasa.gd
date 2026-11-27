@@ -185,6 +185,11 @@ func _yeni_gun() -> void:
 	_fiyatlar("gunsonu")
 
 
+## Fiyatlar'ın "← Geri"si (T12: Dükkan'a döner).
+func _fiyat_geri() -> void:
+	_tedarik("gunsonu")
+
+
 func _fiyatlardan_sonra() -> void:
 	super._yeni_gun()
 
@@ -296,7 +301,7 @@ func _fiyatlar(kip: String) -> void:
 		v.add_child(Tema.yazi("Aleti eksik olduğu için menüde olmayan: %s." % ", ".join(eksik_alet), 15, Tema.SOLUK))
 	var dugmeler: Array = []
 	if kip == "gunsonu":
-		dugmeler.append({"metin": "← Geri", "fn": func(): _tedarik("gunsonu")})
+		dugmeler.append({"metin": "← Geri", "fn": _fiyat_geri})
 		dugmeler.append({"metin": "Devam", "tur": "ana", "fn": _fiyatlardan_sonra})
 	else:
 		dugmeler.append({"metin": "Kapat", "tur": "ana", "fn": _ekrandan_cik})
