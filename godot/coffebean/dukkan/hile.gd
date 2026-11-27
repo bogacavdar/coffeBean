@@ -1,4 +1,4 @@
-extends "res://dukkan/kredi.gd"
+extends "res://dukkan/ilerleme.gd"
 ## Hile paneli ve akış testi kurulumu (tasarım belgesi §4 "Hile modu ve akış testi (taşıma adımı T9)"); web CHEATS, FLOWS.
 
 var hile_katman: CanvasLayer
@@ -84,6 +84,16 @@ func _hile_paneli_kur() -> void:
 			SaveSystem.yaz(GameState.yuva, GameState.S)
 			get_tree().reload_current_scene()],
 		["Stokları doldur", _hile_stok],
+		["Sıradaki tarifi aç", func():
+			var id := sonraki_tarif()
+			if id == "":
+				flash = "Tüm tarifler zaten açık"
+				return
+			GameState.S.rp = maxi(tarif_ilerlemesi(), int(GameState.D.drinks[id].unlockCups))
+			if int(GameState.D.drinks[id].get("shop", 1)) > _yildiz():
+				flash = "%s için %d★ dükkan gerekli" % [GameState.D.drinks[id].name, int(GameState.D.drinks[id].shop)]
+				return
+			tarifleri_ac()],
 		["Tüm tarifler + aletler", func():
 			GameState.S.unlocked = GameState.D.drinks.keys()
 			for k in GameState.D.tools:

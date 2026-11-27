@@ -159,6 +159,12 @@ func serve() -> void:
 	var ad: String = _bas_harf(m.metin_ad)
 	flash = "%s · %s · ₺%s%s · %s" % [m.ad, ad, GameState.tl(tutar), (" + ₺%s bahşiş" % GameState.tl(bahsis)) if bahsis > 0 else "", mesaj]
 	prompt_tail()
+	_servis_sonrasi(m, tutar, bahsis, servis)
+
+
+## Ücretli servisten sonra (T10: tarif ilerlemesi, görev, rütbe).
+func _servis_sonrasi(_m: Dictionary, _tutar: int, _bahsis: int, _servis: int) -> void:
+	pass
 
 
 ## Stok harcaması (T6'da doldurulur): servis anında çekirdek, süt, özel malzeme.

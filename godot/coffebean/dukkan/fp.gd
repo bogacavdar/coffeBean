@@ -19,9 +19,9 @@ const QUEUE := Vector3(-2.0, 0, 0.3)
 const CUP_POS := Vector3(-2.45, 1.0, -1.16)
 const MACHINE := Vector3(-2.45, 1.0, -0.86)
 ## Kural 9: renkli bölgelerin zaman pencereleri (sn). Bölge yarı genişliği = ibre hızı × pencere.
-const WIN_DARK := 0.027
-const WIN_LIGHT := 0.067
-const WIN_YELLOW := 0.133
+var WIN_DARK := 0.027        # Kural 9 pencereleri; T10 rütbe/zorluk/çekirdek çarpanıyla günceller
+var WIN_LIGHT := 0.067
+var WIN_YELLOW := 0.133
 
 var player: CharacterBody3D
 var cam: Camera3D

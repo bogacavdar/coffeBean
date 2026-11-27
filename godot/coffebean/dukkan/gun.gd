@@ -300,10 +300,16 @@ func _sabir(delta: float) -> void:
 			_kizip_git(m)
 
 
+## Sabrı biten müşteri (T10: "Hiç müşteri kaçırma" görevini bozar).
+func _musteri_kacti() -> void:
+	pass
+
+
 func _kizip_git(m: Dictionary) -> void:
 	var siparisli: bool = m.durum == "siparis"
 	sira.erase(m)
 	ist.kizgin += 1
+	_musteri_kacti()
 	var S := GameState.S
 	S.rep = maxi(0, int(S.get("rep", 0)) - 5)
 	S.streak = 0
