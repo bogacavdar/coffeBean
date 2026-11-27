@@ -63,6 +63,7 @@ static func dugme(metin: String, tur := "", genislik := 0) -> Button:
 	var b := Button.new()
 	b.text = metin
 	b.focus_mode = Control.FOCUS_NONE
+	b.pressed.connect(func(): Engine.get_main_loop().root.get_node("Ses").sfx("click"))
 	if genislik > 0:
 		b.custom_minimum_size.x = genislik
 	if tur == "ana" or tur == "tehlike":

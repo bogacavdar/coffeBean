@@ -14,6 +14,7 @@ var dokunuslar: Array = []
 func _ready() -> void:
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	Ses.muzik("menu")
 	var dk: Node3D = load(Flow.DUKKAN).instantiate()
 	dk.menu_modu = true
 	add_child(dk)

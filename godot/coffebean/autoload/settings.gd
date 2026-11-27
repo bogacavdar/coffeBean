@@ -10,6 +10,9 @@ var kalite := 2               ## 0 düşük, 1 orta, 2 yüksek
 var hile_acilmis := false     ## "cheat" bir kez yazıldı mı (Ayarlar'da anahtar görünür)
 var hile_acik := false        ## hile modu (T9)
 var akis_tamam: Array = []    ## tamamlanan akış testleri
+var muzik := 0.6              ## T18 müzik seviyesi 0–1
+var efekt := 0.8              ## T18 efekt seviyesi 0–1
+var sessiz := false
 
 
 func _ready() -> void:
@@ -21,6 +24,9 @@ func _ready() -> void:
 		hile_acilmis = c.get_value("hile", "acilmis", false)
 		hile_acik = hile_acilmis and c.get_value("hile", "acik", false)
 		akis_tamam = c.get_value("hile", "akis_tamam", [])
+		muzik = clampf(c.get_value("ses", "muzik", 0.6), 0.0, 1.0)
+		efekt = clampf(c.get_value("ses", "efekt", 0.8), 0.0, 1.0)
+		sessiz = c.get_value("ses", "sessiz", false)
 	pencere_uygula()
 
 
@@ -32,6 +38,9 @@ func kaydet() -> void:
 	c.set_value("hile", "acilmis", hile_acilmis)
 	c.set_value("hile", "acik", hile_acik)
 	c.set_value("hile", "akis_tamam", akis_tamam)
+	c.set_value("ses", "muzik", muzik)
+	c.set_value("ses", "efekt", efekt)
+	c.set_value("ses", "sessiz", sessiz)
 	c.save(YOL)
 
 

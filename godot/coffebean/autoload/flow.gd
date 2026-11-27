@@ -47,6 +47,7 @@ func oyunu_baslat(durum: Dictionary, i: int) -> void:
 
 
 func ana_menuye() -> void:
+	Ses.donguleri_durdur()
 	SaveSystem.otomatik()
 	if GameState.yuva == 0:
 		SaveSystem.sil(0)
@@ -103,6 +104,7 @@ func pencere(baslik: String, govde: Control, dugmeler: Array, vazgec = null, gen
 			kapat(p)
 			if vazgec is Callable: vazgec.call())
 	yigin.append(p)
+	Ses.sfx("open")
 	return p
 
 
@@ -232,6 +234,33 @@ func ayarlar() -> void:
 	fh.add_child(kay)
 	fh.add_child(deger)
 	g.add_child(fh)
+	for s in [["Müzik", "muzik"], ["Efektler", "efekt"]]:
+		g.add_child(_etiket(s[0]))
+		var sh := HBoxContainer.new()
+		var sk := HSlider.new()
+		sk.min_value = 0
+		sk.max_value = 100
+		sk.step = 5
+		var alan: String = s[1]
+		sk.value = roundi(float(Settings.get(alan)) * 100)
+		sk.custom_minimum_size.x = 220
+		sk.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var sd := _etiket(str(int(sk.value)))
+		sk.value_changed.connect(func(v):
+			Settings.set(alan, v / 100.0)
+			sd.text = str(int(v))
+			Ses.seviyeleri_uygula())
+		sh.add_child(sk)
+		sh.add_child(sd)
+		g.add_child(sh)
+	g.add_child(_etiket("Sesi kapat"))
+	var sesk := CheckButton.new()
+	sesk.button_pressed = Settings.sessiz
+	sesk.focus_mode = Control.FOCUS_NONE
+	sesk.toggled.connect(func(on):
+		Settings.sessiz = on
+		Ses.seviyeleri_uygula())
+	g.add_child(sesk)
 	g.add_child(_etiket("Tam ekran"))
 	var te := CheckButton.new()
 	te.button_pressed = Settings.tam_ekran
