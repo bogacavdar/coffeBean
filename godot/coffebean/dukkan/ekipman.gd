@@ -5,7 +5,7 @@ extends "res://dukkan/ogretici.gd"
 ## Web adımı → Godot adımı (belgedeki eşleme tablosu).
 const ADIM_ESLEME := {"grind": "wdt", "dose": "dose", "tamp": "tamp", "extract": "pull", "milk": "steam", "art": "pour"}
 ## İstasyonu ya da akışı Godot'a henüz gelmemiş ekipman listelenmez.
-const GIZLI_EKIPMAN := ["dualGroup", "tkMachine", "filterMachine"]
+const GIZLI_EKIPMAN := ["dualGroup"]
 ## Aletler sekmesinde satılan aletler (Godot'da istasyonu olanlar).
 const GODOT_ALETLER := ["milkKit", "cocoa", "syrupPump", "creamSiphon", "cezve", "kettle", "frenchPress", "v60", "aeropress", "mokaPot", "chemex", "kalita", "iceMachine", "shaker", "frother", "whisk",
 	"blender", "coldBrewJar", "nitroTap", "coldDripTower", "iceCreamFridge", "phin", "clothFilter", "indianFilter", "siphon",

@@ -258,6 +258,8 @@ func action_text(id: String) -> String:
 			"dm_torba":
 				if s in ["fdose", "fpdose"]: return "E basılı: kahve koy"
 			"dm_kettle":
+				if s in ["bloom", "pourover"] and GameState.S.equipment.get("filterMachine", false):
+					return "E: Makineyle dök"
 				if s == "bloom": return "E basılı: ön ıslatma"
 				if s in ["pourover", "fpwater"]: return "E basılı: sıcak su dök"
 				if s == "steepcup": return "E basılı: fincana kaynar su"
@@ -293,6 +295,13 @@ func interact(id: String) -> void:
 	if not t.begins_with("E"):
 		return
 	var s := _dm_simdi()
+	if t == "E: Makineyle dök":
+		dm_su = _dm_hedef(s) if s == "pourover" else dm_su + _dm_hedef(s)
+		var kh := dm_cihaz.get_node_or_null("Kahve") if dm_cihaz else null
+		if kh:
+			kh.visible = true
+		_dm_bitir(float(_E().autoScore), "%s (makine)" % String(_D().minigames[s].name))
+		return
 	if id == "dm_yer":
 		if dm_fincan == null:
 			dm_tur = held_kind

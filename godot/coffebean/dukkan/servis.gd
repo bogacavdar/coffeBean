@@ -119,6 +119,7 @@ func _odeme(m: Dictionary, kalite: float, yardimci := false) -> void:
 	var tutar := siparis_fiyati(m.tarif, m.boy)
 	if ct.get("discount") != null:
 		tutar = roundi(tutar * float(ct.discount))
+	tutar = _ek_ucret(m, tutar)
 	var bahsis := 0
 	if kalite >= 80:
 		bahsis = roundi(tutar * 0.25 * ((kalite - 70.0) / 30.0) * hiz * float(ct.tip) * float(_rutbe().tipMult) * _seri_carpani() * _bahsis_carpani(m))
@@ -173,6 +174,11 @@ func _odeme(m: Dictionary, kalite: float, yardimci := false) -> void:
 	if not yardimci:
 		prompt_tail()
 	_servis_sonrasi(m, tutar, bahsis, servis)
+
+
+## Ekstra shot ve paket ücreti (Faz 3h).
+func _ek_ucret(_m: Dictionary, tutar: int) -> int:
+	return tutar
 
 
 ## Bahşiş çarpanı (T14: dekor, T15: sadakat, yoğun saat).

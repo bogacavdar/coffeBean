@@ -250,6 +250,8 @@ func action_text(id: String) -> String:
 				return ""
 			"cz_ocak":
 				if cz_durum == "karisti": return "E: Cezveyi ocağa koy"
+				if cz_durum == "dozlandi" and GameState.S.equipment.get("tkMachine", false) and _kopuk_adim() == "tkfoam":
+					return "E: Makineye koy (karıştırır ve pişirir)"
 				if cz_durum in ["bos", "dozlandi"]: return "Önce kahveyi koy ve karıştır"
 				return ""
 			"cz_servis":
@@ -289,6 +291,12 @@ func interact(id: String) -> void:
 				cz_durum = "karisti"
 				prompt_flash("Karıştırıldı · şeker %d kaşık" % cz_seker)
 		"cz_ocak":
+			if cz_durum == "dozlandi":
+				if _tarif().get("sugar", false):
+					var fark2 := absi(cz_seker - _seker_n())
+					step_scores.append(100.0 if fark2 == 0 else (72.0 if fark2 == 1 else 0.0))
+				step_scores.append(float(_E().autoScore))
+				cz_durum = "karisti"
 			cezve.position = OCAK + Vector3(0, 0.05, 0)
 			alev.visible = true
 			cz_kopuk = 0.0
@@ -299,6 +307,11 @@ func interact(id: String) -> void:
 			olcek.visible = int(GameState.S.served.get(siparis_tarif, 0)) < 3
 			_olcek_kur()
 			mode = "cz_ocak"
+			if GameState.S.equipment.get("tkMachine", false) and _kopuk_adim() == "tkfoam":
+				get_tree().create_timer(1.0).timeout.connect(func():
+					if mode == "cz_ocak":
+						cz_kopuk = float(KOPUK_AYAR.tkfoam.hedef)
+						_cz_ocaktan_al())
 			cz_bas = Time.get_ticks_msec() / 1000.0
 			cz_e_once = true
 			prompt.text = ""
@@ -366,19 +379,24 @@ func _process(delta: float) -> void:
 			var al := e_simdi and not cz_e_once and simdi - cz_bas > 0.25
 			cz_e_once = e_simdi
 			if al or cz_kopuk >= 100.0:
-				var secs := absf(cz_kopuk - float(A.hedef)) / float(A.hiz)
-				var sc := 0.0
-				if cz_kopuk < 100.0:
-					sc = 100.0 if secs <= WIN_DARK else (88.0 if secs <= WIN_LIGHT else (72.0 if secs <= WIN_YELLOW else 0.0))
-				step_scores.append(sc)
-				if sc < 70.0 and _kopuk_adim() == "tkfoam":
-					ipucu("tkfoam_low" if cz_kopuk < float(A.hedef) else "tkfoam_high")
-				mode = ""
-				hint.text = ""
-				alev.visible = false
-				olcek.visible = false
-				cz_durum = "pisti"
-				prompt_flash("Köpük: %s" % ("taştı!" if cz_kopuk >= 100.0 else {100.0: "Mükemmel!", 88.0: "Güzel", 72.0: "İyi", 0.0: "Kaçtı"}[sc]))
+				_cz_ocaktan_al()
+
+
+func _cz_ocaktan_al() -> void:
+	var A: Dictionary = KOPUK_AYAR[_kopuk_adim()]
+	var secs := absf(cz_kopuk - float(A.hedef)) / float(A.hiz)
+	var sc := 0.0
+	if cz_kopuk < 100.0:
+		sc = 100.0 if secs <= WIN_DARK else (88.0 if secs <= WIN_LIGHT else (72.0 if secs <= WIN_YELLOW else 0.0))
+	step_scores.append(sc)
+	if sc < 70.0 and _kopuk_adim() == "tkfoam":
+		ipucu("tkfoam_low" if cz_kopuk < float(A.hedef) else "tkfoam_high")
+	mode = ""
+	hint.text = ""
+	alev.visible = false
+	olcek.visible = false
+	cz_durum = "pisti"
+	prompt_flash("Köpük: %s" % ("taştı!" if cz_kopuk >= 100.0 else {100.0: "Mükemmel!", 88.0: "Güzel", 72.0: "İyi", 0.0: "Kaçtı"}[sc]))
 
 
 ## Cezve siparişi espresso istasyonunun durumunu değiştirmez.
