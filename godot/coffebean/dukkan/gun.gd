@@ -32,9 +32,16 @@ func _ready() -> void:
 	if menu_modu:
 		return
 	var dk := GameState.dukkan(GameState.S.get("shopLevel", 0))
-	gelecek = int(dk.customersPerDay)
-	aralik = float(dk.interval)
+	gelecek = int(dk.customersPerDay) + int(trafik().cust) * int(dk.custStep)
+	aralik = float(dk.interval) * pow(float(GameState.D.traffic.freqMult), int(trafik().freq))
 	_tabela_kur()
+
+
+## Bu dükkanın müşteri gelişi kademeleri (web tr(); T13).
+func trafik() -> Dictionary:
+	var S := GameState.S
+	var t2: Dictionary = S.get("traffic", {}).get(str(int(S.get("shopLevel", 0))), {})
+	return {"cust": int(t2.get("cust", 0)), "freq": int(t2.get("freq", 0))}
 
 
 # ---------- sahne parçaları ----------

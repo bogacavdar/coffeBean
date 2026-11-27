@@ -29,8 +29,7 @@ func varsayilan_fiyat(id: String) -> int:
 	var ilk: String = d.get("sizes", ["single"])[0]
 	var maliyet := _cekirdek_kg(id, ilk) * float(GameState.D.beans.brazil.price) + _sut_l(id, ilk) * float(GameState.D.economy.milkPrice) + float(d.cost)
 	var dk := GameState.dukkan(GameState.S.shopLevel)
-	var trafik := int(GameState.S.get("traffic", {}).get("cust", 0))
-	var gunluk_m := int(dk.customersPerDay) + trafik * int(dk.custStep)
+	var gunluk_m := int(dk.customersPerDay) + int(trafik().cust) * int(dk.custStep)
 	return maxi(1, roundi(maliyet * float(GameState.D.pricing.markup) + float(dk.rent) / (7.0 * gunluk_m)))
 
 

@@ -149,6 +149,7 @@ func _dukkan(kip: String) -> void:
 		Flow.kapat(Flow.yigin.back())
 		_dukkan(kip)
 	v.add_child(Tema.yazi("Kasa: ₺" + GameState.tl(S.money), 22, Tema.ANA, true))
+	_dukkan_ust(v, yenile)
 	var sekmeler := HBoxContainer.new()
 	sekmeler.add_theme_constant_override("separation", 8)
 	for s in [["upg", "Geliştirmeler"], ["tools", "Aletler"]]:
@@ -173,6 +174,11 @@ func _dukkan(kip: String) -> void:
 	Flow.pencere("Dükkan · %s %s" % ["★".repeat(int(dk.stars)), dk.name], kaydir, dugmeler, _ekrandan_cik, 820)
 	kaydir.set_deferred("scroll_vertical", dukkan_kaydir)
 	dukkan_kaydir = 0
+
+
+## Dükkan penceresinin üstüne ek (T13: Ana hedef).
+func _dukkan_ust(_v: VBoxContainer, _yenile: Callable) -> void:
+	pass
 
 
 func _dukkan_bolum(v: VBoxContainer, baslik: String, aciklama: String) -> VBoxContainer:

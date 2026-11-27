@@ -133,7 +133,13 @@ func tarifleri_ac() -> void:
 		v.add_child(Tema.yazi(String(_D().tutorial.milk), 16, Tema.SOLUK))
 	Flow.pencere("Yeni tarif%s: %s" % ["ler" if yeni.size() > 1 else "", ", ".join(adlar)], v, [
 		{"metin": "Tedarik'e git", "fn": func(): _tedarik("ara")},
-		{"metin": "Tamam", "tur": "ana", "fn": _ekrandan_cik}], _ekrandan_cik, 640)
+		{"metin": "Tamam", "tur": "ana", "fn": _acilis_kapandi}], _acilis_kapandi, 640)
+
+
+## Açılış penceresi başka bir pencerenin (gün sonu, Dükkan) üstünde açıldıysa oyun duraklı kalır.
+func _acilis_kapandi() -> void:
+	if Flow.yigin.is_empty():
+		_ekrandan_cik()
 
 
 # ---------- servis sonrası: ilerleme, görev, rütbe ----------
