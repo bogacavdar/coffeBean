@@ -17,7 +17,9 @@ const YAPILABILIR := {"espresso": "", "lungo": "", "ristretto": "", "americano":
 	"turkish": "", "sutluturk": "", "menengic": "", "dibek": "", "damla": "", "kenger": "", "osmanli": "", "mirra": "",
 	"hotchoc": "", "chai": "", "salep": "", "latmac": "", "caramelmac": "",
 	"frenchpress": "", "filter": "", "cafeaulait": "", "redeye": "", "irish": "", "kopi": "", "aeropress": "", "moka": "",
-	"chemex": "", "kalitaw": ""}
+	"chemex": "", "kalitaw": "",
+	"icedamericano": "", "icedlatte": "", "espressotonic": "", "spanish": "", "mazagran": "", "freddoesp": "",
+	"freddocap": "", "shakerato": "", "greekfrappe": "", "dalgona": "", "icedmocha": "", "cubano": ""}
 ## Web bardak türü → birinci şahıs fincanı; fincanların adı.
 const FINCAN := {"espS": "tek", "espD": "double", "cupS": "cappuccino", "cupM": "latte", "cupL": "buyuk"}
 const FINCAN_AD := {"tek": "tek espresso", "double": "double espresso", "cappuccino": "küçük", "latte": "orta", "buyuk": "büyük"}

@@ -1,10 +1,10 @@
-; CoffeBean (Godot 4.7) — taşıma adımları T1–T18, Faz 3a–3e
+; CoffeBean (Godot 4.7) — taşıma adımları T1–T18, Faz 3a–3f
 config_version=5
 
 [application]
 
 config/name="CoffeBean"
-config/version="0.23"
+config/version="0.24"
 run/main_scene="res://ui/ana_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.png"
