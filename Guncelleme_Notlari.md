@@ -1,5 +1,16 @@
 # CoffeBean – Güncelleme Notları
 
+## Godot 0.3 – 27 Kasım 2026 (birinci şahıs sürüm: ana menü, kayıt, gün döngüsü)
+Web sürümü v0.47'de donduruldu; oyun artık Godot'da, birinci şahıs 3B olarak yeniden kuruluyor (Windows indirmesi).
+- **Ana menü:** arkada boş dükkan; Devam (en son kayıt, yuva/gün/para bilgisiyle), Yeni oyun, Yükle, Ayarlar, Çıkış. Sol altta sürüm ve tarif sayısı.
+- **3 kayıt yuvası:** her yuvada gün, hafta, zorluk, para, dükkan ve kayıt saati. Dolu yuvanın üstüne yazma ve silme onaylı. Oyun ana menüye dönünce, çıkışta ve pencere kapanınca kendiliğinden kaydediliyor.
+- **Zorluk:** Kolay (₺3.600), Normal (₺2.700), Zor (₺2.250), web'deki etkileriyle.
+- **Esc menüsü:** oyunu durdurur; Oyuna dön, Kaydet, Ayarlar, Ana menüye dön.
+- **Ayarlar:** fare hassasiyeti, tam ekran, grafik kalitesi (Düşük / Orta / Yüksek).
+- **Gün döngüsü:** gün kasanın yanındaki KAPALI tabelasına bakıp E'ye basınca başlar; 150 saniyede 08:00'den 20:00'ye (duvar saati ve sağ üstte). 1★'da günde 6 müşteri; kapıdan girip kasada sıraya diziliyorlar, başlarının üstünde tipleri ve sabır çubukları var. Öndeki siparişini söylüyor; sabrı biten "Bu kadar beklenmez!" deyip çıkıyor (−5 itibar); sıra doluysa gelen kapıdan dönüyor. Gün bitince kısa özet ve "Ertesi gün".
+- **Espresso bir tık hızlı:** çekim ~27 sn yerine ~23 sn; renkli bölgeler aynı oranda genişledi.
+- **Şimdilik:** müşteriler yalnız espresso istiyor (tarif açılışı sonra gelecek); para, kira ve gün sonu ekranları sonraki adımlarda.
+
 ## v0.47 – 13 Kasım 2026 (kritik: uygulama olarak yükleme)
 - **CoffeBean ve Purple Light artık ayrı uygulama olarak yüklenebiliyor.** İki oyunun uygulama kimliği aynı çıkıyordu; Chrome ikisini tek uygulama sanıyor, biri yüklenince diğerinin yerine geçiyordu (adı CoffeBean, içi Purple Light). CoffeBean'in kimliği artık kendi klasörü. Eski karışık uygulamayı kaldırıp oyunu kendi adresinden yeniden yüklemek gerekiyor.
 - **Telefonda hile paneli:** artık ekranın sol üstünde, üst bilgi çubuğunun altında açılıyor; düğmeler büyüdü. Panel ekranın alt kenarından uzak duruyor, sürüklerken de oraya inmiyor (telefonun uygulama değiştirme hareketiyle çakışmasın). Daha önce alt köşeye kaydedilmiş yer sıfırlanıyor.
