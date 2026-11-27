@@ -242,6 +242,68 @@ func build_player() -> void:
 	hand_r.position = hand_base_r
 	hand_l.position = hand_base_l
 	cam_home = cam.transform
+	kollari_kur()
+
+
+# ---------- baristanın kolları (Rocketbox Male_Adult_11, MIT; tasarım belgesi "Eller") ----------
+## Gerçek bir insan modelinin kolları kameraya bağlanır; eller hand_r / hand_l hedeflerine TwoBoneIK3D ile uzanır.
+## Baş ve bacaklar kemik ölçeği 0 ile gizlenir; gövde görüş alanının altında kalır.
+const KOL_MODEL := "Male_Adult_11"
+var kol_iskelet: Skeleton3D
+var kol_klavikula := {}
+
+
+func kollari_kur() -> void:
+	for c in hand_r.get_children() + hand_l.get_children():
+		if c is MeshInstance3D or c is Node3D:
+			c.visible = false
+	var govde: Node3D = load("res://art/people/%s/Export/%s.fbx" % [KOL_MODEL, KOL_MODEL]).instantiate()
+	govde.rotation.y = PI
+	govde.position = Vector3(0, -1.6, 0.1)
+	cam.add_child(govde)
+	kol_iskelet = govde.find_child("Skeleton3D", true, false)
+	var ap: AnimationPlayer = govde.find_child("AnimationPlayer", true, false)
+	if ap:
+		ap.stop()
+	for kemik in ["Bip01 Head", "Bip01 L Thigh", "Bip01 R Thigh"]:
+		var i := kol_iskelet.find_bone(kemik)
+		if i >= 0:
+			kol_iskelet.set_bone_pose_scale(i, Vector3(0.001, 0.001, 0.001))
+	for mi in govde.find_children("*", "MeshInstance3D", true, false):
+		(mi as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# parmaklar hafif kıvrık (doğal duruş)
+	for yan in ["L", "R"]:
+		for f in ["1", "2", "3", "4"]:
+			for ek in ["", "1", "2"]:
+				var i := kol_iskelet.find_bone("Bip01 %s Finger%s%s" % [yan, f, ek])
+				if i >= 0:
+					var r := kol_iskelet.get_bone_rest(i).basis.get_rotation_quaternion()
+					kol_iskelet.set_bone_pose_rotation(i, r * Quaternion(Vector3(0, 0, 1), deg_to_rad(-28.0 if yan == "R" else 28.0)))
+	var ik := TwoBoneIK3D.new()
+	ik.set_setting_count(2)
+	kol_iskelet.add_child(ik)
+	var dirsek_r := Node3D.new()
+	dirsek_r.position = Vector3(0.55, -0.7, 0.1)
+	cam.add_child(dirsek_r)
+	var dirsek_l := Node3D.new()
+	dirsek_l.position = Vector3(-0.55, -0.7, 0.1)
+	cam.add_child(dirsek_l)
+	var hedefler := [[0, "R", hand_r, dirsek_r], [1, "L", hand_l, dirsek_l]]
+	for h in hedefler:
+		ik.set_root_bone_name(h[0], "Bip01 %s UpperArm" % h[1])
+		ik.set_middle_bone_name(h[0], "Bip01 %s Forearm" % h[1])
+		ik.set_end_bone_name(h[0], "Bip01 %s Hand" % h[1])
+		ik.set_target_node(h[0], ik.get_path_to(h[2]))
+		ik.set_pole_node(h[0], ik.get_path_to(h[3]))
+		kol_klavikula[h[1]] = kol_iskelet.find_bone("Bip01 %s Clavicle" % h[1])
+
+
+## Bir kolu göster/gizle (klavikula ölçeği): kamera alete yaklaştığında eller ekranı kapatmasın.
+func kol_goster(yan: String, acik: bool) -> void:
+	if kol_iskelet == null:
+		return
+	var s := Vector3.ONE if acik else Vector3(0.001, 0.001, 0.001)
+	kol_iskelet.set_bone_pose_scale(kol_klavikula[yan], s)
 
 
 func make_hand(side: int) -> Node3D:
@@ -291,8 +353,8 @@ func hands_tick(delta: float) -> void:
 	hand_l.position = hand_l.position.lerp(hand_base_l + Vector3(-bob.x, bob.y, 0), min(1.0, delta * 10.0))
 	if held:
 		held.position = hand_r.position + Vector3(-0.05, 0.05, -0.1)
-	hand_r.visible = mode in ["", "pull", "pour"]
-	hand_l.visible = mode == ""
+	kol_goster("R", mode in ["", "pull", "pour"])
+	kol_goster("L", mode == "")
 
 
 # ---------- kamera: aletin başına yaklaş ----------

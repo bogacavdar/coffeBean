@@ -191,7 +191,7 @@ func _yuzen(node: Node3D, metin: String, renk: Color, gecikme: float) -> void:
 	l.outline_size = 14
 	l.modulate = Color(renk, 0.0)
 	l.outline_modulate = Color(0.98, 0.96, 0.92, 0.0)
-	l.position = node.position + Vector3(0.25, 2.05, 0)
+	l.position = node.position + Vector3(0.6, 1.55, 0)
 	add_child(l)
 	var tw := create_tween()
 	tw.tween_interval(gecikme)

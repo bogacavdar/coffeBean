@@ -161,7 +161,7 @@ func _musteri_getir() -> void:
 		siparis = "tek" if boy == "single" else "double"
 	var say: String = GameState.D.sizes[boy].say if tarif == "espresso" else ""
 	var d: String = ((say + " ") if say != "" else "") + String(Content.tarif(tarif).name).to_lower()
-	var node := make_avatar(AVATARS[n_customer % AVATARS.size()])
+	var node := make_avatar(_gorunus(tip))
 	n_customer += 1
 	node.position = DOOR
 	add_child(node)
@@ -205,6 +205,29 @@ func _istenebilir(_id: String) -> bool:
 	return true
 
 
+## Tipine uyan bir insan modeli (tasarım belgesi "Müşteri"); dükkanda aynı kişi iki kez olmasın.
+const GORUNUS := {
+	"business": ["Business_Male_01", "Business_Male_02", "Business_Male_03"],
+	"student": ["Female_Adult_12", "Male_Adult_17", "Male_Adult_09"],
+	"elder": ["Business_Female_02", "Female_Adult_14"],
+	"geek": ["Male_Adult_04", "Female_Adult_08", "Male_Adult_12"],
+	"regular": ["Male_Adult_03", "Female_Adult_09", "Male_Adult_02", "Female_Adult_03"],
+}
+
+
+func _gorunus(tip: String) -> String:
+	var aday: Array = GORUNUS.get(tip, GORUNUS.regular).duplicate()
+	aday.shuffle()
+	for a in aday:
+		var var_mi := false
+		for m in sira:
+			if m.node.get_meta("model", "") == a:
+				var_mi = true
+		if not var_mi:
+			return a
+	return aday[0]
+
+
 ## Web orderLine: genel + tipe özel cümleler, ilk harf büyük. "saniye" içeren cümle yalnız espresso ailesinde.
 func _siparis_cumlesi(tip: String, d: String) -> String:
 	var L: Dictionary = GameState.D.orderLines
@@ -216,7 +239,7 @@ func _siparis_cumlesi(tip: String, d: String) -> String:
 
 
 func _sira_yeri(i: int) -> Vector3:
-	return QUEUE_R + Vector3(-0.3 * i, 0, 0.8 * i)
+	return QUEUE_R + Vector3(-0.3 * i + (0.3 if i % 2 == 1 else 0.0), 0, 0.8 * i)
 
 
 ## fp_real.customer_tick yerine: bütün müşterileri yürütür; öndeki kasaya varınca siparişini söyler.
@@ -331,8 +354,18 @@ func _gun_ozeti() -> String:
 	return "Hizmet edilen: %d · Kızıp giden: %d · Kapıdan dönen: %d" % [ist.hizmet, ist.kizgin, ist.donen]
 
 
+var flash_son := ""
+var flash_ms := 0
+
+
 func _hud() -> void:
 	var S := GameState.S
+	if flash != flash_son:
+		flash_son = flash
+		flash_ms = Time.get_ticks_msec()
+	elif flash != "" and Time.get_ticks_msec() - flash_ms > 6000:
+		flash = ""
+		flash_son = ""
 	var saat := _saat()
 	var sag := _sag_ust()
 	if saat_hud.text != sag:

@@ -333,12 +333,13 @@ func make_avatar(name: String) -> Node3D:
 	root.add_child(body)
 	var ap: AnimationPlayer = body.find_child("AnimationPlayer", true, false)
 	var lib := AnimationLibrary.new()
-	var pre := "f" if name.begins_with("Female") else "m"
+	var pre := "f" if "Female" in name else "m"
 	lib.add_animation("idle", avatar_anim(pre + "_idle_breathe_01"))
 	lib.add_animation("walk", avatar_anim(pre + "_walk_neutral_01"))
 	ap.add_animation_library("cb", lib)
 	ap.play("cb/idle")
 	root.set_meta("ap", ap)
+	root.set_meta("model", name)
 	return root
 
 
