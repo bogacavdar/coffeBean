@@ -83,6 +83,8 @@ func sus_gerek() -> Array:
 	var d := _tarif()
 	var st: Array = d.get("steps", [])
 	var ei := st.find("extract")
+	if ei < 0:
+		ei = st.find("milk")                  # espressosuz tarifte "önce" süte göre
 	var pompa_var := false
 	for u in d.get("uses", []):
 		if u[1] is String and u[1] == "pump":
@@ -207,14 +209,19 @@ func _matta_koy() -> void:
 
 
 func _mattan_al() -> void:
+	_pompalari_bitir()
+	mat_fincan.queue_free()
+	mat_fincan = null
+	hold(mat_tur, cup_size)
+
+
+## Minderdeki fincana basılan pompaları puanlar (fincan alınınca ya da süt dökülmeye başlanınca).
+func _pompalari_bitir() -> void:
 	for x in sus_gerek():
 		if x.tur == "pump" and int(pompa.get(x.k, 0)) > 0 and not sus_durum.has(x.k):
 			var fark := absi(int(pompa[x.k]) - int(x.n))
 			_puan(x.k, 100.0 if fark == 0 else (72.0 if fark == 1 else 0.0), "%s %d pompa" % [x.ad, int(pompa[x.k])])
 	pompa = {}
-	mat_fincan.queue_free()
-	mat_fincan = null
-	hold(mat_tur, cup_size)
 
 
 func _puan(k: String, sc: float, etiket: String) -> void:

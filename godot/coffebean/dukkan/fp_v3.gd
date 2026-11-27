@@ -44,6 +44,7 @@ var pitcher: Node3D
 var milk_surface: MeshInstance3D
 var temp_label: Label3D
 var milk_pitcher_home: Node3D
+var dokme_yer := CUP_POS                  ## sütün döküldüğü fincanın yeri (Faz 3d: süsleme minderi de olabilir)
 
 
 func needs_milk() -> bool:
@@ -686,11 +687,11 @@ func milk_tick(delta: float) -> void:
 		stream.visible = pouring
 		if pouring:
 			(stream.material_override as StandardMaterial3D).albedo_color = Color(0.97, 0.95, 0.9)
-			var ctop := CUP_POS.y + cup_dims(cup_size).y + 0.012
+			var ctop := dokme_yer.y + cup_dims(cup_size).y + 0.012
 			(stream.mesh as CylinderMesh).height = 0.12
 			(stream.mesh as CylinderMesh).top_radius = 0.009
 			(stream.mesh as CylinderMesh).bottom_radius = 0.009
-			stream.position = Vector3(CUP_POS.x, ctop + 0.06, CUP_POS.z)
+			stream.position = Vector3(dokme_yer.x, ctop + 0.06, dokme_yer.z)
 		var c: Node3D = placed_cup.get_node_or_null("Top") as Node3D
 		if c:
 			var h := cup_dims(cup_size).y
@@ -724,7 +725,7 @@ func finish_steam() -> void:
 func start_pour() -> void:
 	pour_fill = 0.0
 	mode = "pour"
-	view_at(Vector3(-2.5, 1.4, -1.7), CUP_POS + Vector3(0, 0.05, 0))
+	view_at(dokme_yer + Vector3(-0.05, 0.4, -0.54), dokme_yer + Vector3(0, 0.05, 0))
 
 
 func finish_pour() -> void:
