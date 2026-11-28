@@ -1,4 +1,4 @@
-extends "res://dukkan/hayat.gd"
+extends "res://dukkan/gorunus.gd"
 ## Hile paneli ve akış testi kurulumu (tasarım belgesi §4 "Hile modu ve akış testi (taşıma adımı T9)"); web CHEATS, FLOWS.
 
 var hile_katman: CanvasLayer

@@ -234,4 +234,8 @@ func _defter() -> void:
 	var son8: Array = log_.slice(maxi(0, log_.size() - 8))
 	son8.reverse()
 	b7.add_child(Tema.yazi("\n".join(son8) if not son8.is_empty() else "—", 15, Tema.SOLUK))
-	Flow.pencere("Kahve Defteri", kaydir, [{"metin": "Kapat", "tur": "ana", "fn": _pencereden_cik}], _pencereden_cik, 760)
+	Flow.pencere("Kahve Defteri", kaydir, _defter_dugmeleri(), _pencereden_cik, 760)
+
+
+func _defter_dugmeleri() -> Array:
+	return [{"metin": "Kapat", "tur": "ana", "fn": _pencereden_cik}]

@@ -87,8 +87,11 @@ func make_cup(parent: Node3D, size: String, fill := 0.0) -> Node3D:
 	m.bottom_radius = r * 0.78
 	m.height = h
 	m.radial_segments = 40
+	m.cap_top = false
 	body.mesh = m
-	body.material_override = mat(WHITE, 0.25)
+	var bm := mat(WHITE, 0.25)
+	bm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	body.material_override = bm
 	body.position.y = 0.012 + h * 0.5
 	c.add_child(body)
 	var handle := MeshInstance3D.new()
@@ -101,7 +104,7 @@ func make_cup(parent: Node3D, size: String, fill := 0.0) -> Node3D:
 	handle.position = Vector3(r + 0.01, 0.012 + h * 0.55, 0)
 	c.add_child(handle)
 	if fill > 0.0:
-		var top := cyl(c, Vector3(0, 0.012 + h * min(fill, 1.0) * 0.9, 0), r * (0.8 + 0.18 * min(fill, 1.0)), 0.006, Color("8a5a35"), 0.2)
+		var top := cyl(c, Vector3(0, 0.012 + h * min(fill, 1.0) * 0.9, 0), r * (0.775 + 0.2 * min(fill, 1.0) * 0.9), 0.006, Color("8a5a35"), 0.2)
 		top.name = "Top"
 	return c
 

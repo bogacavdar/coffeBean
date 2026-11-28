@@ -334,6 +334,7 @@ func akis_listesi() -> Array:
 	]
 	for n in 5:
 		L.append(["A%d" % (21 + n), "Dükkan seviyesi %s %s" % ["★".repeat(n + 1), GameState.dukkan(n).name], {"day": 3, "shopLevel": n}, null])
+	L.append(["A26", "Tarif görselleri galerisi (82 tarif)", {"day": 3}, func(sc): sc.tarif_galerisi(true)])
 	return L
 
 
