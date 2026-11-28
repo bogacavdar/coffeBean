@@ -287,6 +287,26 @@ func ayarlar() -> void:
 		kd.append(b)
 		kh.add_child(b)
 	g.add_child(kh)
+	g.add_child(_etiket("Dokunmatik düğmeler"))
+	var dh := HBoxContainer.new()
+	var dd: Array = []
+	for i in 3:
+		var b := Tema.dugme(Settings.DOKUN[i], "ana" if i == Settings.dokunmatik else "")
+		b.pressed.connect(func():
+			Settings.dokunmatik = i
+			var sc := get_tree().current_scene
+			if sc and sc.has_method("dokunmatik_uygula"):
+				sc.dokunmatik_uygula()
+			for j in 3:
+				var bj: Button = dd[j]
+				var r := Tema.ANA if j == i else Tema.DUGME
+				bj.add_theme_stylebox_override("normal", Tema.kutu(r))
+				bj.add_theme_stylebox_override("hover", Tema.kutu(r.lightened(0.1)))
+				bj.add_theme_color_override("font_color", Tema.KREM if j == i else Tema.KAHVE)
+				bj.add_theme_color_override("font_hover_color", Tema.KREM if j == i else Tema.KAHVE))
+		dd.append(b)
+		dh.add_child(b)
+	g.add_child(dh)
 	if Settings.hile_acilmis:
 		g.add_child(_etiket("Hile modu (test için)"))
 		var hm := CheckButton.new()

@@ -502,7 +502,7 @@ func _hud() -> void:
 			durum += "Müşteri kasaya geliyor"
 		else:
 			durum += "Müşteri bekleniyor…"
-	var yeni := durum + "\n" + (flash if flash != "" else "WASD yürü · fare bak · E / sol tık: etkileşim · Boşluk: tamam · R: kaşık · Esc: menü")
+	var yeni := durum + "\n" + (flash if flash != "" else ("Sol çubuk: yürü · kaydır: bak · E: etkileşim · ☰: menü" if dokunmatik else "WASD yürü · fare bak · E / sol tık: etkileşim · Boşluk: tamam · R: kaşık · Esc: menü"))
 	if yeni != son_info:
 		son_info = yeni
 		info.text = yeni

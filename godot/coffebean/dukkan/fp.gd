@@ -148,6 +148,8 @@ func capsule(parent: Node3D, pos: Vector3, rad: float, h: float, c: Color) -> Me
 ## Ana menünün arkasında boş dükkan olarak açılır (T1): oyuncu, arayüz ve müşteri kurulmaz.
 var menu_modu := false
 var menu_t := 0.0
+var dokunmatik := false                    ## dokunmatik düğmeler açık (Faz 7, dokunmatik.gd)
+var dokun_yon := Vector2.ZERO               ## sanal çubuk: x sağ, y geri
 
 
 func _ready() -> void:
@@ -630,6 +632,8 @@ func _physics_process(delta: float) -> void:
 		if Input.is_physical_key_pressed(KEY_S): dir.z += 1
 		if Input.is_physical_key_pressed(KEY_A): dir.x -= 1
 		if Input.is_physical_key_pressed(KEY_D): dir.x += 1
+		dir.x += dokun_yon.x
+		dir.z += dokun_yon.y
 	dir = (player.transform.basis * dir).normalized() * 2.6
 	player.velocity.x = dir.x
 	player.velocity.z = dir.z
@@ -694,7 +698,7 @@ func _process(delta: float) -> void:
 		"lock": lock_tick(delta)
 		"pull": pull_tick(delta)
 		"":
-			if Input.is_action_just_pressed("interact") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			if Input.is_action_just_pressed("interact") and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or dokunmatik):
 				interact(look_id)
 	if panel.visible:
 		panel.queue_redraw()

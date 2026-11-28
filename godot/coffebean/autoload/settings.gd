@@ -3,6 +3,7 @@ extends Node
 
 const YOL := "user://ayarlar.cfg"
 const KALITE := ["Düşük", "Orta", "Yüksek"]
+const DOKUN := ["Otomatik", "Açık", "Kapalı"]
 
 var fare := 1.0               ## fare hassasiyeti 0,5–2,0
 var tam_ekran := false
@@ -13,6 +14,7 @@ var akis_tamam: Array = []    ## tamamlanan akış testleri
 var muzik := 0.6              ## T18 müzik seviyesi 0–1
 var efekt := 0.8              ## T18 efekt seviyesi 0–1
 var sessiz := false
+var dokunmatik := 0            ## Faz 7: 0 otomatik (yalnız telefon/tablet), 1 açık, 2 kapalı
 
 
 func _ready() -> void:
@@ -27,6 +29,7 @@ func _ready() -> void:
 		muzik = clampf(c.get_value("ses", "muzik", 0.6), 0.0, 1.0)
 		efekt = clampf(c.get_value("ses", "efekt", 0.8), 0.0, 1.0)
 		sessiz = c.get_value("ses", "sessiz", false)
+		dokunmatik = clampi(c.get_value("oyun", "dokunmatik", 0), 0, 2)
 	pencere_uygula()
 
 
@@ -41,6 +44,7 @@ func kaydet() -> void:
 	c.set_value("ses", "muzik", muzik)
 	c.set_value("ses", "efekt", efekt)
 	c.set_value("ses", "sessiz", sessiz)
+	c.set_value("oyun", "dokunmatik", dokunmatik)
 	c.save(YOL)
 
 
@@ -69,3 +73,12 @@ func uygula(sahne: Node) -> void:
 			if not env.has_meta("ilk_glow"):
 				env.set_meta("ilk_glow", env.glow_enabled)
 			env.glow_enabled = kalite == 2 and env.get_meta("ilk_glow")
+
+
+## Dokunmatik düğmeler gösterilsin mi (Otomatik: yalnız telefon ve tablet).
+func dokunmatik_acik() -> bool:
+	if dokunmatik == 1:
+		return true
+	if dokunmatik == 2:
+		return false
+	return OS.has_feature("mobile")
