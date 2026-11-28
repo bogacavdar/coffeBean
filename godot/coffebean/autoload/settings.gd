@@ -14,6 +14,8 @@ var akis_tamam: Array = []    ## tamamlanan akış testleri
 var muzik := 0.6              ## T18 müzik seviyesi 0–1
 var efekt := 0.8              ## T18 efekt seviyesi 0–1
 var sessiz := false
+var tam_bolge := false        ## "Renkli bölgeleri hep tam göster"
+var titresim := true
 var dokunmatik := 0            ## Faz 7: 0 otomatik (yalnız telefon/tablet), 1 açık, 2 kapalı
 
 
@@ -31,6 +33,8 @@ func _ready() -> void:
 		muzik = clampf(c.get_value("ses", "muzik", 0.6), 0.0, 1.0)
 		efekt = clampf(c.get_value("ses", "efekt", 0.8), 0.0, 1.0)
 		sessiz = c.get_value("ses", "sessiz", false)
+		tam_bolge = c.get_value("oyun", "tam_bolge", false)
+		titresim = c.get_value("oyun", "titresim", true)
 		dokunmatik = clampi(c.get_value("oyun", "dokunmatik", 0), 0, 2)
 	pencere_uygula()
 
@@ -47,6 +51,8 @@ func kaydet() -> void:
 	c.set_value("ses", "efekt", efekt)
 	c.set_value("ses", "sessiz", sessiz)
 	c.set_value("oyun", "dokunmatik", dokunmatik)
+	c.set_value("oyun", "tam_bolge", tam_bolge)
+	c.set_value("oyun", "titresim", titresim)
 	c.save(YOL)
 
 

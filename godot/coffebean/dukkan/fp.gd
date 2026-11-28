@@ -815,6 +815,11 @@ func open_panel(m: String, title: String) -> void:
 	gauge.visible = false
 
 
+## Renkli bölgelerin görünürlüğü (usta görünümü, usta.gd'de rütbeye göre).
+func bolge_alfa() -> float:
+	return 1.0
+
+
 func close_panel(score: float, label: String) -> void:
 	step_scores.append(score)
 	mode = ""
@@ -958,9 +963,10 @@ func draw_panel() -> void:
 		"tamp":
 			panel.draw_circle(c, 165.0, Color(0.85, 0.92, 0.75, 0.9))
 			var r: Array = tamp_rings()
-			panel.draw_circle(c, r[0], Color("e2c044"))
-			panel.draw_circle(c, r[1], Color("8fcf6a"))
-			panel.draw_circle(c, r[2], Color("2f8a3a"))
+			var al := bolge_alfa()
+			panel.draw_circle(c, r[0], Color("e2c044", al))
+			panel.draw_circle(c, r[1], Color("8fcf6a", al))
+			panel.draw_circle(c, r[2], Color("2f8a3a", al))
 			panel.draw_circle(c + bubble_pos, 16.0, Color(1, 1, 1, 0.85))
 			panel.draw_arc(c + bubble_pos, 16.0, 0, TAU, 24, Color(0.3, 0.4, 0.3), 2.0)
 		"lock":
@@ -977,7 +983,7 @@ func draw_panel() -> void:
 			var cx := x0 + target / vmax * w
 			for z in [[WIN_YELLOW, Color("e2c044")], [WIN_LIGHT, Color("8fcf6a")], [WIN_DARK, Color("2f8a3a")]]:
 				var half: float = rate * z[0] / vmax * w
-				panel.draw_rect(Rect2(cx - half, 300, half * 2.0, 34), z[1])
+				panel.draw_rect(Rect2(cx - half, 300, half * 2.0, 34), Color(z[1], bolge_alfa()))
 			panel.draw_rect(Rect2(x0 + min(pull_g, vmax) / vmax * w - 2, 294, 4, 46), Color.WHITE)
 
 

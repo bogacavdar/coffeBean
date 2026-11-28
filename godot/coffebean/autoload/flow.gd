@@ -261,6 +261,22 @@ func ayarlar() -> void:
 		Settings.sessiz = on
 		Ses.seviyeleri_uygula())
 	g.add_child(sesk)
+	g.add_child(_etiket("Renkli bölgeleri hep tam göster"))
+	var tb := CheckButton.new()
+	tb.button_pressed = Settings.tam_bolge
+	tb.focus_mode = Control.FOCUS_NONE
+	tb.toggled.connect(func(on): Settings.tam_bolge = on)
+	g.add_child(tb)
+	if OS.has_feature("mobile"):
+		g.add_child(_etiket("Titreşim"))
+		var ti := CheckButton.new()
+		ti.button_pressed = Settings.titresim
+		ti.focus_mode = Control.FOCUS_NONE
+		ti.toggled.connect(func(on):
+			Settings.titresim = on
+			if on:
+				Input.vibrate_handheld(25))
+		g.add_child(ti)
 	g.add_child(_etiket("Tam ekran"))
 	var te := CheckButton.new()
 	te.button_pressed = Settings.tam_ekran
