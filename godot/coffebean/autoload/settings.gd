@@ -19,10 +19,12 @@ var dokunmatik := 0            ## Faz 7: 0 otomatik (yalnız telefon/tablet), 1 
 
 func _ready() -> void:
 	var c := ConfigFile.new()
+	if OS.has_feature("mobile"):
+		kalite = 0                       # telefonda ilk açılış Düşük (Faz 7)
 	if c.load(YOL) == OK:
 		fare = clampf(c.get_value("oyun", "fare", 1.0), 0.5, 2.0)
 		tam_ekran = c.get_value("ekran", "tam_ekran", false)
-		kalite = clampi(c.get_value("ekran", "kalite", 2), 0, 2)
+		kalite = clampi(c.get_value("ekran", "kalite", kalite), 0, 2)
 		hile_acilmis = c.get_value("hile", "acilmis", false)
 		hile_acik = hile_acilmis and c.get_value("hile", "acik", false)
 		akis_tamam = c.get_value("hile", "akis_tamam", [])
