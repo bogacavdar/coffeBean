@@ -8,6 +8,8 @@ var gorev: Dictionary = {}
 var gorev_hud: Label
 var ilerleme_hud: Label
 var tahta: Label3D
+var tahta_sol: Label3D
+var tahta_sag: Label3D
 var rutbe_bas := ""
 
 
@@ -283,26 +285,40 @@ func _hud() -> void:
 func _tahta_kur() -> void:
 	slab(TAHTA_POS, Vector3(1.1, 0.56, 0.03), mat(Color("1f2a24"), 0.9))
 	slab(TAHTA_POS + Vector3(0, 0, -0.005), Vector3(1.16, 0.62, 0.025), mat(Color("6b4a2e"), 0.7))
-	tahta = Label3D.new()
-	tahta.font_size = 30
-	tahta.pixel_size = 0.0016
-	tahta.modulate = Color("efe8d8")
-	tahta.outline_size = 0
-	tahta.line_spacing = -4
-	tahta.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	tahta.position = TAHTA_POS + Vector3(0, 0.25, 0.02)
-	add_child(tahta)
+	tahta = _tahta_yazi(Vector3(0, 0.25, 0.02), 30)
+	tahta.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tahta_sol = _tahta_yazi(Vector3(-0.27, 0.19, 0.02), 19)
+	tahta_sag = _tahta_yazi(Vector3(0.27, 0.19, 0.02), 19)
 	_tahta_yenile()
+
+
+func _tahta_yazi(ofs: Vector3, boy: int) -> Label3D:
+	var l := Label3D.new()
+	l.font_size = boy
+	l.pixel_size = 0.0016
+	l.modulate = Color("efe8d8")
+	l.outline_size = 0
+	l.line_spacing = -6
+	l.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	l.position = TAHTA_POS + ofs
+	add_child(l)
+	return l
 
 
 func _tahta_yenile() -> void:
 	if tahta == null:
 		return
-	var satirlar: Array = ["MENÜ"]
+	var satirlar: Array = []
 	for id in GameState.S.unlocked:
 		if YAPILABILIR.has(id) and aletleri_var(id):
 			satirlar.append("%s  ₺%s" % [_D().drinks[id].name, GameState.tl(fiyat(id))])
-	tahta.text = "\n".join(satirlar.slice(0, 9))
+	if satirlar.size() > 24:
+		var fazla := satirlar.size() - 23
+		satirlar = satirlar.slice(0, 23)
+		satirlar.append("+%d tarif daha" % fazla)
+	tahta.text = "MENÜ"
+	tahta_sol.text = "\n".join(satirlar.slice(0, 12))
+	tahta_sag.text = "\n".join(satirlar.slice(12, 24))
 
 
 func _fiyatlar(kip: String) -> void:

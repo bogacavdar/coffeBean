@@ -45,6 +45,7 @@ Testi kullanıcı yapar; geliştirme sırasında test yok, yalnız kullanıcı i
 - **Faz 3h (Godot 0.26):** `dukkan/ekstra.gd` (soguk.gd ile hile.gd arasına): ekstra shot (fincan tepside kalır, portafiltre yeniden; `shot_sayi`) ve paket servis (ön tezgâhın sağ ucunda kapak yığını); unutulursa yanlış sipariş; fiyat servis `_ek_ucret` kancası, çekirdek +9 g. Türk kahvesi makinesi (cezve: makineye koy → karıştırır, 1 sn'de köpük; `_cz_ocaktan_al` ayrıldı) ve filtre kahve makinesi (demleme: "Makineyle dök") artık satılıyor; yalnız çift grup gizli.
 - **Godot 0.27:** `dukkan/dersler.gd` (ekstra.gd ile hile.gd arasına): adım dersleri; yeni adımlı ilk siparişte "Yeni adım" penceresi, `ADIM_DERS` (50 adım, her adımı karşılıyor), kayıt `mg:adım`. Hile "Siparişi kendisi yap" ekstra shot ve kapağı tamam sayar.
 - **Godot 0.28 (Faz 5):** `dukkan/hayat.gd` (dersler.gd ile hile.gd arasına): servis edilen müşterinin %50'si boş oturağa oturur (Rocketbox `*_sit_chair_breathe_01`, fp_real make_avatar `cb/sit`), 20–40 sn sonra kalkar; masada kalan kirli fincan ("E: Fincanı topla") oturağı kapatır; gün sonunda oturanlar gider, fincanlar toplanır. Günlük görev yazısı sağ üstle çakışmasın diye bir satır aşağı (offset_top 82).
+- **Godot 0.29:** menü tahtası iki sütun, en çok 24 satır, fazlası "+N tarif daha" (ilerleme.gd `tahta_sol`/`tahta_sag`).
 
 ## Önceki paket: Godot 0.3 (3741fb9) — aşağıdakiler yayında
 - Espresso akışı ×1,25 (FLOW tek 1,025 / double 2,05 g/sn, terazi metni ~23 sn); tasarım belgesi Espresso satırları + Web sürümü + §10 Depo/Web kararları; KURALLAR Kural 4/6.
