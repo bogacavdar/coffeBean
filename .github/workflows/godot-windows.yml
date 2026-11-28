@@ -44,3 +44,60 @@ jobs:
             --target ${{ github.sha }} --prerelease \
             --title "CoffeBean Godot (Windows)" \
             --notes "Zip'i açıp CoffeBean.exe'yi çalıştırın. WASD yürü, fare bak, E / sol tık etkileşim, Boşluk tamam, R kaşık, Esc menü. Modeller: Poly Haven (CC0), insanlar: Microsoft Rocketbox (MIT). Commit: ${{ github.sha }}"
+  android:
+    # Android deneme APK'sı (tasarım belgesi "Dokunmatik kontroller (Faz 7)"); başarısız olursa Windows etkilenmez.
+    runs-on: ubuntu-latest
+    env:
+      GODOT: "4.7.2"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Godot ve dışa aktarım şablonlarını kur
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT}-stable/Godot_v${GODOT}-stable_linux.x86_64.zip
+          unzip -q Godot_v${GODOT}-stable_linux.x86_64.zip
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT}-stable/Godot_v${GODOT}-stable_export_templates.tpz
+          unzip -q Godot_v${GODOT}-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT}.stable
+          mv templates/* ~/.local/share/godot/export_templates/${GODOT}.stable/
+      - name: Android SDK ve deneme anahtarı
+        run: |
+          KS=$HOME/debug.keystore
+          keytool -genkeypair -v -keystore $KS -storepass android -keypass android -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          mkdir -p ~/.config/godot
+          V=$(echo $GODOT | cut -d. -f1,2)
+          cat > ~/.config/godot/editor_settings-$V.tres <<EOT
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/java_sdk_path = "$JAVA_HOME_17_X64"
+          export/android/debug_keystore = "$KS"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          EOT
+          sed -i 's/^          //' ~/.config/godot/editor_settings-$V.tres
+          cat ~/.config/godot/editor_settings-$V.tres
+          ls $ANDROID_HOME/build-tools $ANDROID_HOME/platform-tools | head
+      - name: Android için dışa aktar
+        env:
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /home/runner/debug.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
+        run: |
+          G=$PWD/Godot_v${GODOT}-stable_linux.x86_64
+          cd godot/coffebean
+          $G --headless --import || true
+          mkdir -p build
+          $G --headless --export-debug "Android" build/CoffeBean.apk
+          ls -la build
+          cp build/CoffeBean.apk $GITHUB_WORKSPACE/CoffeBean_Godot_Deneme_Android.apk
+      - name: Sürüme koy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete godot-deneme-android --yes --cleanup-tag || true
+          gh release create godot-deneme-android CoffeBean_Godot_Deneme_Android.apk \
+            --target ${{ github.sha }} --prerelease \
+            --title "CoffeBean Godot (Android deneme)" \
+            --notes "Android deneme APK'sı (64 bit ARM, deneme imzalı). Sol çubuk yürü, kaydırarak bak, E düğmesi etkileşim, ☰ menü. Commit: ${{ github.sha }}"
