@@ -257,7 +257,7 @@ func _hud() -> void:
 		return
 	var S := GameState.S
 	var r := rutbe()
-	var s := "%s · %d XP · " % [r.name, int(S.xp)]
+	var s := "%s · %d XP\n" % [r.name, int(S.xp)]
 	var nx := sonraki_tarif()
 	if nx == "":
 		s += "Tüm tarifler açık"
