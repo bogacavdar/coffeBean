@@ -336,6 +336,8 @@ func make_avatar(name: String) -> Node3D:
 	var pre := "f" if "Female" in name else "m"
 	lib.add_animation("idle", avatar_anim(pre + "_idle_breathe_01"))
 	lib.add_animation("walk", avatar_anim(pre + "_walk_neutral_01"))
+	if ResourceLoader.exists("res://art/people/anims/%s_sit_chair_breathe_01.max.fbx" % pre):
+		lib.add_animation("sit", avatar_anim(pre + "_sit_chair_breathe_01"))
 	ap.add_animation_library("cb", lib)
 	ap.play("cb/idle")
 	root.set_meta("ap", ap)

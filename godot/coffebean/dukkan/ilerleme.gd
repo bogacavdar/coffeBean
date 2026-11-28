@@ -243,7 +243,7 @@ func build_ui() -> void:
 	gorev_hud.anchor_right = 0.5
 	gorev_hud.offset_left = -360
 	gorev_hud.offset_right = 360
-	gorev_hud.offset_top = 14
+	gorev_hud.offset_top = 82
 	gorev_hud.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	style(gorev_hud, 18)
 	info.get_parent().add_child(gorev_hud)
